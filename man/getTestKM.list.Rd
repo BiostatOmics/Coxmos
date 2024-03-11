@@ -59,6 +59,8 @@ Run the function "getTestKM" for a list of models. More information in "?getTest
 \examples{
 data("X_proteomic")
 data("Y_proteomic")
+X_proteomic <- X_proteomic[1:50,]
+Y_proteomic <- Y_proteomic[1:50,]
 set.seed(123)
 index_train <- caret::createDataPartition(Y_proteomic$event, p = .5, list = FALSE, times = 1)
 X_train <- X_proteomic[index_train,1:20]
