@@ -216,22 +216,22 @@ print.Coxmos <- function(x, ...){
   if(attr(x, "model") %in% pkg.env$all_methods){
 
     method <- attr(x, "model")
-    cat(paste0("The method used is ", method, ".\n\n"))
+    message(paste0("The method used is ", method, ".\n\n"))
 
     if("removed_variables_correlation" %in% names(x) && !is.null(x$removed_variables_correlation)){
-      cat(paste0("A total of ", length(x$removed_variables_correlation), " variables have been removed due to high correlation filter.\n\n"))
+      message(paste0("A total of ", length(x$removed_variables_correlation), " variables have been removed due to high correlation filter.\n\n"))
     }
 
     if("removed_variables" %in% names(x) && !is.null(x$removed_variables)){
-      cat(paste0("A total of ", length(x$nzv), " variables have been removed due to Zero or Near-Zero Variance filter.\n\n"))
+      message(paste0("A total of ", length(x$nzv), " variables have been removed due to Zero or Near-Zero Variance filter.\n\n"))
     }
 
     if("nsv" %in% names(x) && !is.null(x$nsv)){
-      cat(paste0("A total of ", length(x$nsv), " variables have been removed due to non-significance filter inside cox model.\n\n"))
+      message(paste0("A total of ", length(x$nsv), " variables have been removed due to non-significance filter inside cox model.\n\n"))
     }
 
     if(!all(is.null(x$survival_model))){
-      cat("Survival model:\n")
+      message("Survival model:\n")
       tab <- summary(x$survival_model$fit)[[7]]
 
       print(tab)
@@ -241,21 +241,21 @@ print.Coxmos <- function(x, ...){
 
   }else if(attr(x, "model") %in% pkg.env$all_cv){
 
-    cat("The cross validation method used is ", attr(x, "model"), ".\n\n", sep = "")
+    message("The cross validation method used is ", attr(x, "model"), ".\n\n", sep = "")
 
     if(!is.null(x$best_model_info)){
-      cat("Best model is:\n\n")
+      message("Best model is:\n\n")
       print(x$best_model_info)
     }else{
-      cat("Best model could NOT be obtained. All models computed present problems.\n\n")
+      message("Best model could NOT be obtained. All models computed present problems.\n\n")
     }
 
   }else if(attr(x, "model") %in% pkg.env$eval_class){
 
-    cat(paste0("Evaluation performed for methods: ", paste0(levels(x$df$method), collapse = ", "), ".\n\n", sep = ""))
+    message(paste0("Evaluation performed for methods: ", paste0(levels(x$df$method), collapse = ", "), ".\n\n", sep = ""))
 
     for(m in levels(x$df$method)){
-      cat(paste0(m,": \n"))
+      message(paste0(m,": \n"))
       for(c in colnames(x$df)){
 
         if(c=="method"){
@@ -263,21 +263,21 @@ print.Coxmos <- function(x, ...){
         }else if(c=="time"){
           time_vector <- levels(x$df[x$df$method==m,c,drop = TRUE])
           time_vector <- unlist(lapply(time_vector, function(x){gsub("time_", "", x)[[1]]}))
-          cat(paste0("\t",c,": ", paste0(time_vector, collapse = ", "), "\n"))
+          message(paste0("\t",c,": ", paste0(time_vector, collapse = ", "), "\n"))
         }else if(c=="brier_time"){
           time_vector <- levels(x$df[x$df$method==m,c,drop = TRUE])
           time_vector <- unlist(lapply(time_vector, function(x){gsub("brier_time_", "", x)[[1]]}))
-          cat(paste0("\t",c,": ", paste0(time_vector, collapse = ", "), "\n"))
+          message(paste0("\t",c,": ", paste0(time_vector, collapse = ", "), "\n"))
         }else if(c=="Brier"){ #use integrative brier
           ave <- x$lst_BRIER[[m]]$ierror
-          cat(paste0("\t","I.Brier",": ", round(ave, 5), "\n"))
+          message(paste0("\t","I.Brier",": ", round(ave, 5), "\n"))
         }else{
           ave <- mean(x$df[x$df$method==m,c,drop = TRUE], na.rm = TRUE)
-          cat(paste0("\t",c,": ", round(ave, 5), "\n"))
+          message(paste0("\t",c,": ", round(ave, 5), "\n"))
         }
 
       }
-      cat("\n")
+      message("\n")
     }
 
   }
@@ -493,8 +493,8 @@ deleteNearZeroCoefficientOfVariation <- function(X, LIMIT = 0.1){
 # Individual Cox results #
 #### ### ### ### ### ### #
 getIndividualCox <- function(data, time_var = "time", event_var = "event", score_data = NULL,
-                             verbose = FALSE){
-  set.seed(123)
+                             verbose = FALSE, seed = 123){
+  set.seed(seed)
 
   time <- data[,time_var]
   event <- data[,event_var]
@@ -1007,7 +1007,7 @@ getMaxNPredictors <- function(n.var, Y, MIN_EPV){
   if(any(EPV >= MIN_EPV)){
     max_n_predictors <- max(which(EPV>=MIN_EPV))
   }else{
-    cat("Minimum EPV not reached. You should be less strict or increse the number of events.\n")
+    message("Minimum EPV not reached. You should be less strict or increse the number of events.\n")
     return(0) #Treatment in the function that calls this one
   }
 
@@ -1066,29 +1066,17 @@ removeNonSignificativeCox <- function(cox, alpha, cox_input, time.value = NULL, 
 
   if(any(is.na(p_val)) || any(is.nan(p_val)) || any(is.null(p_val))){
     message("Problem to get P.Values in model:")
-    print(cox)
+    message(cox)
     return(list(cox = cox, removed_variables = removed_variables))
   }
 
   if(!isa(p_val, "numeric")){
     message("P.Values are not numerics in model:")
-    print(cox)
+    message(cox)
     return(list(cox = cox, removed_variables = removed_variables))
   }
 
-  # message("\n\np_val")
-  # message(paste0(p_val, collapse = ", "))
-  # message("alpha")
-  # message(alpha)
-  # message("c1")
-  # message(any(p_val>alpha))
-  # message("c2")
-  # message(length(p_val)>1)
-
   while(any(p_val>alpha) && length(p_val)>1){
-
-    # message("\n Inside while - cox model")
-    # message(paste0(names(cox$coefficients), ": ", cox$coefficients, collapse = ", "))
 
     to_remove <- names(which.max(p_val))
     to_remove <- deleteIllegalChars(to_remove)
@@ -2582,8 +2570,8 @@ get_COX_evaluation_AIC_CINDEX <- function(comp_model_lst, max.ncomp, penalty.lis
           }
 
           if(!isa(model,pkg.env$model_class)){
-            message("Model must be an object of class Coxmos.")
-            print(model)
+            warning("Model must be an object of class Coxmos.")
+            warning(model)
             next
           }
 
@@ -2658,8 +2646,8 @@ get_COX_evaluation_AIC_CINDEX <- function(comp_model_lst, max.ncomp, penalty.lis
             }
 
             if(!isa(model,pkg.env$model_class)){
-              message("Model must be an object of class Coxmos.")
-              print(model)
+              warning("Model must be an object of class Coxmos.")
+              warning(model)
               next
             }
 
@@ -3739,8 +3727,8 @@ getSubModel <- function(model, comp, remove_non_significant){
 getSubModel.mb <- function(model, comp, remove_non_significant){
 
   if(!isa(model,pkg.env$model_class)){
-    message("Model must be an object of class Coxmos.")
-    print(model)
+    warning("Model must be an object of class Coxmos.")
+    warning(model)
     return(NA)
   }
 
@@ -5029,8 +5017,8 @@ evaluation_list_Coxmos <- function(model, X_test, Y_test, pred.method = "cenROC"
   t3 <- Sys.time()
 
   if(!isa(model,pkg.env$model_class)){
-    message("Model must be an object of class Coxmos.")
-    print(model)
+    warning("Model must be an object of class Coxmos.")
+    warning(model)
     return(list(model_time = NA, comp.time = NA, aic.cox = NA, c_index.cox = NA, lst_AUC_values = NA))
   }
 

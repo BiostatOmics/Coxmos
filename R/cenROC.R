@@ -11,8 +11,8 @@
 #' @param t A scaler time point at which the time-dependent ROC curve is computed.
 #' @param U The vector of grid points where the ROC curve is estimated. The default is a sequence of \code{151} numbers between \code{0} and \code{1}.
 #' @param bw A character string specifying the bandwidth estimation method for the ROC itself. The possible options are "\code{NR}" for the normal reference, the plug-in "\code{PI}" and the cross-validation "\code{CV}". The default is the "\code{NR}" normal reference method. The user can also introduce a numerical value.
-#' @param h A scaler for the bandwidth of Beran's weight calculaions. The defualt is the value obtained by using the method of Sheather and Jones (1991).
-#' @param method The method of ROC curve estimation. The possible options are "\code{emp}" emperical metod; "\code{untra}" smooth without boundary correction and "\code{tra}" is smooth ROC curve estimation with boundary correction. The default is the "\code{tra}" smooth ROC curve estimate with boundary correction.
+#' @param h A scaler for the bandwidth of Beran's weight calculaions. The default is the value obtained by using the method of Sheather and Jones (1991).
+#' @param method The method of ROC curve estimation. The possible options are "\code{emp}" emperical method; "\code{untra}" smooth without boundary correction and "\code{tra}" is smooth ROC curve estimation with boundary correction. The default is the "\code{tra}" smooth ROC curve estimate with boundary correction.
 #' @param ktype A character string giving the type kernel distribution to be used for smoothing the ROC curve: "\code{normal}", "\code{epanechnikov}", "\code{biweight}", or "\code{triweight}". By default, the "\code{normal}" kernel is used.
 #' @param ktype1 A character string specifying the desired kernel needed for Beran weight calculation. The possible options are "\code{normal}", "\code{epanechnikov}", "\code{tricube}", "\code{boxcar}", "\code{triangular}", or "\code{quartic}". The defaults is "\code{normal}" kernel density.
 #' @param B The number of bootstrap samples to be used for variance estimation. The default is \code{0}, no variance estimation.
@@ -45,9 +45,9 @@ cenROC <- function(Y, M, censor, t, U = NULL, h = NULL, bw = "NR",  method = "tr
   if (is.null(U)) {U <- seq(0, 1, length.out = 151)}
   if (!is.vector(Y, mode = "numeric") |
       !is.vector(M, mode = "numeric") |
-      !is.vector(censor, mode = "numeric"))
-    print("Error! all numeric vectors Y, M and censor should be specified")
-  else{
+      !is.vector(censor, mode = "numeric")){
+    warning("Error! all numeric vectors Y, M and censor should be specified")
+  }else{
     Dt <- Csurv(Y = Y, M = M, censor = censor, t = t, h = h, kernel = ktype1)$positive
     estim <- RocFun(U = U, D = Dt, M = M, method = method, bw = bw, ktype = ktype)
     ROC <- estim$roc
@@ -81,7 +81,7 @@ cenROC <- function(Y, M, censor, t, U = NULL, h = NULL, bw = "NR",  method = "tr
 #' @param M The numeric vector of marker values for which we want to compute the time-dependent ROC curves.
 #' @param censor The censoring indicator, \code{1} if event, \code{0} otherwise.
 #' @param t A scaler time point at which we want to compute the time-dependent ROC curve.
-#' @param h A scaler for the bandwidth of Beran's weight calculaions. The defualt is using the method of Sheather and Jones (1991).
+#' @param h A scaler for the bandwidth of Beran's weight calculaions. The default is using the method of Sheather and Jones (1991).
 #' @param kernel A character string giving the type kernel to be used: "\code{normal}", "\code{epanechnikov}", , "\code{tricube}", "\code{boxcar}", "\code{triangular}", or "\code{quartic}". The defaults is "\code{normal}" kernel density.
 #' @return Return a vectors:
 #' @return \code{positive    }    \code{P(T<t|Y,censor,M)}.
@@ -133,7 +133,7 @@ Csurv <- function(Y, M, censor, t, h = NULL, kernel="normal") {
 #' @param D The event indicator.
 #' @param M The numeric vector of marker values for which the time-dependent ROC curves is computed.
 #' @param bw The bandwidth parameter for smoothing the ROC function. The possible options are \code{NR} normal reference method; \code{PI} plug-in method and \code{CV} cross-validation method. The default is the \code{NR} normal reference method.
-#' @param method is the method of ROC curve estimation. The possible options are \code{emp} emperical metod; \code{untra} smooth without boundary correction and \code{tra} is smooth ROC curve estimation with boundary correction.
+#' @param method is the method of ROC curve estimation. The possible options are \code{emp} emperical method; \code{untra} smooth without boundary correction and \code{tra} is smooth ROC curve estimation with boundary correction.
 #' @param ktype A character string giving the type kernel to be used: "\code{normal}", "\code{epanechnikov}", "\code{biweight}", or "\code{triweight}".
 #' @author Beyene K. Mehari and El Ghouch Anouar
 #' @references Beyene, K. M. and El Ghouch A. (2019). Smoothed time-dependent ROC curves for right-censored survival data. <https://dial.uclouvain.be/pr/boreal/object/boreal:219643>.
@@ -212,7 +212,7 @@ wbw <- function(X, wt, bw = "NR", ktype = "normal")
   } else if (bw == "PI") {
     bwv <- PI(X = X, wt = wt, ktype = ktype)$bw
   } else{
-    print("Please check your bandwidth options")
+    warning("Please check your bandwidth options")
   }
   return(list(bw = bwv))
 }
@@ -539,7 +539,7 @@ integ <- function(x, fx, method, n.pts = 256) {
 #'
 #' @param X The numeric data vector.
 #' @param wt The non-negative weight vector.
-#' @param p The percentile value. The defult is 0.5.
+#' @param p The percentile value. The default is 0.5.
 #' @keywords internal
 
 wquantile <- function(X, wt, p = 0.5)
@@ -564,7 +564,7 @@ wquantile <- function(X, wt, p = 0.5)
 #'
 #' @param X The numeric data vector.
 #' @param wt The non-negative weight vector.
-#' @param na.rm The character indicator wether to consider missing value(s) or not. The defult is FALSE.
+#' @param na.rm The character indicator wether to consider missing value(s) or not. The default is FALSE.
 #' @keywords internal
 
 wvar <- function(X, wt, na.rm = FALSE) {

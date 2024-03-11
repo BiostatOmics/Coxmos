@@ -603,19 +603,19 @@ cv.sb.splsicox <- function(X, Y,
   total_models <- max.ncomp * k_folds * n_run * length(penalty.list)
 
   lst_model <- get_Coxmos_models2.0(method = pkg.env$sb.splsicox,
-                                   X_train = X, Y_train = Y,
-                                   lst_X_train = lst_train_indexes, lst_Y_train = lst_train_indexes,
-                                   max.ncomp = max.ncomp, penalty.list = penalty.list, EN.alpha.list = NULL, max.variables = NULL, vector = NULL,
-                                   n_run = n_run, k_folds = k_folds,
-                                   MIN_NVAR = NULL, MAX_NVAR = NULL, MIN_AUC_INCREASE = NULL, EVAL_METHOD = NULL,
-                                   n.cut_points = NULL,
-                                   x.center = x.center, x.scale = x.scale,
-                                   y.center = y.center, y.scale = y.scale,
-                                   remove_near_zero_variance = remove_variance_at_fold_level, remove_zero_variance = FALSE, toKeep.zv = NULL,
-                                   alpha = alpha, MIN_EPV = MIN_EPV,
-                                   remove_non_significant = remove_non_significant, tol = tol, max.iter = NULL,
-                                   returnData = returnData, total_models = total_models,
-                                   PARALLEL = PARALLEL, verbose = verbose)
+                                    X_train = X, Y_train = Y,
+                                    lst_X_train = lst_train_indexes, lst_Y_train = lst_train_indexes,
+                                    max.ncomp = max.ncomp, penalty.list = penalty.list, EN.alpha.list = NULL, max.variables = NULL, vector = NULL,
+                                    n_run = n_run, k_folds = k_folds,
+                                    MIN_NVAR = NULL, MAX_NVAR = NULL, MIN_AUC_INCREASE = NULL, EVAL_METHOD = NULL,
+                                    n.cut_points = NULL,
+                                    x.center = x.center, x.scale = x.scale,
+                                    y.center = y.center, y.scale = y.scale,
+                                    remove_near_zero_variance = remove_variance_at_fold_level, remove_zero_variance = FALSE, toKeep.zv = NULL,
+                                    alpha = alpha, MIN_EPV = MIN_EPV,
+                                    remove_non_significant = remove_non_significant, tol = tol, max.iter = NULL,
+                                    returnData = returnData, total_models = total_models,
+                                    PARALLEL = PARALLEL, verbose = verbose)
 
   # already check in Coxmos_models
   # if(all(is.na(unlist(comp_model_lst)))){
@@ -822,11 +822,6 @@ cv.sb.splsicox <- function(X, Y,
 #' individually in an iterative manner. This ensures a detailed examination of each block's
 #' contribution to the survival outcome without the interference of other blocks. This approach is
 #' distinct from multiblock methods where all blocks are analyzed simultaneously.
-#'
-#' In the context of this function, "iterative single-block" means that each block of data is
-#' analyzed separately, one after the other. This approach is beneficial when different blocks
-#' represent distinct types or sources of data, allowing for a granular understanding of each block's
-#' significance.
 #'
 #' The cross-validation process involves partitioning the dataset into multiple subsets (folds) and
 #' then iteratively training the model on a subset of the data while validating it on the remaining

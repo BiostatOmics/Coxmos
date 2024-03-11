@@ -105,7 +105,7 @@
 #'  \item \code{Yresidus}: Y residuals.
 #' }
 #'
-#' \code{mb.model}: List of sPLS-ICOX models computed for each block.
+#' \code{mb.model}: List of sPLS models computed for each block.
 #'
 #' \code{n.comp}: Number of components selected.
 #'
@@ -645,7 +645,7 @@ mb.splsdrcox <- function (X, Y,
 
 #' MB.sPLS-DRCOX Cross-Validation
 #' @description The cv.mb.splsdrcox function performs cross-validation for the MB.sPLS-DRCOX model,
-#' a specialized model tailored for survival analysis with high-dimensional data. This function
+#' a specialized model for survival analysis with high-dimensional data. This function
 #' systematically evaluates the performance of the model across different hyperparameters and
 #' configurations to determine the optimal settings for the given data.
 #'

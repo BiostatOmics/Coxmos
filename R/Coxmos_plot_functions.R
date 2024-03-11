@@ -20,15 +20,17 @@
 #' @export
 #'
 #' @examples
-#' \dontrun{
+#' \donttest{
+#' if(requireNamespace("ggplot2", quietly = TRUE)){
 #' library(ggplot2)
 #' data(iris)
 #' g <- ggplot(iris, aes(Sepal.Width, Sepal.Length, color = Species))
 #' g <- g + geom_point(size = 4)
-#' save_ggplot(g)
+#' save_ggplot(g, folder = tempdir())
+#' }
 #' }
 
-save_ggplot <- function(plot, folder = NULL, name = "plot", wide = TRUE, quality = "4K", dpi = 80,
+save_ggplot <- function(plot, folder, name = "plot", wide = TRUE, quality = "4K", dpi = 80,
                         custom = NULL){
   width=NULL
   height=NULL
@@ -127,15 +129,17 @@ save_ggplot <- function(plot, folder = NULL, name = "plot", wide = TRUE, quality
 #' @export
 #'
 #' @examples
-#' \dontrun{
+#' \donttest{
+#' if(requireNamespace("ggplot2", quietly = TRUE)){
 #' library(ggplot2)
 #' data(iris)
 #' g <- ggplot(iris, aes(Sepal.Width, Sepal.Length, color = Species))
 #' g <- g + geom_point(size = 4)
-#' save_ggplot.svg(g)
+#' save_ggplot.svg(g, folder = tempdir())
+#' }
 #' }
 
-save_ggplot.svg <- function(plot, folder = NULL, name = "plot", wide = TRUE, quality = "4K", dpi = 80,
+save_ggplot.svg <- function(plot, folder, name = "plot", wide = TRUE, quality = "4K", dpi = 80,
                             custom = NULL){
   width=NULL
   height=NULL
@@ -236,7 +240,8 @@ save_ggplot.svg <- function(plot, folder = NULL, name = "plot", wide = TRUE, qua
 #' @export
 #'
 #' @examples
-#' \dontrun{
+#' \donttest{
+#' if(requireNamespace("ggplot2", quietly = TRUE)){
 #' library(ggplot2)
 #' data(iris)
 #' g <- ggplot(iris, aes(Sepal.Width, Sepal.Length, color = Species))
@@ -244,10 +249,11 @@ save_ggplot.svg <- function(plot, folder = NULL, name = "plot", wide = TRUE, qua
 #' g2 <- ggplot(iris, aes(Petal.Width, Petal.Length, color = Species))
 #' g2 <- g2 + geom_point(size = 4)
 #' lst_plots <- list("Sepal" = g, "Petal" = g2)
-#' save_ggplot_lst(lst_plots)
+#' save_ggplot_lst(lst_plots, folder = tempdir())
+#' }
 #' }
 
-save_ggplot_lst <- function(lst_plots, folder = NULL, prefix = NULL, suffix = NULL, wide = TRUE,
+save_ggplot_lst <- function(lst_plots, folder, prefix = NULL, suffix = NULL, wide = TRUE,
                             quality = "4K", dpi = 80, custom = NULL, object_name = NULL){
   width=NULL
   height=NULL
@@ -386,7 +392,8 @@ save_ggplot_lst <- function(lst_plots, folder = NULL, prefix = NULL, suffix = NU
 #' @export
 #'
 #' @examples
-#' \dontrun{
+#' \donttest{
+#' if(requireNamespace("ggplot2", quietly = TRUE)){
 #' library(ggplot2)
 #' data(iris)
 #' g <- ggplot(iris, aes(Sepal.Width, Sepal.Length, color = Species))
@@ -394,10 +401,11 @@ save_ggplot_lst <- function(lst_plots, folder = NULL, prefix = NULL, suffix = NU
 #' g2 <- ggplot(iris, aes(Petal.Width, Petal.Length, color = Species))
 #' g2 <- g2 + geom_point(size = 4)
 #' lst_plots <- list("Sepal" = g, "Petal" = g2)
-#' save_ggplot_lst.svg(lst_plots)
+#' save_ggplot_lst.svg(lst_plots, folder = tempdir())
+#' }
 #' }
 
-save_ggplot_lst.svg <- function(lst_plots, folder = NULL, prefix = NULL, suffix = NULL, wide = TRUE,
+save_ggplot_lst.svg <- function(lst_plots, folder, prefix = NULL, suffix = NULL, wide = TRUE,
                                 quality = "4K", dpi = 80, custom = NULL, object_name = NULL){
   width=NULL
   height=NULL
@@ -1175,8 +1183,8 @@ coxweightplot.fromVector.Coxmos <- function(model, vector, sd.min = NULL, sd.max
                                             size_percentage = 3){
 
   if(!isa(model,pkg.env$model_class)){
-    message("Model must be an object of class Coxmos.")
-    print(model)
+    warning("Model must be an object of class Coxmos.")
+    warning(model)
     return(NA)
   }
 
@@ -1959,11 +1967,15 @@ plot_events <- function(Y, max.breaks = 20, roundTo = 0.1, categories = c("Censo
 #' @export
 #'
 #' @examples
-#' \dontrun{
-#'   NAMEVAR1 = "sex"
-#'   NAMEVAR2 = "age"
-#'   plot_divergent.biplot(X, Y, NAMEVAR1, NAMEVAR2, BREAKTIME = 5, x.text = "N. of Patients")
-#' }
+#' X <- data.frame(sex = factor(c("M","M","F","F","F","M","F","M","M")),
+#' age = as.numeric(c(22,23,25,28,32,30,29,33,32)))
+#'
+#' Y = data.frame(time = c(24,25,28,29,22,26,22,23,24),
+#' event = c(TRUE,TRUE,FALSE,TRUE,FALSE,TRUE,TRUE,FALSE,FALSE))
+#'
+#' NAMEVAR1 = "sex"
+#' NAMEVAR2 = "age"
+#' plot_divergent.biplot(X, Y, NAMEVAR1, NAMEVAR2, BREAKTIME = 5, x.text = "N. of Patients")
 
 plot_divergent.biplot <- function(X, Y, NAMEVAR1, NAMEVAR2, BREAKTIME, x.text = "N. of Samples"){
   df<-NULL
@@ -2048,8 +2060,7 @@ plot_divergent.biplot <- function(X, Y, NAMEVAR1, NAMEVAR2, BREAKTIME, x.text = 
     scale_y_continuous(breaks = breaks_values,
                        labels = abs(breaks_values)) +
     guides(fill=guide_legend(title="Event type")) +
-    theme(plot.title = element_text(hjust = 0.5 + round2any(real_center_deviation, 0.01))) +
-    xlab(label = x.text)
+    theme(plot.title = element_text(hjust = 0.5 + round2any(real_center_deviation, 0.01)))
 
   if(requireNamespace("RColorConesa", quietly = TRUE)){
     ggp_distribution <- ggp_distribution + RColorConesa::scale_fill_conesa()
@@ -2132,8 +2143,8 @@ plot_PLS_Coxmos <- function(model, comp = c(1,2), mode = "scores", factor = NULL
                             text.size = 2, overlaps = 10){
 
   if(!isa(model,pkg.env$model_class)){
-    message("Model must be an object of class Coxmos.")
-    print(model)
+    warning("Model must be an object of class Coxmos.")
+    warning(model)
     return(NA)
   }
 
@@ -3024,8 +3035,8 @@ plot_proportionalHazard.list <- function(lst_models){
 plot_proportionalHazard <- function(model){
 
   if(!isa(model,pkg.env$model_class)){
-    message("Model must be an object of class Coxmos.")
-    print(model)
+    warning("Model must be an object of class Coxmos.")
+    warning(model)
     return(NULL)
   }
 
@@ -3194,8 +3205,8 @@ plot_forest <- function(model,
                         noDigits = 2){
 
   if(!isa(model,pkg.env$model_class)){
-    message("Model must be an object of class Coxmos.")
-    print(model)
+    warning("Model must be an object of class Coxmos.")
+    warning(model)
     return(NULL)
   }
 
@@ -3314,14 +3325,14 @@ plot_cox.event <- function(model, type = "lp", n.breaks = 20){
   event <- NULL
 
   if(!isa(model,pkg.env$model_class)){
-    message("Model must be an object of class Coxmos.")
-    print(model)
+    warning("Model must be an object of class Coxmos.")
+    warning(model)
     return(NULL)
   }
 
   #exits
   if(all(is.null(model$survival_model$fit)) || all(is.na(model$survival_model$fit))){
-    message(paste0("Survival model not found for ", attr(model, "model"), "."))
+    warning(paste0("Survival model not found for ", attr(model, "model"), "."))
     return(NULL)
   }
 
@@ -3370,7 +3381,7 @@ prop.between2values <- function(df, min, max){
 
   total_0 <- round(count[[1]] / sum(df$event==levels(df$event)[[1]]) * 100,2)
   total_1 <- round(count[[2]] / sum(df$event==levels(df$event)[[2]]) * 100,2)
-  cat(paste0("Between ", min, " and ", max, " there are:\n",
+  message(paste0("Between ", min, " and ", max, " there are:\n",
              perc[[1]], " % of censored (",total_0, " % of total censored)\n",
              perc[[2]], " % of events (",total_1, " % of total event)\n\n"))
 }
@@ -3679,8 +3690,8 @@ plot_pseudobeta <- function(model, error.bar = TRUE, onlySig = FALSE, alpha = 0.
                             label_x_axis_size  = 10, label_y_axis_size  = 10){
 
   if(!isa(model,pkg.env$model_class)){
-    message("Model must be an object of class Coxmos.")
-    print(model)
+    warning("Model must be an object of class Coxmos.")
+    warning(model)
     return(NULL)
   }
 
@@ -3993,8 +4004,8 @@ plot_pseudobeta_newObservation <- function(model, new_observation, error.bar = T
                                        top = NULL, auto.limits = TRUE, show.betas = FALSE){
 
   if(!isa(model,pkg.env$model_class)){
-    message("Model must be an object of class Coxmos.")
-    print(model)
+    warning("Model must be an object of class Coxmos.")
+    warning(model)
     return(NULL)
   }
 
@@ -4022,8 +4033,8 @@ plot_pseudobeta.newObservation <- function(model, new_observation, error.bar = T
                                        top = NULL, auto.limits = TRUE, show.betas = FALSE){
 
   if(!isa(model,pkg.env$model_class)){
-    message("Model must be an object of class Coxmos.")
-    print(model)
+    warning("Model must be an object of class Coxmos.")
+    warning(model)
     return(NULL)
   }
 
@@ -4036,7 +4047,7 @@ plot_pseudobeta.newObservation <- function(model, new_observation, error.bar = T
   coefficients <- ggp.simulated_beta$beta
 
   if(all(coefficients==0)){
-    message("No significant variables selected.")
+    warning("No significant variables selected.")
     return(NULL)
   }
 
@@ -4213,8 +4224,8 @@ plot_MB.pseudobeta.newObservation <- function(model, new_observation, error.bar 
                                           top = NULL, auto.limits = TRUE, show.betas = FALSE){
 
   if(!isa(model,pkg.env$model_class)){
-    message("Model must be an object of class Coxmos.")
-    print(model)
+    warning("Model must be an object of class Coxmos.")
+    warning(model)
     return(NULL)
   }
 
@@ -4563,8 +4574,8 @@ getAutoKM <- function(type = "LP", model, comp = 1:2, top = 10, ori_data = TRUE,
   }
 
   if(!isa(model,pkg.env$model_class)){
-    message("Model must be an object of class Coxmos.")
-    print(model)
+    warning("Model must be an object of class Coxmos.")
+    warning(model)
     return(NULL)
   }
 
@@ -4799,7 +4810,7 @@ getCompKM <- function(model, comp = 1:2, top = 10, ori_data = TRUE, BREAKTIME = 
     if(only_sig){
 
       if(length(v_names[v_names$`P-Val (Log Rank)` <= alpha,]$Variable)==0){
-          cat("None of the variables have a significant log-rank test value. Survival function, Hazard Curve, and Cumulative Hazard plots will be returned.\n")
+        message("None of the variables have a significant log-rank test value. Survival function, Hazard Curve, and Cumulative Hazard plots will be returned.\n")
       }
 
       LST_SPLOT <- plot_survivalplot.qual(data = d,
@@ -4824,7 +4835,7 @@ getCompKM <- function(model, comp = 1:2, top = 10, ori_data = TRUE, BREAKTIME = 
       if(only_sig){
 
         if(length(v_names[[b]][v_names[[b]]$`P-Val (Log Rank)` <= alpha,]$Variable)==0){
-            cat("None of the variables have a significant log-rank test value. Survival function, Hazard Curve, and Cumulative Hazard plots will be returned.\n")
+          message("None of the variables have a significant log-rank test value. Survival function, Hazard Curve, and Cumulative Hazard plots will be returned.\n")
         }
 
         LST_SPLOT[[b]] <- plot_survivalplot.qual(data = d[[b]],
@@ -5044,7 +5055,7 @@ getLPVarKM <- function(model, comp = 1:2, top = 10, ori_data = TRUE, BREAKTIME =
 
       if(length(v_names[v_names$`P-Val (Log Rank)` <= alpha,]$Variable)==0){
         if(verbose){
-          cat("All variables has a non-significant log-rank test value. Survival function, Hazard Curve and Cumulative Hazard plots will be returned.")
+          message("All variables has a non-significant log-rank test value. Survival function, Hazard Curve and Cumulative Hazard plots will be returned.")
         }
       }
 
@@ -5067,7 +5078,7 @@ getLPVarKM <- function(model, comp = 1:2, top = 10, ori_data = TRUE, BREAKTIME =
 
         if(length(v_names[[b]][v_names[[b]]$`P-Val (Log Rank)` <= alpha,]$Variable)==0){
           if(verbose){
-            cat("Any variable has a significant log-rank test value. Survival function, Hazard Curve and Cumulative Hazard plots will be returned.")
+            message("Any variable has a significant log-rank test value. Survival function, Hazard Curve and Cumulative Hazard plots will be returned.")
           }
         }
 
@@ -5288,7 +5299,7 @@ getVarKM <- function(model, comp = 1:2, top = 10, ori_data = TRUE, BREAKTIME = N
 
       if(length(v_names[v_names$`P-Val (Log Rank)` <= alpha,]$Variable)==0){
         if(verbose){
-          cat("Any variable has a significant log-rank test value. Survival function, Hazard Curve and Cumulative Hazard plots will be returned.")
+          message("Any variable has a significant log-rank test value. Survival function, Hazard Curve and Cumulative Hazard plots will be returned.")
         }
       }
 
@@ -5310,7 +5321,7 @@ getVarKM <- function(model, comp = 1:2, top = 10, ori_data = TRUE, BREAKTIME = N
       if(only_sig){
 
         if(verbose & length(v_names[[b]][v_names[[b]]$`P-Val (Log Rank)` <= alpha,]$Variable)==0){
-          cat(paste0("Any variable has a significant log-rank test value for block '", b, "'. Survival function, Hazard Curve and Cumulative Hazard plots will be returned."))
+          message(paste0("Any variable has a significant log-rank test value for block '", b, "'. Survival function, Hazard Curve and Cumulative Hazard plots will be returned."))
         }
 
         LST_SPLOT[[b]] <- plot_survivalplot.qual(data = d[[b]],
@@ -5727,7 +5738,7 @@ plot_survivalplot.qual <- function(data, sdata, cn_variables, name_data = NULL, 
 getCutoffAutoKM.list <- function(lst_results){
 
   #check names in lst_models
-  lst_models <- checkModelNames(lst_models)
+  lst_models <- checkModelNames(lst_results)
 
   LST_RES <- purrr::map(lst_results, ~getCutoffAutoKM(.))
   return(LST_RES)
@@ -5764,6 +5775,7 @@ getCutoffAutoKM.list <- function(lst_results){
 getCutoffAutoKM <- function(result){
 
   if(all(is.null(result)) || all(is.na(result))){
+    warning("All NA or NULL in result object.")
     return(NULL)
   }
 
@@ -5974,8 +5986,8 @@ getTestKM <- function(model, X_test, Y_test, cutoff, type = "LP", ori_data = TRU
   checkTestTimesVSTrainTimes(model, Y_test)
 
   if(!isa(model,pkg.env$model_class)){
-    message("Model must be an object of class Coxmos.")
-    print(model)
+    warning("Model must be an object of class Coxmos.")
+    warning(model)
     return(NULL)
   }
 
@@ -6269,8 +6281,8 @@ plot_LP.multipleObservations <- function(model, new_observations, error.bar = FA
                                      auto.limits = TRUE, top = NULL){
 
   if(!isa(model,pkg.env$model_class)){
-    message("Model must be an object of class Coxmos.")
-    print(model)
+    warning("Model must be an object of class Coxmos.")
+    warning(model)
     return(NULL)
   }
 
@@ -6429,7 +6441,7 @@ plot_cox.comparePatients <- function(model, new_data, error.bar = FALSE, onlySig
   coefficients <- ggp.simulated_beta$beta
 
   if(all(coefficients==0)){
-    message("No significant variables selected.")
+    warning("No significant variables selected.")
     return(NULL)
   }
 

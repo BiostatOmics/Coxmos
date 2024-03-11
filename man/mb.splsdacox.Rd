@@ -136,7 +136,7 @@ elements:
 \item \code{Yresidus}: Y residuals.
 }
 
-\code{mb.model}: List of splsdacox_dynamic models computed for each block.
+\code{mb.model}: List of sPLS models computed for each block.
 
 \code{n.comp}: Number of components selected.
 

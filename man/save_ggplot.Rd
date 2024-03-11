@@ -6,7 +6,7 @@
 \usage{
 save_ggplot(
   plot,
-  folder = NULL,
+  folder,
   name = "plot",
   wide = TRUE,
   quality = "4K",
@@ -36,12 +36,14 @@ Generate a plot image in the specific folder or working directory.
 Allows to save 'ggplot2' objects in .tiff format based on an specific resolution.
 }
 \examples{
-\dontrun{
+\donttest{
+if(requireNamespace("ggplot2", quietly = TRUE)){
 library(ggplot2)
 data(iris)
 g <- ggplot(iris, aes(Sepal.Width, Sepal.Length, color = Species))
 g <- g + geom_point(size = 4)
-save_ggplot(g)
+save_ggplot(g, folder = tempdir())
+}
 }
 }
 \author{

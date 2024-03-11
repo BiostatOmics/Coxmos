@@ -15,7 +15,7 @@ Csurv(Y, M, censor, t, h = NULL, kernel = "normal")
 
 \item{t}{A scaler time point at which we want to compute the time-dependent ROC curve.}
 
-\item{h}{A scaler for the bandwidth of Beran's weight calculaions. The defualt is using the method of Sheather and Jones (1991).}
+\item{h}{A scaler for the bandwidth of Beran's weight calculaions. The default is using the method of Sheather and Jones (1991).}
 
 \item{kernel}{A character string giving the type kernel to be used: "\code{normal}", "\code{epanechnikov}", , "\code{tricube}", "\code{boxcar}", "\code{triangular}", or "\code{quartic}". The defaults is "\code{normal}" kernel density.}
 }

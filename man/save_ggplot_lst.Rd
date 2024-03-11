@@ -6,7 +6,7 @@
 \usage{
 save_ggplot_lst(
   lst_plots,
-  folder = NULL,
+  folder,
   prefix = NULL,
   suffix = NULL,
   wide = TRUE,
@@ -42,7 +42,8 @@ Generate a plot image in the specific folder or working directory.
 Allows to save a list of 'ggplot2' objects in .tiff format based on an specific resolution.
 }
 \examples{
-\dontrun{
+\donttest{
+if(requireNamespace("ggplot2", quietly = TRUE)){
 library(ggplot2)
 data(iris)
 g <- ggplot(iris, aes(Sepal.Width, Sepal.Length, color = Species))
@@ -50,7 +51,8 @@ g <- g + geom_point(size = 4)
 g2 <- ggplot(iris, aes(Petal.Width, Petal.Length, color = Species))
 g2 <- g2 + geom_point(size = 4)
 lst_plots <- list("Sepal" = g, "Petal" = g2)
-save_ggplot_lst(lst_plots)
+save_ggplot_lst(lst_plots, folder = tempdir())
+}
 }
 }
 \author{

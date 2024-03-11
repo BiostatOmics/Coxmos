@@ -212,11 +212,6 @@ individually in an iterative manner. This ensures a detailed examination of each
 contribution to the survival outcome without the interference of other blocks. This approach is
 distinct from multiblock methods where all blocks are analyzed simultaneously.
 
-In the context of this function, "iterative single-block" means that each block of data is
-analyzed separately, one after the other. This approach is beneficial when different blocks
-represent distinct types or sources of data, allowing for a granular understanding of each block's
-significance.
-
 The cross-validation process involves partitioning the dataset into multiple subsets (folds) and
 then iteratively training the model on a subset of the data while validating it on the remaining
 data. This helps in determining the optimal hyperparameters for the model, such as the number of

@@ -15,7 +15,7 @@ RocFun(U, D, M, bw = "NR", method, ktype)
 
 \item{bw}{The bandwidth parameter for smoothing the ROC function. The possible options are \code{NR} normal reference method; \code{PI} plug-in method and \code{CV} cross-validation method. The default is the \code{NR} normal reference method.}
 
-\item{method}{is the method of ROC curve estimation. The possible options are \code{emp} emperical metod; \code{untra} smooth without boundary correction and \code{tra} is smooth ROC curve estimation with boundary correction.}
+\item{method}{is the method of ROC curve estimation. The possible options are \code{emp} emperical method; \code{untra} smooth without boundary correction and \code{tra} is smooth ROC curve estimation with boundary correction.}
 
 \item{ktype}{A character string giving the type kernel to be used: "\code{normal}", "\code{epanechnikov}", "\code{biweight}", or "\code{triweight}".}
 }

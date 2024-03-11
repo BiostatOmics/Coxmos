@@ -1,14 +1,32 @@
 Package: Coxmos
-Title: Cox MultiBlock Survival
-Version: 0.4.0
+Title: Coxmos: Cox MultiBlock Survival
+Version: 1.0.0
 Authors@R: 
-    person("Pedro", "Salguero Garcia", , "pedrosalguerog@gmail.com", role = c("aut", "cre"),
-           comment = c(ORCID = "0000-0002-1879-3374"))
+    c(person("Pedro", "Salguero García", , "pedrosalguerog@gmail.com", role = c("aut", "cre", "rev"),
+           comment = c(ORCID = "0000-0002-1879-3374")),
+    person("Sonia", "Tarazona Campos", , "sotacam@eio.upv.es", role = c("ths")),
+    person("Ana", "Conesa Cegarra", , "ana.conesa@csic.es", role = c("ths")),
+    person("Kassu", "Mehari Beyene", , "kasu.beyene@uclouvain.be", role = c("ctb")),
+    person("Luis", "Meira Machado", , "", role = c("ctb")),
+    person("Marta", "Sestelo", , "", role = c("ctb")),
+    person("Artur", "Araújo", , "", role = c("ctb"))
+    )
 Maintainer: Pedro Salguero Garcia <pedrosalguerog@gmail.com>
-Description: This tool enables Cox survival analysis on high-dimensional and multiblock data. It 
-             offers functions for classical COX analysis (Cox, Stepwise and Elastic-Net), (s)PLS-COX, and 
-             MB.(s)PLS-COX. The software assists in managing high-dimensional datasets, provides cross-validation, 
-             generates plots, and delivers additional tools for result interpretation.
+Description: This software package provides Cox survival analysis for high-dimensional and multiblock datasets. 
+             It encompasses a suite of functions dedicated from the classical Cox regression to newest analysis,
+             including Cox proportional hazards model, Stepwise Cox regression, and Elastic-Net Cox regression, 
+             Sparse Partial Least Squares Cox regression (sPLS-COX) incorporating three distinct strategies, 
+             and two Multiblock-PLS Cox regression (MB-sPLS-COX) methods. This tool is designed to adeptly handle 
+             high-dimensional data, and provides tools for cross-validation, plot generation, and additional resources 
+             for interpreting results. While references are available within the corresponding functions, 
+             key literature is mentioned below.
+             Terry M Therneau (2024) <https://CRAN.R-project.org/package=survival>,
+             Noah Simon et al. (2011) <doi:10.18637/jss.v039.i05>,
+             Philippe Bastien et al. (2005) <doi:10.1016/j.csda.2004.02.005>,
+             Philippe Bastien (2008) <doi:10.1016/j.chemolab.2007.09.009>,
+             Philippe Bastien et al. (2014) <doi:10.1093/bioinformatics/btu660>,
+             Kassu Mehari Beyene and Anouar El Ghouch (2020) <doi:10.1002/sim.8671>,
+             Florian Rohart et al. (2017) <doi:10.1371/journal.pcbi.1005752>.
 URL: https://github.com/ConesaLab/Coxmos
 BugReports: https://github.com/ConesaLab/Coxmos/issues
 License: CC BY 4.0

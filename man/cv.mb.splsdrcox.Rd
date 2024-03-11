@@ -190,7 +190,7 @@ for test the models.
 }
 \description{
 The cv.mb.splsdrcox function performs cross-validation for the MB.sPLS-DRCOX model,
-a specialized model tailored for survival analysis with high-dimensional data. This function
+a specialized model for survival analysis with high-dimensional data. This function
 systematically evaluates the performance of the model across different hyperparameters and
 configurations to determine the optimal settings for the given data.
 }

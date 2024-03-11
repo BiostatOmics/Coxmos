@@ -18,11 +18,11 @@ cenROC(Y, M, censor, t, U = NULL, h = NULL, bw = "NR", method = "tra",
 
 \item{U}{The vector of grid points where the ROC curve is estimated. The default is a sequence of \code{151} numbers between \code{0} and \code{1}.}
 
-\item{h}{A scaler for the bandwidth of Beran's weight calculaions. The defualt is the value obtained by using the method of Sheather and Jones (1991).}
+\item{h}{A scaler for the bandwidth of Beran's weight calculaions. The default is the value obtained by using the method of Sheather and Jones (1991).}
 
 \item{bw}{A character string specifying the bandwidth estimation method for the ROC itself. The possible options are "\code{NR}" for the normal reference, the plug-in "\code{PI}" and the cross-validation "\code{CV}". The default is the "\code{NR}" normal reference method. The user can also introduce a numerical value.}
 
-\item{method}{The method of ROC curve estimation. The possible options are "\code{emp}" emperical metod; "\code{untra}" smooth without boundary correction and "\code{tra}" is smooth ROC curve estimation with boundary correction. The default is the "\code{tra}" smooth ROC curve estimate with boundary correction.}
+\item{method}{The method of ROC curve estimation. The possible options are "\code{emp}" emperical method; "\code{untra}" smooth without boundary correction and "\code{tra}" is smooth ROC curve estimation with boundary correction. The default is the "\code{tra}" smooth ROC curve estimate with boundary correction.}
 
 \item{ktype}{A character string giving the type kernel distribution to be used for smoothing the ROC curve: "\code{normal}", "\code{epanechnikov}", "\code{biweight}", or "\code{triweight}". By default, the "\code{normal}" kernel is used.}
 

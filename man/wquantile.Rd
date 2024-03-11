@@ -11,7 +11,7 @@ wquantile(X, wt, p = 0.5)
 
 \item{wt}{The non-negative weight vector.}
 
-\item{p}{The percentile value. The defult is 0.5.}
+\item{p}{The percentile value. The default is 0.5.}
 }
 \description{
 Weighted quartile estimation

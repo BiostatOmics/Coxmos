@@ -703,10 +703,11 @@ getRealNameVarFromCoxModel <- function(x_sw_train, var, symbol = ":"){
     res_var = var
   }
 
-  if(res_var %in% colnames(x_sw_train))
+  if(res_var %in% colnames(x_sw_train)){
     return(res_var)
-  else
+  }else{
     return(NULL)
+  }
 }
 
 isInteraction <- function(cn, symbol = ":"){

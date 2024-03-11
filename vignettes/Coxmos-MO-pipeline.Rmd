@@ -184,7 +184,7 @@ In order to perform survival analysis with our high-dimensional data, we have im
 
 To evaluate the performance of these methods, we have implemented cross-validation, which allows us to estimate the optimal parameters for future predictions based on prediction metrics such as: **AIC**, **C-INDEX**, **I.BRIER** and **AUC**. By default AUC metric (Area under the ROC curve) is used with the "cenROC" evaluator as it has provided the best results in our tests. However, multiple **AUC** evaluators could be used: "risksetROC", "survivalROC", "cenROC", "nsROC", "smoothROCtime_C" and "smoothROCtime_I". 
 
-Furthermore, a mix of multiple metrics could be used to obtain the optimal model. The user has to establish different weight for each emtric and all of them will be consider to compute the optimal model (the total weight must sum 1).
+Furthermore, a mix of multiple metrics could be used to obtain the optimal model. The user has to establish different weight for each metric and all of them will be consider to compute the optimal model (the total weight must sum 1).
 
 In addition, we have included options for normalizing data, filtering variables, and setting the minimum EPV, as well as specific parameters for each method, such as the alpha value for Cox Elastic Net and the number of components for PLS models. Overall, our cross-validation methodology allows us to effectively analyze high-dimensional survival data and optimize our model parameters.
 
@@ -364,7 +364,7 @@ cv.mb.splsdrcox_res <- cv.mb.splsdrcox(X = X_train, Y = Y_train,
 cv.mb.splsdrcox_res #1.5min
 ```
 
-After getting the cross-validation, the full model could be optain by passing the optimizal number of components and the list of the number of variables per omic.
+After getting the cross-validation, the full model could be obtain by passing the optimized number of components and the list of the number of variables per omic.
 
 ```{r}
 mb.splsdrcox_model <- mb.splsdrcox(X = X_train, Y = Y_train, 
@@ -405,7 +405,7 @@ cv.mb.splsdacox_res <- cv.mb.splsdacox(X = X_train, Y = Y_train,
 cv.mb.splsdacox_res #2min
 ```
 
-After getting the cross-validation, the full model could be optain by passing the optimizal number of components and the list of the number of variables per omic.
+After getting the cross-validation, the full model could be obtain by passing the optimized number of components and the list of the number of variables per omic.
 
 ```{r}
 mb.splsdacox_model <- mb.splsdacox(X = X_train, Y = Y_train, 

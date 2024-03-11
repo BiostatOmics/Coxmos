@@ -11,7 +11,7 @@ wvar(X, wt, na.rm = FALSE)
 
 \item{wt}{The non-negative weight vector.}
 
-\item{na.rm}{The character indicator wether to consider missing value(s) or not. The defult is FALSE.}
+\item{na.rm}{The character indicator wether to consider missing value(s) or not. The default is FALSE.}
 }
 \description{
 Weighted variance estimation

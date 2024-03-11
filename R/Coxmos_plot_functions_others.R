@@ -41,8 +41,8 @@
 loadingplot.Coxmos <- function(model, zero.rm = TRUE, top = NULL, auto.limits = TRUE){
 
   if(!isa(model,pkg.env$model_class)){
-    message("Model must be an object of class Coxmos.")
-    print(model)
+    warning("Model must be an object of class Coxmos.")
+    warning(model)
     return(NULL)
   }
 
@@ -148,8 +148,8 @@ loadingplot.Coxmos <- function(model, zero.rm = TRUE, top = NULL, auto.limits = 
 loadingplot.fromVector.Coxmos <- function(model, vector, zero.rm = FALSE, top = NULL, auto.limits = TRUE){
 
   if(!isa(model,pkg.env$model_class)){
-    message("Model must be an object of class Coxmos.")
-    print(model)
+    warning("Model must be an object of class Coxmos.")
+    warning(model)
     return(NULL)
   }
 
@@ -286,8 +286,8 @@ loadingplot.fromVector.Coxmos <- function(model, vector, zero.rm = FALSE, top = 
 w.starplot.Coxmos <- function(model, zero.rm = FALSE, top = NULL, auto.limits = TRUE){
 
   if(!isa(model,pkg.env$model_class)){
-    message("Model must be an object of class Coxmos.")
-    print(model)
+    warning("Model must be an object of class Coxmos.")
+    warning(model)
     return(NULL)
   }
 

@@ -56,11 +56,15 @@ variable. The bars in the plot are further colored based on the event type, prov
 distinction between censored and event observations.
 }
 \examples{
-\dontrun{
-  NAMEVAR1 = "sex"
-  NAMEVAR2 = "age"
-  plot_divergent.biplot(X, Y, NAMEVAR1, NAMEVAR2, BREAKTIME = 5, x.text = "N. of Patients")
-}
+X <- data.frame(sex = factor(c("M","M","F","F","F","M","F","M","M")),
+age = as.numeric(c(22,23,25,28,32,30,29,33,32)))
+
+Y = data.frame(time = c(24,25,28,29,22,26,22,23,24),
+event = c(TRUE,TRUE,FALSE,TRUE,FALSE,TRUE,TRUE,FALSE,FALSE))
+
+NAMEVAR1 = "sex"
+NAMEVAR2 = "age"
+plot_divergent.biplot(X, Y, NAMEVAR1, NAMEVAR2, BREAKTIME = 5, x.text = "N. of Patients")
 }
 \author{
 Pedro Salguero Garcia. Maintainer: pedsalga@upv.edu.es
