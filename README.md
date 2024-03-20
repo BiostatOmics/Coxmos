@@ -1,18 +1,18 @@
 **Coxmos** is still a beta-version. Work in progress. We strongly recommend to not use it yet.
 
-* [Introduction](https://github.com/ConesaLab/Coxmos/edit/master/README.md#introduction)
+* [Introduction](https://github.com/BiostatOmics/Coxmos/edit/master/README.md#introduction)
 
-* [Installation](https://github.com/ConesaLab/Coxmos/edit/master/README.md#installation)
+* [Installation](https://github.com/BiostatOmics/Coxmos/edit/master/README.md#installation)
 
-* [Getting started](https://github.com/ConesaLab/Coxmos/edit/master/README.md#getting-started)
+* [Getting started](https://github.com/BiostatOmics/Coxmos/edit/master/README.md#getting-started)
 
-* [Contact](https://github.com/ConesaLab/Coxmos/edit/master/README.md#contact)
+* [Contact](https://github.com/BiostatOmics/Coxmos/edit/master/README.md#contact)
 
-* [References](https://github.com/ConesaLab/Coxmos/edit/master/README.md#references)
+* [References](https://github.com/BiostatOmics/Coxmos/edit/master/README.md#references)
 
 
 ### Introduction
-The **coxmos** R package is an end-to-end pipeline designed for the study of survival analysis for 
+The **Coxmos** R package is an end-to-end pipeline designed for the study of survival analysis for 
 high dimensional data. Updating classical methods and adding new ones based on sPLS technologies. 
 Furthermore, includes multiblock functions to work with multiple sets of information to improve 
 survival accuracy. 
@@ -36,8 +36,8 @@ of study.
 
 #### Dependencies requiring manual installation
 
-Some of the metrics available in *coxmos* are optional based and will not be included in the 
-standard *coxmos* installation. A list of all optional packages are shown below:
+Some of the metrics available in *Coxmos* are optional based and will not be included in the 
+standard *Coxmos* installation. A list of all optional packages are shown below:
 
 * nsROC:
 * smoothROCtime:
@@ -46,26 +46,26 @@ standard *coxmos* installation. A list of all optional packages are shown below:
 * ggforce:
 * RColorConesa:
 
-#### Installing coxmos
+#### Installing Coxmos
 
-The *coxmos* R package and all the remaining dependencies can be installed 
+The *Coxmos* R package and all the remaining dependencies can be installed 
 from GitHub using `devtools`:
 
 ```
-devtools::install_github("ConesaLab/Coxmos")
+devtools::install_github("BiostatOmics/Coxmos")
 ```
 
 To access vignettes, you will need to force building with
 `devtools::install_github(build_vignettes = TRUE)`. Please note that this will
 also install all suggested packages required for vignette build and might 
 increase install time. Alternatively, an HTML version of the vignette is
-available under the [vignettes](https://github.com/ConesaLab/Coxmos/tree/master/vignettes)
+available under the [vignettes](https://github.com/BiostatOmics/Coxmos/tree/master/vignettes)
 folder.
 
 
 ### Getting started
 
-In order to use coxmos, you will need the following items:
+In order to use Coxmos, you will need the following items:
 
 - A explanatory X matrix.
 - A response survival Y matrix (with two columns, "time" and "event").
@@ -76,9 +76,9 @@ found in the package's vignette.
 
 ### Contact
 If you encounter a problem, please 
-[open an issue](https://github.com/ConesaLab/Coxmos/issues) via GitHub.
+[open an issue](https://github.com/BiostatOmics/Coxmos/issues) via GitHub.
 
   
 ### References
-If you use *coxmos* in your research, please cite the original publication:
+If you use *Coxmos* in your research, please cite the original publication:
 

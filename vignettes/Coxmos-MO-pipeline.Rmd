@@ -3,7 +3,7 @@ title: "Step-by-step guide to the MO-Coxmos pipeline"
 author: 
     name: "Pedro Salguero García"
     affiliation: "Polytechnic University of Valencia and Institute for Integrative Systems Biology (I2SysBio), Valencia, Spain"
-    email: pedrosalguerog@gmail.com
+    email: pedrosalguerog[at]gmail.com
 package: Coxmos
 date: "Last updated: `r format(Sys.time(), '%d %B, %Y')`"
 output: 
@@ -66,7 +66,7 @@ Coxmos can be installed from GitHub using `devtools`:
 
 ```{r, eval = FALSE}
 install.packages("devtools")
-devtools::install_github("ConesaLab/Coxmos", build_vignettes = TRUE)
+devtools::install_github("BiostatOmics/Coxmos", build_vignettes = TRUE)
 ```
 
 # Getting ready
@@ -208,7 +208,7 @@ In our pursuit of addressing the challenges posed by high-dimensional multi-omic
 
 ```{r,warning=T, eval=F}
 cv.sb.splsicox_res <- cv.sb.splsicox(X = X_train, Y = Y_train,
-                                     max.ncomp = 2, spv_penalty.list = c(0.5,0.9),
+                                     max.ncomp = 2, penalty.list = c(0.5,0.9),
                                      n_run = 2, k_folds = 5, 
                                      x.center = x.center, x.scale = x.scale, 
                                      remove_near_zero_variance = T, remove_zero_variance = F, toKeep.zv = NULL,
@@ -220,7 +220,7 @@ cv.sb.splsicox_res <- cv.sb.splsicox(X = X_train, Y = Y_train,
                                      MIN_EPV = 5, return_models = F, remove_non_significant = F, returnData = F,
                                      PARALLEL = F, verbose = F, seed = 123)
 
-cv.sb.splsicox_res #3.2min
+cv.sb.splsicox_res
 ```
 
 ```{r, fig.small=T, eval=F}
@@ -232,7 +232,7 @@ We will generate a SB.sPLS-ICOX model with optimal number of principal component
 ```{r}
 sb.splsicox_model <- sb.splsicox(X = X_train, Y = Y_train,
                                  n.comp = 1, #cv.sb.splsicox_res$opt.comp, 
-                                 spv_penalty = 0.9, #cv.sb.splsicox_res$opt.spv_penalty,
+                                 penalty = 0.9, #cv.sb.splsicox_res$opt.penalty,
                                  x.center = x.center, x.scale = x.scale,
                                  remove_near_zero_variance = T, remove_zero_variance = F, toKeep.zv = NULL,
                                  remove_non_significant = F, 
@@ -247,7 +247,7 @@ In case some components get a P-Value greater than the cutoff for significant, w
 ```{r}
 sb.splsicox_model <- sb.splsicox(X = X_train, Y = Y_train,
                                  n.comp = 1, #cv.sb.splsicox_res$opt.comp,
-                                 spv_penalty = 0.9, #cv.sb.splsicox_res$opt.spv_penalty,
+                                 penalty = 0.9, #cv.sb.splsicox_res$opt.penalty,
                                  x.center = x.center, x.scale = x.scale,
                                  remove_near_zero_variance = T, remove_zero_variance = F, toKeep.zv = NULL,
                                  remove_non_significant = T,
@@ -263,7 +263,7 @@ In this case, the cross validation returns the model automatically.
 
 ```{r, warning=F, eval=F}
 isb.splsicox_model <- cv.isb.splsicox(X = X_train, Y = Y_train,
-                                      max.ncomp = 2, spv_penalty.list = c(0.5, 0.9),
+                                      max.ncomp = 2, penalty.list = c(0.5, 0.9),
                                       n_run = 2, k_folds = 5, 
                                       x.center = x.center, x.scale = x.scale, 
                                       remove_near_zero_variance = T, remove_zero_variance = F, toKeep.zv = NULL,
@@ -275,7 +275,7 @@ isb.splsicox_model <- cv.isb.splsicox(X = X_train, Y = Y_train,
                                       MIN_EPV = 5, return_models = F, remove_non_significant = T,
                                       PARALLEL = F, verbose = F, seed = 123)
 
-isb.splsicox_model #3.5min.
+isb.splsicox_model
 ```
 
 ## SB.sPLS-DRCOX
@@ -284,7 +284,7 @@ We have developed also SB.sPLS-DRCOX, a comprehensive algorithm that employs the
 
 ```{r, warning=F, eval=F}
 cv.sb.splsdrcox_res <- cv.sb.splsdrcox(X = X_train, Y = Y_train,
-                                       max.ncomp = 2, eta.list = c(0.5,0.9),
+                                       max.ncomp = 2, penalty.list = c(0.5,0.9),
                                        n_run = 2, k_folds = 10, 
                                        x.center = x.center, x.scale = x.scale,
                                        #y.center = FALSE, y.scale = FALSE,
@@ -297,7 +297,7 @@ cv.sb.splsdrcox_res <- cv.sb.splsdrcox(X = X_train, Y = Y_train,
                                        MIN_EPV = 5, return_models = F, remove_non_significant = F, returnData = F,
                                        PARALLEL = F, verbose = F, seed = 123)
 
-cv.sb.splsdrcox_res #0.76min
+cv.sb.splsdrcox_res
 ```
 
 We will generate a SB.sPLS-DRCOX model with optimal number of principal components and its penalty based on the results obtained from the cross validation.
@@ -306,7 +306,7 @@ We will generate a SB.sPLS-DRCOX model with optimal number of principal componen
 sb.splsdrcox_model <- sb.splsdrcox(X = X_train, 
                                    Y = Y_train, 
                                    n.comp = 2, #cv.sb.splsdrcox_res$opt.comp, 
-                                   eta = 0.5, #cv.sb.splsdrcox_res$opt.eta,
+                                   penalty = 0.5, #cv.sb.splsdrcox_res$opt.penalty,
                                    x.center = x.center, x.scale = x.scale,
                                    remove_near_zero_variance = T, remove_zero_variance = F, toKeep.zv = NULL, 
                                    remove_non_significant = T, alpha = 0.05, MIN_EPV = 5,
@@ -321,7 +321,7 @@ The cross validation returns the model automatically.
 
 ```{r, warning=F, eval=F}
 isb.splsdrcox_model <- cv.isb.splsdrcox(X = X_train, Y = Y_train,
-                                        max.ncomp = 2, eta.list = c(0.5,0.9),
+                                        max.ncomp = 2, penalty.list = c(0.5,0.9),
                                         n_run = 2, k_folds = 10, 
                                         x.center = x.center, x.scale = x.scale,
                                         remove_near_zero_variance = T, remove_zero_variance = F, toKeep.zv = NULL,
@@ -333,7 +333,7 @@ isb.splsdrcox_model <- cv.isb.splsdrcox(X = X_train, Y = Y_train,
                                         MIN_EPV = 5, return_models = F, remove_non_significant = T,
                                         PARALLEL = F, verbose = F, seed = 123)
 
-isb.splsdrcox_model #0.8min
+isb.splsdrcox_model
 ```
 
 ## MB.sPLS-DRCOX
@@ -361,7 +361,7 @@ cv.mb.splsdrcox_res <- cv.mb.splsdrcox(X = X_train, Y = Y_train,
                                        MIN_EPV = 5, return_models = F, remove_non_significant = F, returnData = F,
                                        PARALLEL = F, verbose = F, seed = 123)
 
-cv.mb.splsdrcox_res #1.5min
+cv.mb.splsdrcox_res
 ```
 
 After getting the cross-validation, the full model could be obtain by passing the optimized number of components and the list of the number of variables per omic.
@@ -402,7 +402,7 @@ cv.mb.splsdacox_res <- cv.mb.splsdacox(X = X_train, Y = Y_train,
                                        MIN_EPV = 5, return_models = F, remove_non_significant = F, returnData = F,
                                        PARALLEL = F, verbose = F, seed = 123)
 
-cv.mb.splsdacox_res #2min
+cv.mb.splsdacox_res
 ```
 
 After getting the cross-validation, the full model could be obtain by passing the optimized number of components and the list of the number of variables per omic.
@@ -451,8 +451,7 @@ eval_results <- eval_Coxmos_models(lst_models = lst_models,
 In case you prefer to test multiple AUC evaluators, a list of them could be proportionate by using the library "purrr".
 
 ```{r, eval=FALSE}
-lst_evaluators <- c(cenROC = "cenROC",
-                    risksetROC = "risksetROC")
+lst_evaluators <- c(cenROC = "cenROC", risksetROC = "risksetROC")
 
 eval_results <- purrr::map(lst_evaluators, ~eval_Coxmos_models(lst_models = lst_models,
                                                               X_test = X_test, Y_test = Y_test,
@@ -648,7 +647,7 @@ The plot shows the AUC for the full model (called LP), and then, the AUC per eac
 In order to improve the interpretability of a PLS model, a subset of the most influential variables can be selected. In this example, the top 20 variables are chosen. Additionally, non-significant PLS components are excluded by setting the "onlySig" parameter to "TRUE".
 
 ```{r}
-# ggp.simulated_beta <- plot_pseudobeta.list(lst_models = lst_models, 
+# ggp.simulated_beta <- plot_pseudobpenalty.list(lst_models = lst_models, 
 #                                            error.bar = T, onlySig = T, alpha = 0.05, 
 #                                            zero.rm = T, auto.limits = T, top = 20,
 #                                            show_percentage = T, size_percentage = 2, verbose = F)
@@ -664,7 +663,6 @@ The iSB.sPLS-DRCOX model was computed using a total of 2 components. Although th
 The following plot illustrates the pseudo-beta coefficient for the original variables in the iSB.sPLS-DRCOX model. As only the top 20 variables are shown, in some case a percentage of the total linear predictor total value could be shown. To view the complete model, all variables would need to be included in the plot by assigning the value NULL to the "top" parameter.
 
 ```{r, fig.small=T}
-#ggp.simulated_beta$`iSB.sPLS-DRCOX`$plot
 ggp.simulated_beta$plot
 ```
 
@@ -697,7 +695,6 @@ LST_KM_RES_LP <- getAutoKM(type = "LP",
 As a result, the Kaplan-Meier curve could be plotted.  
 
 ```{r, fig.small=T}
-#LST_KM_RES_LP$`iSB.sPLS-DRCOX`$LST_PLOTS$LP
 LST_KM_RES_LP$LST_PLOTS$LP
 ```
 
@@ -724,7 +721,6 @@ LST_KM_TEST_LP <- getTestKM(model = lst_models$`SB.sPLS-DRCOX`,
 ```
 
 ```{r}
-#LST_KM_TEST_LP$`iSB.sPLS-DRCOX`
 LST_KM_TEST_LP
 ```
 
@@ -751,9 +747,6 @@ LST_KM_RES_COMP <- getAutoKM(type = "COMP",
 ```
 
 ```{r, fig.small=T}
-# LST_KM_RES_COMP$`iSB.sPLS-DRCOX`$LST_PLOTS$proteomic$comp_1
-# LST_KM_RES_COMP$`iSB.sPLS-DRCOX`$LST_PLOTS$proteomic$comp_2
-
 LST_KM_RES_COMP$LST_PLOTS$mirna$comp_2
 LST_KM_RES_COMP$LST_PLOTS$proteomic$comp_1
 LST_KM_RES_COMP$LST_PLOTS$proteomic$comp_2
@@ -776,9 +769,6 @@ LST_KM_TEST_COMP <- getTestKM(model = lst_models$`SB.sPLS-DRCOX`,
 ```
 
 ```{r, fig.small=T}
-# LST_KM_TEST_COMP$`iSB.sPLS-DRCOX`$comp_1_proteomic
-# LST_KM_TEST_COMP$`iSB.sPLS-DRCOX`$comp_2_proteomic
-
 LST_KM_TEST_COMP$comp_2_mirna
 LST_KM_TEST_COMP$comp_1_proteomic
 LST_KM_TEST_COMP$comp_2_proteomic
@@ -809,10 +799,6 @@ LST_KM_RES_VAR <- getAutoKM(type = "VAR",
 ```
 
 ```{r, fig.small=T}
-# LST_KM_RES_VAR$`iSB.sPLS-DRCOX`$LST_PLOTS$mirna$`hsa-miR-21-5p`
-# LST_KM_RES_VAR$`iSB.sPLS-DRCOX`$LST_PLOTS$proteomic$`840`
-# LST_KM_RES_VAR$`iSB.sPLS-DRCOX`$LST_PLOTS$proteomic$`3897`
-
 LST_KM_RES_VAR$LST_PLOTS$mirna$`hsa-miR-21-5p`
 LST_KM_RES_VAR$LST_PLOTS$proteomic$`840`
 LST_KM_RES_VAR$LST_PLOTS$proteomic$`7535`
@@ -835,10 +821,6 @@ LST_KM_TEST_VAR <- getTestKM(model = lst_models$`SB.sPLS-DRCOX`,
 ```
 
 ```{r, fig.small=T}
-# LST_KM_TEST_VAR$`iSB.sPLS-DRCOX`$mirna$`hsa-miR-21-5p`
-# LST_KM_TEST_VAR$`iSB.sPLS-DRCOX`$proteomic$`840`
-# LST_KM_TEST_VAR$`iSB.sPLS-DRCOX`$proteomic$`7535`
-
 LST_KM_TEST_VAR$mirna$`hsa-miR-21-5p`
 LST_KM_TEST_VAR$proteomic$`840`
 LST_KM_TEST_VAR$proteomic$`7535`
@@ -846,7 +828,7 @@ LST_KM_TEST_VAR$proteomic$`7535`
 
 # New patients
 
-In addition, HDCox can also manage new patients to perform predictions.
+In addition, Coxmos can also manage new patients to perform predictions.
 
 To demonstrate, an observation from a test dataset will be used.
 
@@ -881,8 +863,6 @@ ggp.simulated_beta_newPat <- plot_pseudobeta_newObservation(model = lst_models$`
 On the left, a linear predictor value is shown for the observation and each variable. On the right, the pseudo-beta coefficients for the model's original variables are illustrated. This allows the user to compare the direction of the linear predictors per variable. A change in direction means that the variable's value is below the mean for hazard variables or above the mean for protective ones. Having an opposite direction for hazard variables and maintaining the direction for protective variables makes the observation safer over time.
 
 ```{r, fig.small=T}
-# ggp.simulated_beta_newPat$`iSB.sPLS-DRCOX`$plot$proteomic
-
 ggp.simulated_beta_newPat$plot$mirna
 ggp.simulated_beta_newPat$plot$proteomic
 ```
@@ -924,7 +904,6 @@ sub_X_test <- list()
 for(b in names(X_test)){
   sub_X_test[[b]] <- X_test[[b]][1:5,]
 }
-
 ```
 
 ```{r}
@@ -946,6 +925,5 @@ lst_cox.comparison <- plot_LP.multipleObservations(model = lst_models$`SB.sPLS-D
 ```
 
 ```{r, fig.small=T}
-# lst_cox.comparison$`iSB.sPLS-DRCOX`$plot
 lst_cox.comparison$plot
 ```

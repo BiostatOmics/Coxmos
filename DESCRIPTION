@@ -27,8 +27,8 @@ Description: This software package provides Cox survival analysis for high-dimen
              Philippe Bastien et al. (2014) <doi:10.1093/bioinformatics/btu660>,
              Kassu Mehari Beyene and Anouar El Ghouch (2020) <doi:10.1002/sim.8671>,
              Florian Rohart et al. (2017) <doi:10.1371/journal.pcbi.1005752>.
-URL: https://github.com/ConesaLab/Coxmos
-BugReports: https://github.com/ConesaLab/Coxmos/issues
+URL: https://github.com/BiostatOmics/Coxmos
+BugReports: https://github.com/BiostatOmics/Coxmos/issues
 License: CC BY 4.0
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
