@@ -10,7 +10,8 @@
 #' @param name Character. File name.
 #' @param wide Logical. If TRUE, widescreen format (16:9) is used, in other case (4:3) format.
 #' @param quality Character. One of: "HD", "FHD", "2K", "4K", "8K"
-#' @param dpi Numeric. Dpi value for the image.
+#' @param dpi Numeric. DPI value for the image.
+#' @param format Device to use. Can either be a device function (e.g. png), or one of "eps", "ps", "tex" (pictex), "pdf", "jpeg", "tiff", "png", "bmp", "svg" or "wmf" (windows only).
 #' @param custom Numeric vector. Custom size of the image. Numeric vector of width and height.
 #'
 #' @author Pedro Salguero Garcia. Maintainer: pedsalga@upv.edu.es
@@ -30,119 +31,15 @@
 #' }
 #' }
 
-save_ggplot <- function(plot, folder, name = "plot", wide = TRUE, quality = "4K", dpi = 80,
+save_ggplot <- function(plot, folder, name = "plot", wide = TRUE, quality = "4K",
+                        dpi = 80, format = "tiff",
                         custom = NULL){
   width=NULL
   height=NULL
 
-  if(!quality %in% c("HD", "FHD", "2K", "4K", "8K")){
-    stop("uality must be one of the following options: 'HD', 'FHD', '2K', '4K', '8K'")
+  if(!format %in% c('eps', 'ps', 'tex', 'pdf', 'jpeg', 'tiff', 'png', 'bmp', 'svg', 'wmf')){
+    stop("format must be one of the following options: 'eps', 'ps', 'tex' (pictex), 'pdf', 'jpeg', 'tiff', 'png', 'bmp', 'svg' or 'wmf' (windows only).")
   }
-
-  ratios <- c(1.5,1.333333,1.5,2)
-
-  if(wide){
-    if(quality == "HD"){
-      width = 1280/dpi#4.266667
-      height = 720/dpi#2.4
-    }else if(quality == "FHD"){
-      dpi = dpi * ratios[1]
-      width = 1920/dpi#6.4
-      height = 1080/dpi#3.6
-    }else if(quality == "2K"){
-      dpi = dpi * ratios[1] * ratios[2]
-      width = 2560/dpi#8.533333
-      height = 1440/dpi#4.8
-    }else if(quality == "4K"){
-      dpi = dpi * ratios[1] * ratios[2] * ratios[3]
-      width = 3840/dpi#12.8
-      height = 2160/dpi#7.2
-    }else if(quality == "8K"){
-      dpi = dpi * ratios[1] * ratios[2] * ratios[3] * ratios[4]
-      width = 7680/dpi#25.6
-      height = 4320/dpi#14.4
-    }
-  }else{
-    if(quality == "HD"){
-      width = 960/dpi#3.19992
-      height = 720/dpi
-    }else if(quality == "FHD"){
-      dpi = dpi * ratios[1]
-      width = 1440/dpi#4.79988
-      height = 1080/dpi
-    }else if(quality == "2K"){
-      dpi = dpi * ratios[1] * ratios[2]
-      width = 1920/dpi#6.39984
-      height = 1440/dpi
-    }else if(quality == "4K"){
-      dpi = dpi * ratios[1] * ratios[2] * ratios[3]
-      width = 2880/dpi#9.59976
-      height = 2160/dpi
-    }else if(quality == "8K"){
-      dpi = dpi * ratios[1] * ratios[2] * ratios[3] * ratios[4]
-      width = 5760/dpi#19.19952
-      height = 4320/dpi
-    }
-  }
-
-  if(!is.null(custom)){
-    if(length(custom)==2){
-      width = custom[1]
-      height = custom[2]
-    }
-  }
-
-  if(!endsWith(name,".tiff")){
-    name <- paste0(name, ".tiff")
-  }
-
-  #remove illegal characters
-  name <- transformIllegalChars(name, except = c("-"))
-
-  if(class(plot)[1] %in% "ggsurvplot"){
-    plot_surv = plot$plot
-    if("table" %in% names(plot)){
-      p2 = plot$table
-      plot_surv = cowplot::plot_grid(plot_surv,p2,align = "v",ncol =1,rel_heights = c(4,1))
-    }
-    ggsave(plot = plot_surv, filename = paste0(folder,name), width = width, height = height, device='tiff', dpi=dpi)
-  }else{
-    ggsave(plot = plot, filename = paste0(folder,name), width = width, height = height, device='tiff', dpi=dpi)
-  }
-}
-
-#' save_ggplot.svg
-#' @description Allows to save 'ggplot2' objects in .svg format based on an specific resolution.
-#'
-#' @param plot 'ggplot2' object. Object to plot and save.
-#' @param folder Character. Folder path as character type.
-#' @param name Character. File name.
-#' @param wide Logical. If TRUE, widescreen format (16:9) is used, in other case (4:3) format.
-#' @param quality Character. One of: "HD", "FHD", "2K", "4K", "8K"
-#' @param dpi Numeric. Dpi value for the image.
-#' @param custom Numeric vector. Custom size of the image. Numeric vector of width and height.
-#'
-#' @return Generate as many plot images as list objects in the specific folder or working directory.
-#'
-#' @author Pedro Salguero Garcia. Maintainer: pedsalga@upv.edu.es
-#'
-#' @export
-#'
-#' @examples
-#' \donttest{
-#' if(requireNamespace("ggplot2", quietly = TRUE)){
-#' library(ggplot2)
-#' data(iris)
-#' g <- ggplot(iris, aes(Sepal.Width, Sepal.Length, color = Species))
-#' g <- g + geom_point(size = 4)
-#' save_ggplot.svg(g, folder = tempdir())
-#' }
-#' }
-
-save_ggplot.svg <- function(plot, folder, name = "plot", wide = TRUE, quality = "4K", dpi = 80,
-                            custom = NULL){
-  width=NULL
-  height=NULL
 
   if(!quality %in% c("HD", "FHD", "2K", "4K", "8K")){
     stop("quality must be one of the following options: 'HD', 'FHD', '2K', '4K', '8K'")
@@ -201,8 +98,8 @@ save_ggplot.svg <- function(plot, folder, name = "plot", wide = TRUE, quality = 
     }
   }
 
-  if(!endsWith(name,".svg")){
-    name <- paste0(name, ".svg")
+  if(!endsWith(name,paste0(".",format))){
+    name <- paste0(name, ".", format)
   }
 
   #remove illegal characters
@@ -214,22 +111,23 @@ save_ggplot.svg <- function(plot, folder, name = "plot", wide = TRUE, quality = 
       p2 = plot$table
       plot_surv = cowplot::plot_grid(plot_surv,p2,align = "v",ncol =1,rel_heights = c(4,1))
     }
-    ggsave(plot = plot_surv, filename = paste0(folder,name), width = width, height = height, device='svg', dpi=dpi)
+    ggsave(plot = plot_surv, filename = paste0(folder,name), width = width, height = height, device=format, dpi=dpi)
   }else{
-    ggsave(plot = plot, filename = paste0(folder,name), width = width, height = height, device='svg', dpi=dpi)
+    ggsave(plot = plot, filename = paste0(folder,name), width = width, height = height, device=format, dpi=dpi)
   }
 }
 
 #' save_ggplot_lst
 #' @description Allows to save a list of 'ggplot2' objects in .tiff format based on an specific resolution.
 #'
-#' @param lst_plots List of 'ggplot2'.
+#' @param lst_plots List of 'ggplot2' objects.
 #' @param folder Character. Folder path as character type.
 #' @param prefix Character. Prefix for file name.
 #' @param suffix Character. Sufix for file name.
 #' @param wide Logical. If TRUE, widescreen format (16:9) is used, in other case (4:3) format.
 #' @param quality Character. One of: "HD", "FHD", "2K", "4K", "8K"
-#' @param dpi Numeric. Dpi value for the image.
+#' @param dpi Numeric. DPI value for the image.
+#' @param format Device to use. Can either be a device function (e.g. png), or one of "eps", "ps", "tex" (pictex), "pdf", "jpeg", "tiff", "png", "bmp", "svg" or "wmf" (windows only).
 #' @param custom Numeric vector. Custom size of the image. Numeric vector of width and height.
 #' @param object_name Character. If the file to plot it is inside of a list, name of the object to save.
 #'
@@ -254,9 +152,13 @@ save_ggplot.svg <- function(plot, folder, name = "plot", wide = TRUE, quality = 
 #' }
 
 save_ggplot_lst <- function(lst_plots, folder, prefix = NULL, suffix = NULL, wide = TRUE,
-                            quality = "4K", dpi = 80, custom = NULL, object_name = NULL){
+                            quality = "4K", dpi = 80, format = "png", custom = NULL, object_name = NULL){
   width=NULL
   height=NULL
+
+  if(!format %in% c('eps', 'ps', 'tex', 'pdf', 'jpeg', 'tiff', 'png', 'bmp', 'svg', 'wmf')){
+    stop("format must be one of the following options: 'eps', 'ps', 'tex' (pictex), 'pdf', 'jpeg', 'tiff', 'png', 'bmp', 'svg' or 'wmf' (windows only).")
+  }
 
   if(!quality %in% c("HD", "FHD", "2K", "4K", "8K")){
     stop("quality must be one of the following options: 'HD', 'FHD', '2K', '4K', '8K'")
@@ -323,8 +225,8 @@ save_ggplot_lst <- function(lst_plots, folder, prefix = NULL, suffix = NULL, wid
       name <- transformIllegalChars(name, except = c("-"))
 
       name <- paste0(folder,name)
-      if(!endsWith(name,".tiff")){
-        name <- paste0(name, ".tiff")
+      if(!endsWith(name,paste0(".",format))){
+        name <- paste0(name, ".", format)
       }
 
       if(is.null(object_name)){
@@ -334,9 +236,9 @@ save_ggplot_lst <- function(lst_plots, folder, prefix = NULL, suffix = NULL, wid
             p2 = lst_plots[[cn]]$table
             plot_surv = cowplot::plot_grid(plot_surv,p2,align = "v",ncol =1,rel_heights = c(4,1))
           }
-          ggsave(plot = plot_surv, filename = name, width = width, height = height, device='tiff', dpi=dpi)
+          ggsave(plot = plot_surv, filename = name, width = width, height = height, device=format, dpi=dpi)
         }else{
-          ggsave(plot = lst_plots[[cn]], filename = name, width = width, height = height, device='tiff', dpi=dpi)
+          ggsave(plot = lst_plots[[cn]], filename = name, width = width, height = height, device=format, dpi=dpi)
         }
       }else{
         if(class(lst_plots[[cn]][[object_name]])[1] %in% "ggsurvplot"){
@@ -345,9 +247,9 @@ save_ggplot_lst <- function(lst_plots, folder, prefix = NULL, suffix = NULL, wid
             p2 = lst_plots[[cn]][[object_name]]$table
             plot_surv = cowplot::plot_grid(plot_surv,p2,align = "v",ncol =1,rel_heights = c(4,1))
           }
-          ggsave(plot = plot_surv, filename = name, width = width, height = height, device='tiff', dpi=dpi)
+          ggsave(plot = plot_surv, filename = name, width = width, height = height, device=format, dpi=dpi)
         }else{
-          ggsave(plot = lst_plots[[cn]][[object_name]], filename = name, width = width, height = height, device='tiff', dpi=dpi)
+          ggsave(plot = lst_plots[[cn]][[object_name]], filename = name, width = width, height = height, device=format, dpi=dpi)
         }
       }
     }
@@ -359,168 +261,14 @@ save_ggplot_lst <- function(lst_plots, folder, prefix = NULL, suffix = NULL, wid
       name <- transformIllegalChars(name, except = c("-"))
 
       name <- paste0(folder,name)
-      if(!endsWith(name,".tiff")){
-        name <- paste0(name, ".tiff")
+      if(!endsWith(name,paste0(".",format))){
+        name <- paste0(name, ".", format)
       }
 
       if(is.null(object_name)){
-        ggsave(plot = lst_plots[[cn]], filename = name, width = width, height = height, device='tiff', dpi=dpi)
+        ggsave(plot = lst_plots[[cn]], filename = name, width = width, height = height, device=format, dpi=dpi)
       }else{
-        ggsave(plot = lst_plots[[cn]][[object_name]], filename = name, width = width, height = height, device='tiff', dpi=dpi)
-      }
-    }
-  }
-}
-
-#' save_ggplot_lst.svg
-#' @description Allows to save a list of 'ggplot2' objects in .svg format based on an specific resolution.
-#'
-#' @param lst_plots List of 'ggplot2'.
-#' @param folder Character. Folder path as character type.
-#' @param prefix Character. Prefix for file name.
-#' @param suffix Character. Sufix for file name.
-#' @param wide Logical. If TRUE, widescreen format (16:9) is used, in other case (4:3) format.
-#' @param quality Character. One of: "HD", "FHD", "2K", "4K", "8K"
-#' @param dpi Numeric. Dpi value for the image.
-#' @param custom Numeric vector. Custom size of the image. Numeric vector of width and height.
-#' @param object_name Character. If the file to plot it is inside of a list, name of the object to save.
-#'
-#' @return Generate as many plot images as list objects in the specific folder or working directory.
-#'
-#' @author Pedro Salguero Garcia. Maintainer: pedsalga@upv.edu.es
-#'
-#' @export
-#'
-#' @examples
-#' \donttest{
-#' if(requireNamespace("ggplot2", quietly = TRUE)){
-#' library(ggplot2)
-#' data(iris)
-#' g <- ggplot(iris, aes(Sepal.Width, Sepal.Length, color = Species))
-#' g <- g + geom_point(size = 4)
-#' g2 <- ggplot(iris, aes(Petal.Width, Petal.Length, color = Species))
-#' g2 <- g2 + geom_point(size = 4)
-#' lst_plots <- list("Sepal" = g, "Petal" = g2)
-#' save_ggplot_lst.svg(lst_plots, folder = tempdir())
-#' }
-#' }
-
-save_ggplot_lst.svg <- function(lst_plots, folder, prefix = NULL, suffix = NULL, wide = TRUE,
-                                quality = "4K", dpi = 80, custom = NULL, object_name = NULL){
-  width=NULL
-  height=NULL
-
-  if(!quality %in% c("HD", "FHD", "2K", "4K", "8K")){
-    stop("quality must be one of the following options: 'HD', 'FHD', '2K', '4K', '8K'")
-  }
-
-  ratios <- c(1.5,1.333333,1.5,2)
-
-  if(wide){
-    if(quality == "HD"){
-      width = 1280/dpi#4.266667
-      height = 720/dpi#2.4
-    }else if(quality == "FHD"){
-      dpi = dpi * ratios[1]
-      width = 1920/dpi#6.4
-      height = 1080/dpi#3.6
-    }else if(quality == "2K"){
-      dpi = dpi * ratios[1] * ratios[2]
-      width = 2560/dpi#8.533333
-      height = 1440/dpi#4.8
-    }else if(quality == "4K"){
-      dpi = dpi * ratios[1] * ratios[2] * ratios[3]
-      width = 3840/dpi#12.8
-      height = 2160/dpi#7.2
-    }else if(quality == "8K"){
-      dpi = dpi * ratios[1] * ratios[2] * ratios[3] * ratios[4]
-      width = 7680/dpi#25.6
-      height = 4320/dpi#14.4
-    }
-  }else{
-    if(quality == "HD"){
-      width = 960/dpi#3.19992
-      height = 720/dpi
-    }else if(quality == "FHD"){
-      dpi = dpi * ratios[1]
-      width = 1440/dpi#4.79988
-      height = 1080/dpi
-    }else if(quality == "2K"){
-      dpi = dpi * ratios[1] * ratios[2]
-      width = 1920/dpi#6.39984
-      height = 1440/dpi
-    }else if(quality == "4K"){
-      dpi = dpi * ratios[1] * ratios[2] * ratios[3]
-      width = 2880/dpi#9.59976
-      height = 2160/dpi
-    }else if(quality == "8K"){
-      dpi = dpi * ratios[1] * ratios[2] * ratios[3] * ratios[4]
-      width = 5760/dpi#19.19952
-      height = 4320/dpi
-    }
-  }
-
-  if(!is.null(custom)){
-    if(length(custom)==2){
-      width = custom[1]
-      height = custom[2]
-    }
-  }
-
-  if(!is.null(names(lst_plots))){
-    for(cn in names(lst_plots)){
-
-      name <- paste0(prefix,cn,suffix)
-      #remove illegal characters
-      name <- transformIllegalChars(name, except = c("-"))
-
-      name <- paste0(folder,name)
-      if(!endsWith(name,".svg")){
-        name <- paste0(name, ".svg")
-      }
-
-      if(is.null(object_name)){
-
-        if(class(lst_plots[[cn]])[1] %in% "ggsurvplot"){
-          plot_surv = lst_plots[[cn]]$plot
-          if("table" %in% names(lst_plots[[cn]])){
-            p2 = lst_plots[[cn]]$table
-            plot_surv = cowplot::plot_grid(plot_surv,p2,align = "v",ncol =1,rel_heights = c(4,1))
-          }
-          ggsave(plot = plot_surv, filename = name, width = width, height = height, device='svg', dpi=dpi)
-        }else{
-          ggsave(plot = lst_plots[[cn]], filename = name, width = width, height = height, device='svg', dpi=dpi)
-        }
-
-      }else{
-        if(class(lst_plots[[cn]][[object_name]])[1] %in% "ggsurvplot"){
-          plot_surv = lst_plots[[cn]][[object_name]]$plot
-          if("table" %in% names(lst_plots[[cn]][[object_name]])){
-            p2 = lst_plots[[cn]][[object_name]]$table
-            plot_surv = cowplot::plot_grid(plot_surv,p2,align = "v",ncol =1,rel_heights = c(4,1))
-          }
-          ggsave(plot = plot_surv, filename = name, width = width, height = height, device='svg', dpi=dpi)
-        }else{
-          ggsave(plot = lst_plots[[cn]][[object_name]], filename = name, width = width, height = height, device='svg', dpi=dpi)
-        }
-      }
-    }
-  }else{
-    for(cn in 1:length(lst_plots)){
-
-      name <- paste0(prefix,cn,suffix)
-      #remove illegal characters
-      name <- transformIllegalChars(name, except = c("-"))
-
-      name <- paste0(folder,name)
-      if(!endsWith(name,".svg")){
-        name <- paste0(name, ".svg")
-      }
-
-      if(is.null(object_name)){
-        ggsave(plot = lst_plots[[cn]], filename = name, width = width, height = height, device='svg', dpi=dpi)
-      }else{
-        ggsave(plot = lst_plots[[cn]][[object_name]], filename = name, width = width, height = height, device='svg', dpi=dpi)
+        ggsave(plot = lst_plots[[cn]][[object_name]], filename = name, width = width, height = height, device=format, dpi=dpi)
       }
     }
   }
@@ -547,13 +295,20 @@ save_ggplot_lst.svg <- function(lst_plots, folder, prefix = NULL, suffix = NULL,
 #' The resultant plot is generated using the 'ggplot2' package, ensuring a high-quality and interpretable
 #' visualization. The Y-axis of the plot represents the computational time, typically in minutes, while
 #' the X-axis enumerates the different models. The function also offers customization options for axis
-#' labels, ensuring that the resultant plot aligns with the user's preferences and the intended audience's
+#' labels, legend title and text size, and the size and position of the values displayed on the bars,
+#' ensuring that the resultant plot aligns with the user's preferences and the intended audience's
 #' expectations.
 #'
 #' @param lst_models List of Coxmos models. Each Coxmos object has the attribute time measured in
 #' minutes (cross-validation models could be also added to this function).
-#' @param x.text Character. X axis title.
+#' @param x.text Character. X axis title (default: "Method").
 #' @param y.text Character. Y axis title. If y.text = NULL, then y.text = "Time (mins)" (default: NULL).
+#' @param legend.title Character. Title of the legend (default: "Method").
+#' @param x.text.size Numeric. Size of the text for the x-axis labels (default: 12).
+#' @param x.text.angle Numeric. Angle of the text for the x-axis labels (default: 0).
+#' @param legend.text.size Numeric. Size of the text for the legend labels (default: 12).
+#' @param value.text.size Numeric. Size of the text for the values displayed on the bars (default: 4).
+#' @param value.nudge.y Numeric. Vertical adjustment for the text of the values displayed on the bars (default: 0.005).
 #'
 #' @return A 'ggplot2' bar plot object.
 #'
@@ -569,36 +324,34 @@ save_ggplot_lst.svg <- function(lst_plots, folder, prefix = NULL, suffix = NULL,
 #' coxSW.model <- coxSW(X, Y, x.center = TRUE, x.scale = TRUE)
 #' coxEN.model <- coxEN(X, Y, x.center = TRUE, x.scale = TRUE)
 #' lst_models = list("coxSW" = coxSW.model, "coxEN" = coxEN.model)
-#' plot_time.list(lst_models, x.text = "Method")
+#' plot_time.list(lst_models, x.text = "Method", legend.title = "Model Method",
+#'                x.text.size = 14, x.text.angle = 90, legend.text.size = 14,
+#'                value.text.size = 5, value.nudge.y = 0.2)
 
-plot_time.list <- function(lst_models, x.text = "Method", y.text = NULL){
+plot_time.list <- function(lst_models, x.text = "Method", y.text = NULL, legend.title = "Method",
+                           x.text.size = 12, x.text.angle = 0,
+                           legend.text.size = 12,
+                           value.text.size = 4, value.nudge.y = 0.005){
 
-  #check names in lst_models
+  # check names in lst_models
   lst_models <- checkModelNames(lst_models)
 
-  lst_times <- list()
-  for(m in names(lst_models)){
+  lst_times <- lapply(names(lst_models), function(m) {
     if(isa(lst_models[[m]],pkg.env$model_class)){
-      lst_times[[m]] <- lst_models[[m]]$time
-    }else if(isa(lst_models[[m]][[1]],pkg.env$model_class)){
+      return(lst_models[[m]]$time)
+    } else if(isa(lst_models[[m]][[1]],pkg.env$model_class)){
       eval_sum <- lst_models[[m]][[1]]$time
-      if(length(lst_models[[m]])>1){
+      if(length(lst_models[[m]]) > 1){
         for(i in 2:length(lst_models[[m]])){
           eval_sum <- eval_sum + lst_models[[m]][[i]]$time
         }
       }
-      lst_times[[m]] <- eval_sum
+      return(eval_sum)
     }
+  })
+  names(lst_times) <- names(lst_models)
 
-  }
-
-  total_time <- lst_times[[1]]
-  if(length(lst_times)>1){
-    for(m in 2:length(lst_times)){
-      total_time <- total_time + lst_times[[m]]
-    }
-  }
-
+  total_time <- Reduce(`+`, lst_times)
   lst_times$Total <- total_time
 
   df.times <- do.call(rbind.data.frame, lst_times)
@@ -606,79 +359,56 @@ plot_time.list <- function(lst_models, x.text = "Method", y.text = NULL){
   df.times$method <- names(lst_times)
   rownames(df.times) <- NULL
 
-  roundTo = 0
-  max.breaks = 10
+  max.breaks <- 10
+  roundTo <- 0
   if(roundTo == 0){
-    #select the decimals of Y
-    if(length(grep("\\.", df.times$times))>0){
-      ch <- gsub("\\.", "", as.character(format(min(df.times$times)/max.breaks, scientific = FALSE, trim = TRUE)))
-      cont = 0
-      for(c in 1:nchar(ch)){
-        if(substr(ch,c,c) == "0"){
-          cont = cont + 1
-        }else{
-          break
-        }
+    min_time <- min(df.times$times)
+    ch <- gsub("\\.", "", as.character(format(min_time/max.breaks, scientific = FALSE, trim = TRUE)))
+    cont <- 0
+    for(c in 1:nchar(ch)){
+      if(substr(ch,c,c) == "0"){
+        cont <- cont + 1
+      } else {
+        break
       }
-      roundTo = 1*10^-cont
-    }else{
-      roundTo = 0.1
     }
+    roundTo <- 1 * 10^-cont
   }
 
-  breaks_size = round2any(max(df.times$times), roundTo, f = ceiling) / max.breaks
-
-  roundTo = 0
-  max.breaks = 10
-  if(roundTo == 0){
-    #select the decimals of Y
-    if(length(grep("\\.", df.times$times))>0){
-      ch <- gsub("\\.", "", as.character(format(max(df.times$times)/max.breaks, scientific = FALSE, trim = TRUE)))
-      cont = 1
-      for(c in 1:nchar(ch)){
-        if(substr(ch,c,c) == "0"){
-          cont = cont + 1
-        }else{
-          break
-        }
-      }
-      roundTo = 1*10^-cont
-    }else{
-      roundTo = 0.1
-    }
-  }
-
-  breaks_size = round2any(breaks_size, roundTo, f = ceiling)
-  breaks = seq(0, max(df.times$times)+breaks_size, by=breaks_size)
-
-  accuracy <- roundTo
-  max <- max(breaks)
+  breaks_size <- round2any(max(df.times$times), roundTo, f = ceiling) / max.breaks
+  breaks <- seq(0, max(df.times$times) + breaks_size, by = breaks_size)
 
   df.times$times <- round(df.times$times, digits = 4)
-  x.var = "method"
-  y.var = "times"
-  x.color = "method"
-  x.text = x.text
+  x.var <- "method"
+  y.var <- "times"
+  x.color <- "method"
+
   if(is.null(y.text)){
-    y.text = paste0("Time (",attr(lst_times[["Total"]], "units"),")")
+    y.text <- paste0("Time (", attr(lst_times[["Total"]], "units"), ")")
   }
 
   df.times$method <- factor(df.times$method, levels = df.times$method)
 
   ggp_time <- ggplot(df.times, aes_string(x = x.var, y = y.var, fill = x.color)) +
-    geom_bar(stat="identity") +
+    geom_bar(stat = "identity") +
     scale_y_continuous(breaks = breaks) +
-    geom_text(aes_string(label = "times"), vjust = 0, nudge_y = accuracy)
+    geom_text(aes_string(label = "times"), vjust = 0, nudge_y = value.nudge.y, size = value.text.size) +
+    theme(
+      axis.text.x = element_text(size = x.text.size, angle = x.text.angle, hjust = ifelse(x.text.angle == 90, 1, 0.5), vjust = ifelse(x.text.angle == 90, 0.5, 0.5)),
+      legend.title = element_text(size = x.text.size),
+      legend.text = element_text(size = legend.text.size)
+    ) +
+    guides(fill = guide_legend(title = legend.title))
 
   if(requireNamespace("RColorConesa", quietly = TRUE)){
     ggp_time <- ggp_time + RColorConesa::scale_fill_conesa(palette = "complete")
   }
 
   if(!is.null(y.text)){
-    ggp_time = ggp_time + ylab(label = y.text)
+    ggp_time <- ggp_time + ylab(label = y.text)
   }
   if(!is.null(x.text)){
-    ggp_time = ggp_time + xlab(label = x.text)
+    ggp_time <- ggp_time + xlab(label = x.text)
   }
 
   return(ggp_time)

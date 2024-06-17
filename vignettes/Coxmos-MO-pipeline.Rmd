@@ -465,7 +465,7 @@ eval_results <- purrr::map(lst_evaluators, ~eval_Coxmos_models(lst_models = lst_
 We can print the results obtained in the console where we can see, for each of the selected methods, the training time and the time it took to be evaluated, as well as their AIC, C-Index and AUC metrics and at which time points it was evaluated.
 
 ```{r}
-eval_results$cenROC
+eval_results
 ```
 
 ## Plot comparison
@@ -473,8 +473,8 @@ eval_results$cenROC
 However, we can also obtain graphical results where we can compare each method over time, as well as their average scores using the function "plot_evaluation" or "plot_evaluation.list" if multiple evaluators have been tested. The user could choose to plot the AUC for time prediction points or Brier Score. In case of use Brier Score, instead of uses the Integrative Brier Score for the boxplots, the mean or median is used (plot_evaluation parameter).
 
 ```{r, warning=F}
-lst_eval_results <- plot_evaluation(eval_results$cenROC, evaluation = "AUC")
-lst_eval_results_brier <- plot_evaluation(eval_results$cenROC, evaluation = "Brier")
+lst_eval_results <- plot_evaluation(eval_results, evaluation = "AUC")
+lst_eval_results_brier <- plot_evaluation(eval_results, evaluation = "Brier")
 ```
 
 After performing the cross-validation, we obtain a list in R that contains two new lists. The first of these refers to the evaluation over time for each of the methods used, as well as a variant where the average value of each of them is shown. On the other hand, we can compare the mean results of each method using: T-test, Wilcoxon-test, anova or Kruskal-Wallis.

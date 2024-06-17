@@ -4,15 +4,37 @@
 \alias{plot_time.list}
 \title{Time consuming plot.}
 \usage{
-plot_time.list(lst_models, x.text = "Method", y.text = NULL)
+plot_time.list(
+  lst_models,
+  x.text = "Method",
+  y.text = NULL,
+  legend.title = "Method",
+  x.text.size = 12,
+  x.text.angle = 0,
+  legend.text.size = 12,
+  value.text.size = 4,
+  value.nudge.y = 0.005
+)
 }
 \arguments{
 \item{lst_models}{List of Coxmos models. Each Coxmos object has the attribute time measured in
 minutes (cross-validation models could be also added to this function).}
 
-\item{x.text}{Character. X axis title.}
+\item{x.text}{Character. X axis title (default: "Method").}
 
 \item{y.text}{Character. Y axis title. If y.text = NULL, then y.text = "Time (mins)" (default: NULL).}
+
+\item{legend.title}{Character. Title of the legend (default: "Method").}
+
+\item{x.text.size}{Numeric. Size of the text for the x-axis labels (default: 12).}
+
+\item{x.text.angle}{Numeric. Angle of the text for the x-axis labels (default: 0).}
+
+\item{legend.text.size}{Numeric. Size of the text for the legend labels (default: 12).}
+
+\item{value.text.size}{Numeric. Size of the text for the values displayed on the bars (default: 4).}
+
+\item{value.nudge.y}{Numeric. Vertical adjustment for the text of the values displayed on the bars (default: 0.005).}
 }
 \value{
 A 'ggplot2' bar plot object.
@@ -35,7 +57,8 @@ case to provide an aggregate view.
 The resultant plot is generated using the 'ggplot2' package, ensuring a high-quality and interpretable
 visualization. The Y-axis of the plot represents the computational time, typically in minutes, while
 the X-axis enumerates the different models. The function also offers customization options for axis
-labels, ensuring that the resultant plot aligns with the user's preferences and the intended audience's
+labels, legend title and text size, and the size and position of the values displayed on the bars,
+ensuring that the resultant plot aligns with the user's preferences and the intended audience's
 expectations.
 }
 \examples{
@@ -46,7 +69,9 @@ Y <- Y_proteomic
 coxSW.model <- coxSW(X, Y, x.center = TRUE, x.scale = TRUE)
 coxEN.model <- coxEN(X, Y, x.center = TRUE, x.scale = TRUE)
 lst_models = list("coxSW" = coxSW.model, "coxEN" = coxEN.model)
-plot_time.list(lst_models, x.text = "Method")
+plot_time.list(lst_models, x.text = "Method", legend.title = "Model Method",
+               x.text.size = 14, x.text.angle = 90, legend.text.size = 14,
+               value.text.size = 5, value.nudge.y = 0.2)
 }
 \author{
 Pedro Salguero Garcia. Maintainer: pedsalga@upv.edu.es

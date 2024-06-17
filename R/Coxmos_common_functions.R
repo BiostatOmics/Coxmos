@@ -4744,6 +4744,9 @@ checkTestTimesVSTrainTimes <- function(lst_models, Y_test){
   }
 
   for(cn in names(lst_models)){
+
+    if(all(is.na(lst_models[[cn]]))){next} #in some cases a model could be considerer or not deleted by the user and be NA
+
     Y_max_aux <- max(lst_models[[cn]]$Y$data[,"time"]) #maybe we should pick last event !!!
     Y_min_aux <- min(lst_models[[cn]]$Y$data[,"time"]) #maybe we should pick last event !!!
     if(is.null(max_train_time)){
@@ -4861,6 +4864,10 @@ eval_Coxmos_models <- function(lst_models, X_test, Y_test, pred.method = "cenROC
 
   #### Check evaluator installed:
   checkLibraryEvaluator(pred.method)
+
+  #### Remove NA models (just in case)
+  vector_whichNA <- unlist(lapply(lst_models, function(x){all(is.na(x))}))
+  lst_models <- lst_models[!vector_whichNA]
 
   #### Check test times are less or equal than max train time:
   checkTestTimesVSTrainTimes(lst_models, Y_test)
@@ -5030,6 +5037,11 @@ evaluation_list_Coxmos <- function(model, X_test, Y_test, pred.method = "cenROC"
   #NULL in Coxmos object (NA no anymore)
   if(all(is.null(model$survival_model))){
     return(list(model_time = NA, comp.time = NA, aic.cox = NA, c_index.cox = NA, lst_AUC_values = NA))
+  }
+
+  if(attr(model, "model") %in% c(pkg.env$cox, pkg.env$coxSW)){
+    old_colnames <- colnames(X_test)
+    colnames(X_test) <- transformIllegalChars(old_colnames)
   }
 
   cox <- model$survival_model$fit

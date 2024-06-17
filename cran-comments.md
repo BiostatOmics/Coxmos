@@ -1,3 +1,18 @@
+# CRAN Submission Comments (2024-06-17)
+This resubmission incorporates the following adjustments:
+
+- Functions 'save_ggplot' and 'save_ggplot_lst' updated to work with multiples formats.
+- Functions 'save_ggplot.svg' and 'save_ggplot_lst.svg' deleted due to they are included in 'save_ggplot'.
+- Function 'plot_time.list' have been updated to work with extra parameters to allow more customization.
+- Function 'checkTestTimesVSTrainTimes' updated to consider NA cases.
+- Function 'eval_Coxmos_models' updated to remove NA models cases.
+- Function 'evaluation_list_Coxmos' fixed for cox and coxSW cases: X_test colnames with 'transformIllegalChars()'.
+
+# CRAN Submission Comments (2024-03-20 & 2024-03-22)
+This resubmission incorporates the following adjustments:
+
+- Vignettes have been changed in order to use the correct parameters and compute all the results.
+
 # CRAN Submission Comments (2024-02-29)
 
 ## R CMD check results
@@ -7,7 +22,7 @@
 
 I think this is due to the development environment on Windows 10, and it should not affect the package's functionality or integrity.
 
-## Resubmission (2024-03-05)
+## CRAN Submission Comments  (2024-03-05)
 This resubmission incorporates the following adjustments:
 
 - **R/Coxmos_plot_functions.R - getwd() Issue**: The folder argument is now mandatory. Examples use `tempdir()`.

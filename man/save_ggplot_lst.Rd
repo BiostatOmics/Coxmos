@@ -12,12 +12,13 @@ save_ggplot_lst(
   wide = TRUE,
   quality = "4K",
   dpi = 80,
+  format = "png",
   custom = NULL,
   object_name = NULL
 )
 }
 \arguments{
-\item{lst_plots}{List of 'ggplot2'.}
+\item{lst_plots}{List of 'ggplot2' objects.}
 
 \item{folder}{Character. Folder path as character type.}
 
@@ -29,7 +30,9 @@ save_ggplot_lst(
 
 \item{quality}{Character. One of: "HD", "FHD", "2K", "4K", "8K"}
 
-\item{dpi}{Numeric. Dpi value for the image.}
+\item{dpi}{Numeric. DPI value for the image.}
+
+\item{format}{Device to use. Can either be a device function (e.g. png), or one of "eps", "ps", "tex" (pictex), "pdf", "jpeg", "tiff", "png", "bmp", "svg" or "wmf" (windows only).}
 
 \item{custom}{Numeric vector. Custom size of the image. Numeric vector of width and height.}
 
