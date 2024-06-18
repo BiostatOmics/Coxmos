@@ -7,6 +7,7 @@ This resubmission incorporates the following adjustments:
 - Function 'checkTestTimesVSTrainTimes' updated to consider NA cases.
 - Function 'eval_Coxmos_models' updated to remove NA models cases.
 - Function 'evaluation_list_Coxmos' fixed for cox and coxSW cases: X_test colnames with 'transformIllegalChars()'.
+- Function 'plot_pseudobeta.list' updated to work no PLS model case.
 
 # CRAN Submission Comments (2024-03-20 & 2024-03-22)
 This resubmission incorporates the following adjustments:

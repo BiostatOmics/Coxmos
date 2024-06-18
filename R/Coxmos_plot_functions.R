@@ -3342,11 +3342,15 @@ plot_pseudobeta.list <- function(lst_models, error.bar = TRUE, onlySig = FALSE, 
     }
   }
 
-  lst_plots <- purrr::map(sub_lst_models, ~plot_pseudobeta(model = .,
-                                                           error.bar = error.bar,
-                                                           onlySig = onlySig, alpha = alpha,
-                                                           zero.rm = zero.rm, auto.limits = auto.limits, top = top,
-                                                           show_percentage = show_percentage, size_percentage = size_percentage))
+  if(length(sub_lst_models)!=0){
+    lst_plots <- purrr::map(sub_lst_models, ~plot_pseudobeta(model = .,
+                                                             error.bar = error.bar,
+                                                             onlySig = onlySig, alpha = alpha,
+                                                             zero.rm = zero.rm, auto.limits = auto.limits, top = top,
+                                                             show_percentage = show_percentage, size_percentage = size_percentage))
+  }else{
+    lst_plots <- NULL
+  }
 
   return(lst_plots)
 }
