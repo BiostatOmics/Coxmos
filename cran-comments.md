@@ -1,4 +1,4 @@
-# CRAN Submission Comments (2024-06-17)
+# CRAN Submission Comments (2024-06-18)
 This resubmission incorporates the following adjustments:
 
 - Functions 'save_ggplot' and 'save_ggplot_lst' updated to work with multiples formats.
@@ -8,6 +8,8 @@ This resubmission incorporates the following adjustments:
 - Function 'eval_Coxmos_models' updated to remove NA models cases.
 - Function 'evaluation_list_Coxmos' fixed for cox and coxSW cases: X_test colnames with 'transformIllegalChars()'.
 - Function 'plot_pseudobeta.list' updated to work no PLS model case.
+- Functions 'getAUC_vector' and 'getAUC_from_LP_2.0' fixed for smoothROCtime_C and smoothROCtime_I.
+- Function 'getTestKM.list' and 'getTestKM' fixed for cox and coxSW cases: X_test colnames with 'transformIllegalChars()'.
 
 # CRAN Submission Comments (2024-03-20 & 2024-03-22)
 This resubmission incorporates the following adjustments:

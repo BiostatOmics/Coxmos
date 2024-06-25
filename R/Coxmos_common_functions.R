@@ -5039,6 +5039,7 @@ evaluation_list_Coxmos <- function(model, X_test, Y_test, pred.method = "cenROC"
     return(list(model_time = NA, comp.time = NA, aic.cox = NA, c_index.cox = NA, lst_AUC_values = NA))
   }
 
+  # fix illegal characters
   if(attr(model, "model") %in% c(pkg.env$cox, pkg.env$coxSW)){
     old_colnames <- colnames(X_test)
     colnames(X_test) <- transformIllegalChars(old_colnames)

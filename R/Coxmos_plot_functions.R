@@ -5721,7 +5721,13 @@ getTestKM <- function(model, X_test, Y_test, cutoff, type = "LP", ori_data = TRU
   #### Check test times are less or equal than max train time:
   checkTestTimesVSTrainTimes(model, Y_test)
 
-  if(!isa(model,pkg.env$model_class)){
+  #### illegal characters in cox and coxSW
+  if(attr(model, "model") %in% c(pkg.env$cox, pkg.env$coxSW)){
+    old_colnames <- colnames(X_test)
+    colnames(X_test) <- transformIllegalChars(old_colnames)
+  }
+
+  if(!isa(model, pkg.env$model_class)){
     warning("Model must be an object of class Coxmos.")
     warning(model)
     return(NULL)
