@@ -38,9 +38,9 @@ MIN_EPV is not meet, the value will be change automatically (default: 20).}
 
 \item{BACKWARDS}{Logical. If BACKWARDS = TRUE, backward strategy is performed (default: TRUE).}
 
-\item{alpha_ENT}{Numeric. Maximum P-Value for a variable to enter the model (default: 0.10).}
+\item{alpha_ENT}{Numeric. Maximum P-Value threshold for an ANOVA test when comparing a more complex model to a simpler model that includes a new variable. If the p-value is less than or equal to this threshold, the new variable is considered significantly important and will be added to the model (default: 0.10).}
 
-\item{alpha_OUT}{Numeric. Minimum P-Value for a variable to leave the model (default: 0.15).}
+\item{alpha_OUT}{Numeric. Minimum P-Value threshold for an ANOVA test when comparing a simpler model to a more complex model that excludes an existing variable. If the p-value is greater than or equal to this threshold, the existing variable is considered not significantly important and will be removed from the model (default: 0.15).}
 
 \item{toKeep.sw}{Character vector. Name of variables in X to not be deleted by Step-wise
 selection (default: NULL).}

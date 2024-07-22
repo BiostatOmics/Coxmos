@@ -39,8 +39,8 @@
 #' @param max.variables Numeric. Maximum number of variables you want to keep in the cox model. If
 #' MIN_EPV is not meet, the value will be change automatically (default: 20).
 #' @param BACKWARDS Logical. If BACKWARDS = TRUE, backward strategy is performed (default: TRUE).
-#' @param alpha_ENT Numeric. Maximum P-Value for a variable to enter the model (default: 0.10).
-#' @param alpha_OUT Numeric. Minimum P-Value for a variable to leave the model (default: 0.15).
+#' @param alpha_ENT Numeric. Maximum P-Value threshold for an ANOVA test when comparing a more complex model to a simpler model that includes a new variable. If the p-value is less than or equal to this threshold, the new variable is considered significantly important and will be added to the model (default: 0.10).
+#' @param alpha_OUT Numeric. Minimum P-Value threshold for an ANOVA test when comparing a simpler model to a more complex model that excludes an existing variable. If the p-value is greater than or equal to this threshold, the existing variable is considered not significantly important and will be removed from the model (default: 0.15).
 #' @param toKeep.sw Character vector. Name of variables in X to not be deleted by Step-wise
 #' selection (default: NULL).
 #' @param initialModel Character vector. Name of variables in X to include in the initial model
@@ -341,23 +341,19 @@ coxSW <- function(X, Y,
 #### ### ##
 # METHODS #
 #### ### ##
-stepwise.coxph <- function(Time = NULL, Status = NULL, variable.list,
-                           in.variable = "NULL", data, max.variables = NULL,
-                           sle = 0.15, sls = 0.15,
-                           startBackwards = FALSE, verbose = FALSE){
 
-  if(is.null(variable.list)){
-    variable.list <- colnames(data)[!colnames(data) %in% c("time", "event", "status")]
-  }
-
-  univar.pvalue <- NULL
-  temp.model <- NULL
+computeFirstModelSW <- function(Time = NULL, Status = NULL, variable.list,
+                                in.variable = "NULL", data, max.variables = NULL,
+                                startBackwards = FALSE, verbose = FALSE){
+  #### ###
+  # BACKWARDS CODE
+  #### ###
 
   if(startBackwards){
     if(!all(in.variable == "NULL")){
       in.variable <- colnames(data)[colnames(data) %in% in.variable]
       if(length(in.variable)==0){
-        stop("Any variable was selected. Check that 'initialModel' variables belong to X data.")
+        stop("No variables were selected. Check that 'in.variable' parameter must have variables that belong to X data.")
       }
     }else{
       in.variable <- colnames(data)[!colnames(data) %in% c("time", "event", "status")]
@@ -379,11 +375,8 @@ stepwise.coxph <- function(Time = NULL, Status = NULL, variable.list,
       initial.model <- survival::coxph(formula = f, data = aux_data,
                                        method = "efron", model = TRUE, singular.ok = TRUE, x = TRUE)
 
-      #initial.model <- survival::coxph(as.formula(paste("Surv(", Time, ", ", Status, ") ~ .")), data = aux_data,
-                                       #method = "efron", model = TRUE, singular.ok = TRUE, x = TRUE)
-
       # REMOVE NA-PVAL VARIABLES
-      # p_val could be NA for some variables (if NA change to P-VAL=1)
+      # p_val could be NA for some variables (if NA, then change it to P-VAL=1)
       # DO IT ALWAYS, we do not want problems in COX models
       if(all(c("time", "event") %in% colnames(aux_data))){
         lst_model <- removeNAorINFcoxmodel(model = initial.model, data = aux_data, time.value = NULL, event.value = NULL)
@@ -395,8 +388,7 @@ stepwise.coxph <- function(Time = NULL, Status = NULL, variable.list,
     }else{
       # we CAN compute a standard cox because the data has less variables than observations
       aux_data <- as.data.frame(data[,colnames(data) %in% c(in.variable, "time", "event", "status"),drop = FALSE])
-      #initial.model <- survival::coxph(as.formula(paste("Surv(", Time, ", ", Status, ") ~ .")), data = aux_data,
-      #                                 method = "efron", model = TRUE, singular.ok = TRUE, x = TRUE)
+
       f <- as.formula(paste0("survival::Surv(", Time, ", ", Status, ") ~ ", paste0(in.variable, collapse = " + ")))
       initial.model <- survival::coxph(formula = f, data = aux_data,
                                        method = "efron", model = TRUE, singular.ok = TRUE, x = TRUE)
@@ -405,6 +397,9 @@ stepwise.coxph <- function(Time = NULL, Status = NULL, variable.list,
       initial.model <- lst_model$model
     }
 
+  #### ###
+  # FORWARDS CODE
+  #### ###
   }else{
 
     # forward selection - one variable
@@ -433,28 +428,53 @@ stepwise.coxph <- function(Time = NULL, Status = NULL, variable.list,
     initial.model <- lst_model$model
   }
 
+  return(initial.model)
+}
+
+stepwise.coxph <- function(Time = NULL, Status = NULL, variable.list,
+                           in.variable = "NULL", data, max.variables = NULL,
+                           sle = 0.15, sls = 0.15,
+                           startBackwards = FALSE, verbose = FALSE){
+
+  if(is.null(variable.list)){
+    variable.list <- colnames(data)[!colnames(data) %in% c("time", "event", "status")]
+  }
+
+  initial.model <- computeFirstModelSW(Time = Time, Status = Status, variable.list,
+                                       in.variable = in.variable, data, max.variables = max.variables,
+                                       startBackwards = startBackwards, verbose = verbose)
+
   # save model
   temp.model <- initial.model
 
-  #stepwise algorithm model by My.stepwise
+  #Stepwise algorithm model based on My.stepwise
   i <- 0
   break.rule <- TRUE
   broke = FALSE
   iter = 0
+
   last_removed = ""
+  historic = NULL
+  last_AIC <- getInfoCoxModel(temp.model)$AIC #minimum, best
+
+  # WHILE after we got the best model
   while(break.rule){
+
     if(verbose){
       message(paste0("Stepwise loop: ", iter))
-      print(temp.model)
-      iter = iter + 1
+      #print(temp.model)
+      print(head(temp.model$coefficients))
+      print(paste0("AIC: ", last_AIC))
     }
 
+    iter = iter + 1
     i <- i + 1
 
     # choose the list of variable than can enter to the model in this iteration
     if(i == 1){
       variable.list2 <- setdiff(variable.list, all.vars(temp.model$formula))
     }else{
+      # after first iteration, cannot enter out.x from last iteration
       variable.list2 <- setdiff(variable.list, c(all.vars(temp.model$formula), out.x))
       out.x <- NULL
     }
@@ -465,12 +485,11 @@ stepwise.coxph <- function(Time = NULL, Status = NULL, variable.list,
     if(length(variable.list2) != 0 & length(names(temp.model$coefficients)) < max.variables){
       anova.pvalue <- NULL
       mv.pvalue <- NULL
+      AIC.value <- NULL
       for(k in 1:length(variable.list2)){
-        utils::flush.console()
 
-        # if(verbose){
-        #   message(paste0("Checking variable: ", variable.list2[k], "..."))
-        # }
+        message(paste0("Testing Entering: ",k, "/", length(variable.list2), " - iteration ", iter))
+        utils::flush.console()
 
         model <- tryCatch({
           # generate new model
@@ -494,25 +513,36 @@ stepwise.coxph <- function(Time = NULL, Status = NULL, variable.list,
           if(sum(is.na(model$coefficients)) != 0){
             anova.pvalue[k] <- 1
             mv.pvalue[k] <- 1
+            AIC.value[k] <- 1000 #max value
           }else{
-            anova.pvalue[k] <- anova(temp.model, model)[2,"Pr(>|Chi|)"]
-            mv.pvalue[k] <- summary(model)$coefficients[nrow(summary(model)$coefficients),"Pr(>|z|)"]
+            # compare temporal model with current iteration model
+            # different between models is significant if p.val lesser than sig
+            anova.pvalue[k] <- anova(temp.model, model)[2,"Pr(>|Chi|)"] #model sig
+            mv.pvalue[k] <- summary(model)$coefficients[nrow(summary(model)$coefficients),"Pr(>|z|)"] #last variable cox significance
+            AIC.value[k] <- getInfoCoxModel(model)$AIC #aic model
           }
         }
       }
       # list of pvalues complete
       # it uses ANOVA P-VALUE for selecting the variables are going to enter
+      # select indexes of variables whose cox coeff is less than 0.9 or not NA
       variable.list2.1 <- variable.list2[mv.pvalue <= 0.9 & !is.na(mv.pvalue)]
       anova.pvalue2 <- anova.pvalue[mv.pvalue <= 0.9 & !is.na(mv.pvalue)]
       mv.pvalue2 <- mv.pvalue[mv.pvalue <= 0.9 & !is.na(mv.pvalue)]
+      AIC.value2 <- AIC.value[mv.pvalue <= 0.9 & !is.na(mv.pvalue)]
 
-      if(length(anova.pvalue2)==0){
-        #any variable to enter into the model
+      # MinAnova Value have to be lesser than SLE
+      enter.x <- variable.list2.1[anova.pvalue2 == min(anova.pvalue2, na.rm = TRUE) & anova.pvalue2 <= sle]
+      enter.x.AIC <- AIC.value2[anova.pvalue2 == min(anova.pvalue2, na.rm = TRUE) & anova.pvalue2 <= sle]
+
+      #select which variable enters if any or AIC is lesser than last_AIC
+      if(length(enter.x)==0 || last_AIC < enter.x.AIC){
+        #no variables able to enter into the model
         enter.x <- NULL
-      }else{
-        enter.x <- variable.list2.1[anova.pvalue2 == min(anova.pvalue2, na.rm = TRUE) & anova.pvalue2 <= sle]
 
-        # last removed want to enter again, do not allow it
+      }else{
+
+        # if last removed want to enter again, do not allow it
         if(last_removed %in% enter.x){
           enter.x <- enter.x[-which(last_removed==enter.x)]
         }
@@ -527,13 +557,17 @@ stepwise.coxph <- function(Time = NULL, Status = NULL, variable.list,
           }
 
           if(verbose){
-            message(paste0("ENTER: ", paste0(enter.x, collapse = ", ")))
+            message(paste0("ENTER: ", paste0(enter.x, collapse = ", "), " AIC: ", enter.x.AIC, " LAST_AIC: ", last_AIC))
+            historic <- c(historic, paste0("ENTER: ", paste0(enter.x, collapse = ", "), " AIC: ", enter.x.AIC, " LAST_AIC: ", last_AIC))
           }
 
           coeff <- names(coefficients(temp.model))
           f <- as.formula(paste0("survival::Surv(", Time, ", ", Status, ") ~ ", paste0(c(coeff, enter.x), collapse = " + ")))
           temp.model <- survival::coxph(formula = f, data = as.data.frame(data),
                                         method = "efron", model = TRUE, singular.ok = TRUE, x = TRUE)
+
+          # update bc a new model is used
+          last_AIC <- getInfoCoxModel(temp.model)$AIC #minimum, best
         }
       }
 
@@ -554,8 +588,11 @@ stepwise.coxph <- function(Time = NULL, Status = NULL, variable.list,
       if(length(variable.list3) != 0){
         anova.pvalue <- NULL
         mv.pvalue <- NULL
-
+        AIC.value <- NULL
         for(k in 1:length(variable.list3)){
+
+          message(paste0("Testing Leaving: ",k, "/", length(variable.list3), " - iteration ", iter))
+
           model <- tryCatch({
 
             # generate new model
@@ -580,10 +617,14 @@ stepwise.coxph <- function(Time = NULL, Status = NULL, variable.list,
           if(length(model$coefficients) >= 1){
             if(sum(is.na(model$coefficients)) != 0){
               anova.pvalue[k] <- 1
-              mv.pvalue[k] <- getPvalFromCox(temp.model)[variable.list3[k]]
+              mv.pvalue[k] <- getPvalFromCox(model)[variable.list3[k]]
+              AIC.value[k] <- 1000
             }else{
-              anova.pvalue[k] <- anova(model, temp.model)[2, "Pr(>|Chi|)"]
-              mv.pvalue[k] <- getPvalFromCox(temp.model)[variable.list3[k]]
+              # compare temporal model with current iteration model
+              # different between models is significant if p.val lesser than sig
+              anova.pvalue[k] <- anova(temp.model, model)[2,"Pr(>|Chi|)"] #model sig
+              mv.pvalue[k] <- getPvalFromCox(temp.model)[variable.list3[k]] #significant coeff from TEMPORAL model bc variable exist only there
+              AIC.value[k] <- getInfoCoxModel(model)$AIC #aic model
             }
           }
         }
@@ -596,11 +637,15 @@ stepwise.coxph <- function(Time = NULL, Status = NULL, variable.list,
         }
 
         # it uses ANOVA P-VALUE for selecting the variables are going to leave
+        # in this case, max P-val bc is the lesser important variable
+        # Valor mínimo de Anova y Anova menor que SLE, pero creo que debería ser el coeficiente del modelo de COX, no del modelo comparativo.
         out.x <- variable.list3[anova.pvalue == max(anova.pvalue, na.rm = TRUE) & anova.pvalue > sls]
+        out.x.AIC <- AIC.value[anova.pvalue == max(anova.pvalue, na.rm = TRUE) & anova.pvalue > sls]
         out.x <- setdiff(out.x, NA)
         mv.pvalue <- mv.pvalue[which(variable.list3 %in% out.x)] # select just pval selected
 
-        if(length(out.x) != 0){
+        # mod: some out.x and out.x.AIC lesser than current value
+        if(length(out.x) != 0 && last_AIC >= out.x.AIC){
 
           # if tie, then uses the pval
           if(length(out.x) > 1){
@@ -622,7 +667,8 @@ stepwise.coxph <- function(Time = NULL, Status = NULL, variable.list,
           if(!equal){ #if the P-Val is grater than sls then remove, else, althouth the anova wants to remove, dont do it
 
             if(verbose){
-              message(paste0("OUT: ", paste0(out.x, collapse = ", ")))
+              message(paste0("OUT: ", paste0(out.x, collapse = ", "), " AIC: ", out.x.AIC, " LAST_AIC: ", last_AIC))
+              historic <- c(historic, paste0("OUT: ", paste0(out.x, collapse = ", "), " AIC: ", out.x.AIC, " LAST_AIC: ", last_AIC))
             }
 
             #temp.model <- update(temp.model, as.formula(paste(". ~ . - ", out.x.column, sep = "")))
@@ -648,6 +694,8 @@ stepwise.coxph <- function(Time = NULL, Status = NULL, variable.list,
         out.x <- NULL
       }
     }
+
+    last_AIC <- getInfoCoxModel(temp.model)$AIC #minimum, best
 
     if((length(enter.x) + length(out.x)) == 0){
       final.model <- temp.model
