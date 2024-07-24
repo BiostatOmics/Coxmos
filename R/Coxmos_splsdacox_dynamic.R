@@ -317,12 +317,45 @@ splsdacox_dynamic <- function (X, Y,
     }
   )
 
+  if(is.na(cox_model$fit) | is.null(cox_model$fit)){
+    func_call <- match.call()
+
+    t2 <- Sys.time()
+    time <- difftime(t2,t1,units = "mins")
+
+    survival_model <- NULL
+
+    return(splsdacox_dynamic_class(list(X = list("data" = if(returnData) X_norm else NA,
+                                                 "weightings" = W, #used for computed number of variables, bc mixomics do not put 0 in loadings
+                                                 "W.star" = W.star,
+                                                 "loadings" = P,
+                                                 "scores" = Ts,
+                                                 "x.mean" = xmeans, "x.sd" = xsds),
+                                        Y = list("data" = Yh,
+                                                 "y.mean" = ymeans, "y.sd" = ysds),
+                                        survival_model = survival_model,
+                                        n.comp = n.comp, #number of components
+                                        n.varX = keepX,
+                                        var_by_component = NULL,
+                                        plot_accuracyPerVariable = plotVAR,
+                                        call = if(returnData) func_call else NA,
+                                        X_input = if(returnData) X_original else NA,
+                                        Y_input = if(returnData) Y_original else NA,
+                                        alpha = alpha,
+                                        nsv = NULL,
+                                        nzv = NULL,
+                                        nz_coeffvar = NULL,
+                                        class = pkg.env$splsdacox_dynamic,
+                                        time = time)))
+  }
+
   # RETURN a MODEL with ALL significant Variables from complete, deleting one by one
   removed_variables <- NULL
   removed_variables_cor <- NULL
   # REMOVE NA-PVAL VARIABLES
   # p_val could be NA for some variables (if NA change to P-VAL=1)
   # DO IT ALWAYS, we do not want problems in COX models
+
   if(all(c("time", "event") %in% colnames(d))){
     lst_model <- removeNAorINFcoxmodel(model = cox_model$fit, data = d, time.value = NULL, event.value = NULL)
   }else{

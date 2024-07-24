@@ -245,8 +245,18 @@ coxSW <- function(X, Y,
     }
   )
 
+  ## STEPWISE MODEL IS A NOT-ROBUST COX MODEL
+  ## make it robust to have the same P-VAL
+  if(!all(is.na(model))){
+    model <- cox(X = Xh[,names(model$coefficients), drop = FALSE], Y = Yh,
+                 x.center = x.center, x.scale = x.scale,
+                 alpha = alpha, MIN_EPV = MIN_EPV,
+                 remove_near_zero_variance = F, remove_zero_variance = F, remove_non_significant = F,
+                 returnData = returnData, verbose = verbose)
+  }
+
   # if all NA, returna NULL model
-  if(all(is.na(model))){
+  if(all(is.na(model)) | is.null(model$survival_model)){
     problem_flag = TRUE
     survival_model = NULL
     func_call <- match.call()
@@ -263,11 +273,6 @@ coxSW <- function(X, Y,
                             class = pkg.env$coxSW,
                             time = time)))
   }
-
-  ## STEPWISE MODEL IS A NOT-ROBUST COX MODEL
-  ## make it robust to have the same P-VAL
-  model <- cox(X = Xh[,names(model$coefficients), drop = FALSE], Y = Yh,
-               alpha = alpha, MIN_EPV = MIN_EPV, returnData = returnData, verbose = verbose)
 
   # REMOVE NA-PVAL VARIABLES
   # p_val could be NA for some variables (if NA change to P-VAL=1)

@@ -12,7 +12,9 @@ This resubmission incorporates the following adjustments:
 - Function 'getTestKM.list' and 'getTestKM' fixed for cox and coxSW cases: X_test colnames with 'transformIllegalChars()'.
 - Function 'coxSW' has been fixed in several aspects:
   - Now, AIC metric is also considered when selecting a new variable to enter or leave the old model.
+  - Updated order of checking Cox models to avoid problems removing Infinity or NA values.
   - Verbose messages and documentation have been updated.
+- Function 'splsdacox_dynamic' has been update for manage problems with NA or NUL values in final Cox model.
 
 # CRAN Submission Comments (2024-03-20 & 2024-03-22)
 This resubmission incorporates the following adjustments:
