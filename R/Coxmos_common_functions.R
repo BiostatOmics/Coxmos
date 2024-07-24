@@ -615,6 +615,11 @@ removeNAorINFcoxmodel <- function(model, data, time.value = NULL, event.value = 
       to_remove <- deleteIllegalChars(to_remove)
     }
     #data <- data[,!colnames(data) %in% c(to_remove)]
+    if(length(to_remove)>0){
+      if(!any(names(p_val) %in% to_remove)){
+        to_remove <- names(to_remove)
+      }
+    }
     vars_to_include <- names(p_val)[!names(p_val) %in% to_remove]
     aux_model <- tryCatch(
       # Specifying expression
@@ -4086,17 +4091,6 @@ get_Coxmos_models2.0 <- function(method = "sPLS-ICOX",
                                                                max.iter = max.iter, times = times, pred.method = pred.method, max_time_points = max_time_points,
                                                                MIN_EPV = MIN_EPV, returnData = returnData, verbose = verbose))
 
-        # aaa <- mb.splsdacox(X = lapply(X_train, function(x, ind){x[ind,]}, ind = lst_X_train[[1]][[1]]),
-        #              Y = data.matrix(Y_train[lst_Y_train[[1]][[1]],]),
-        #              n.comp = 3, vector = vector,
-        #              MIN_NVAR = MIN_NVAR, MAX_NVAR = MAX_NVAR, MIN_AUC_INCREASE = MIN_AUC_INCREASE,
-        #              x.center = x.center, x.scale = x.scale,
-        #              #y.center = y.center, y.scale = y.scale,
-        #              remove_near_zero_variance = remove_near_zero_variance, remove_zero_variance = remove_zero_variance, toKeep.zv = toKeep.zv,
-        #              remove_non_significant = remove_non_significant, alpha = alpha, max.iter = max.iter,
-        #              MIN_EPV = MIN_EPV, returnData = returnData, verbose = verbose)
-
-
       }
 
     }
@@ -5291,7 +5285,7 @@ cox.prediction <- function(model, new_data, time = NULL, type = "lp", method = "
 
 }
 
-getBestVector <- function(Xh, DR_coxph = NULL, Yh, n.comp, max.iter, vector, MIN_AUC_INCREASE,
+getBestVector2 <- function(Xh, DR_coxph = NULL, Yh, n.comp, max.iter, vector, MIN_AUC_INCREASE,
                           MIN_NVAR = 10, MAX_NVAR = 10000, cut_points = 5, EVAL_METHOD = "AUC",
                           EVAL_EVALUATOR = "cenROC", PARALLEL = FALSE, mode = "spls", times = NULL,
                           max_time_points = 15, verbose = FALSE){
@@ -5525,7 +5519,258 @@ getBestVector <- function(Xh, DR_coxph = NULL, Yh, n.comp, max.iter, vector, MIN
       best_c_index <- best_c_index_aux
       best_keepX <- vector_aux[[index]]
       if(verbose){
-        message(paste0("New Vector found: \n"), paste0(paste0("Value ", names(best_keepX), ": ", unlist(purrr::map(best_keepX, ~unique(.)))), "\n"), paste0("Pred. Value: ", round(best_c_index_aux, 4), "n"))
+        message(paste0("New Vector found: \n"), paste0(paste0("Value ", names(best_keepX), ": ", unlist(purrr::map(best_keepX, ~unique(.)))), "\n"), paste0("Pred. Value: ", round(best_c_index_aux, 4), "\n"))
+      }
+    }
+  }
+
+  keepX <- best_keepX
+  return(list(best.keepX = keepX, p_val = p_val))
+}
+
+getBestVector <- function(Xh, DR_coxph = NULL, Yh, n.comp, max.iter, vector, MIN_AUC_INCREASE,
+                          MIN_NVAR = 10, MAX_NVAR = 10000, cut_points = 5, EVAL_METHOD = "AUC",
+                          EVAL_EVALUATOR = "cenROC", PARALLEL = FALSE, mode = "spls", times = NULL,
+                          max_time_points = 15, verbose = FALSE){
+
+  if(!mode %in% c("spls", "splsda")){
+    stop("Mode must be one of: 'spls' or 'splsda'")
+  }
+
+  if(!EVAL_METHOD %in% c("AUC", "BRIER", "c_index")){
+    stop("Evaluation method must be one of: 'AUC', 'BRIER' or 'c_index'")
+  }
+
+  max_ncol <- ncol(Xh)
+
+  if(is.null(vector)){
+    vector <- getVectorCuts(vector = c(min(MIN_NVAR, max_ncol):min(max_ncol, MAX_NVAR)), cut_points = cut_points, verbose = verbose)
+  }else{
+    #check if each value is less than the ncol
+    if(is.numeric(vector)){
+      vector <- vector[vector<=ncol(Xh)]
+      message(paste0("The initial vector is: ", paste0(vector, collapse = ", "), "\n"))
+    }else{
+      message("Your vector must be a numeric vector. A starting vector is created:")
+      vector <- getVectorCuts(vector = c(min(MIN_NVAR, max_ncol):min(max_ncol, MAX_NVAR)), cut_points = cut_points, verbose = verbose)
+      message(paste0("The initial vector is: ", paste0(vector, collapse = ", ")))
+    }
+  }
+
+  if(verbose){
+    message(paste0("Original vector: "))
+    message(paste0("Values: ", paste0(vector, collapse = ", "), "\n"))
+  }
+
+  count = 1
+  var_exp = NULL
+
+  # if n_col is minimum than MIN_NVAR, values could be the same, so delete duplicates
+  # to use different number of variables per component,
+  # vector variable should be updated to a list of values per component and getCIndex_AUC_CoxModel_spls/da functions
+  # should manage vector variables different
+  vector <- unique(vector)
+
+  if(PARALLEL){
+    n_cores <- future::availableCores() - 1
+
+    if(.Platform$OS.type == "unix") {
+      future::plan("multicore", workers = min(length(vector), n_cores))
+    }else{
+      future::plan("multisession", workers = min(length(vector), n_cores))
+    }
+
+    t1 <- Sys.time()
+    if(mode %in% "spls"){
+      lst_cox_value <- furrr::future_map(vector, ~getCIndex_AUC_CoxModel_spls(Xh = Xh, DR_coxph_ori = DR_coxph, Yh = Yh, n.comp = n.comp, keepX = ., scale = FALSE, near.zero.var = FALSE, EVAL_EVALUATOR = EVAL_EVALUATOR, max.iter = max.iter, times = times, max_time_points = max_time_points), .progress = FALSE)
+    }else{
+      lst_cox_value <- furrr::future_map(vector, ~getCIndex_AUC_CoxModel_splsda(Xh = Xh, Yh = Yh, n.comp = n.comp, keepX = ., scale = FALSE, near.zero.var = FALSE, EVAL_EVALUATOR = EVAL_EVALUATOR, max.iter = max.iter, times = times, max_time_points = max_time_points), .progress = FALSE)
+    }
+    t2 <- Sys.time()
+    future::plan("sequential")
+  }else{
+    t1 <- Sys.time()
+    if(mode %in% "spls"){
+      lst_cox_value <- purrr::map(vector, ~getCIndex_AUC_CoxModel_spls(Xh = Xh, DR_coxph_ori = DR_coxph, Yh = Yh, n.comp = n.comp, keepX = ., scale = FALSE, near.zero.var = FALSE, EVAL_EVALUATOR = EVAL_EVALUATOR, max.iter = max.iter, times = times, max_time_points = max_time_points), .progress = FALSE)
+    }else{
+      lst_cox_value <- purrr::map(vector, ~getCIndex_AUC_CoxModel_splsda(Xh = Xh, Yh = Yh, n.comp = n.comp, keepX = ., scale = FALSE, near.zero.var = FALSE, EVAL_EVALUATOR = EVAL_EVALUATOR, max.iter = max.iter, times = times, max_time_points = max_time_points), .progress = FALSE)
+    }
+    t2 <- Sys.time()
+  }
+
+  df_cox_value <- NULL
+  for(i in 1:length(lst_cox_value)){
+    df_cox_value_aux <- NULL
+    for(j in names(lst_cox_value[[1]])){
+      df_cox_value_aux <- rbind(df_cox_value_aux, lst_cox_value[[i]][[j]])
+    }
+    df_cox_value <- cbind(df_cox_value, df_cox_value_aux)
+  }
+
+  colnames(df_cox_value) <- vector
+  rownames(df_cox_value) <- names(lst_cox_value[[1]])
+
+  # adjust for BRIER
+  df_cox_value["BRIER",] <- 1 - df_cox_value["BRIER",] #maximize 1-brier
+
+  index <- which.max(df_cox_value[EVAL_METHOD,]) #MAX CONCORDANCE/AUC
+
+  # manage errors
+  if(length(index)==0){ #select another evaluator
+    if(EVAL_METHOD %in% "AUC"){
+      message(paste0("Metric ", EVAL_METHOD, " cannot be used, using C-Index instead."))
+      EVAL_METHOD <- "c_index"
+      index <- which.max(df_cox_value[EVAL_METHOD,]) #MAX CONCORDANCE/AUC
+    }
+  }
+
+  #Select best vector
+  keepX <- vector[[index]]
+  FLAG = TRUE
+  cont = 0
+
+  best_c_index <- df_cox_value[EVAL_METHOD,index]
+  best_keepX <- keepX
+
+  if(verbose){
+    message(paste0("First selection: \n"), paste0(paste0("Value ", names(best_keepX), ": ", unlist(purrr::map(best_keepX, ~unique(.)))), "\n"), "Pred. Value: ", round(best_c_index, 4), "\n")
+  }
+
+  ori_vector <- vector
+  aux_vector <- vector
+  p_val <- rep(NA, length(vector))
+  p_val <- df_cox_value[EVAL_METHOD,]
+  names(p_val) <- vector
+
+  while(FLAG){
+    cont = cont + 1
+
+    if(verbose){
+      message(paste0("Iteration: ", cont, "\n"))
+    }
+
+    new_vector <- NULL
+
+    #before_vector - always go two sides
+    for(b in best_keepX){
+      aux <- b
+      index <- which(aux_vector < aux)
+      if(length(index)==0){
+        value = aux_vector[which(aux_vector == aux)]
+      }else{
+        value = round(mean(c(aux, aux_vector[index][[length(aux_vector[index])]]))) #last smaller
+      }
+      new_vector <- unique(c(new_vector, aux, value))
+    }
+
+    #next_vector - always go two sides
+    for(b in best_keepX){
+      aux <- best_keepX
+      index <- which(aux_vector > aux)
+      if(length(index)==0){
+        value = aux_vector[which(aux_vector == aux)]
+      }else{
+        value = round(mean(c(aux, aux_vector[index][[1]]))) #first greater
+      }
+      new_vector <- unique(c(new_vector, aux, value))
+    }
+
+    new_vector <- new_vector[!new_vector %in% names(p_val)[!is.na(p_val)]]
+
+    # all the combinations have been already tested
+    # break the while loop
+    if(length(new_vector)==0){
+      if(verbose){
+        message(paste0("All combinations tested. \n"))
+        message(paste0(paste0("Value ", names(best_keepX), ": ", unlist(purrr::map(best_keepX, ~unique(.)))), "\n"), paste0("Pred. Value: ", round(best_c_index, 4), "\n"))
+        break
+      }
+    }
+
+    ## sort new_vector
+    new_vector <- new_vector[order(new_vector)]
+
+    if(verbose){
+      message(paste0("Testing: \n"), paste0("Value ", names(best_keepX), ": ", new_vector, "\n"))
+    }
+
+    new_vector <- unlist(new_vector)
+
+    all_comb <- expand.grid(new_vector)
+
+    ### update all vector
+    aux_vector <- unique(c(aux_vector, new_vector))
+    aux_vector <- aux_vector[order(aux_vector)]
+    names(aux_vector) <- aux_vector
+
+    p_val <- c(p_val, rep(NA, length(new_vector)))
+    names(p_val)[(length(p_val)-length(new_vector)+1):length(p_val)] <- new_vector
+    p_val <- p_val[order(as.numeric(names(p_val)))]
+
+    ### OTHER KEEP_VECTOR
+    vector_aux <- new_vector
+    vector_aux <- vector_aux[order(vector_aux)]
+
+    ## Compute next c_index
+    if(PARALLEL){
+      n_cores <- future::availableCores() - 1
+
+      if(.Platform$OS.type == "unix") {
+        future::plan("multicore", workers = min(length(vector_aux), n_cores))
+      }else{
+        future::plan("multisession", workers = min(length(vector_aux), n_cores))
+      }
+
+      t1 <- Sys.time()
+      if(mode %in% "spls"){
+        lst_cox_value <- furrr::future_map(vector_aux, ~getCIndex_AUC_CoxModel_spls(Xh = Xh, DR_coxph_ori = DR_coxph, Yh = Yh, n.comp = n.comp, keepX = ., scale = FALSE, near.zero.var = FALSE, max.iter = max.iter, times = times, max_time_points = max_time_points), .progress = FALSE)
+      }else{
+        lst_cox_value <- furrr::future_map(vector_aux, ~getCIndex_AUC_CoxModel_splsda(Xh = Xh, Yh = Yh, n.comp = n.comp, keepX = ., scale = FALSE, near.zero.var = FALSE, max.iter = max.iter, times = times, max_time_points = max_time_points), .progress = FALSE)
+      }
+      t2 <- Sys.time()
+      future::plan("sequential")
+    }else{
+      t1 <- Sys.time()
+      if(mode %in% "spls"){
+        lst_cox_value <- purrr::map(vector_aux, ~getCIndex_AUC_CoxModel_spls(Xh = Xh, DR_coxph_ori = DR_coxph, Yh = Yh, n.comp = n.comp, keepX = ., scale = FALSE, near.zero.var = FALSE, max.iter = max.iter, times = times, max_time_points = max_time_points), .progress = FALSE)
+      }else{
+        lst_cox_value <- purrr::map(vector_aux, ~getCIndex_AUC_CoxModel_splsda(Xh = Xh, Yh = Yh, n.comp = n.comp, keepX = ., scale = FALSE, near.zero.var = FALSE, max.iter = max.iter, times = times, max_time_points = max_time_points), .progress = FALSE)
+      }
+      t2 <- Sys.time()
+    }
+
+    df_cox_value_aux <- NULL
+    for(i in 1:length(lst_cox_value)){
+      if(EVAL_METHOD=="AUC"){
+        df_cox_value_aux <- rbind(df_cox_value_aux, lst_cox_value[[i]]$AUC)
+      }else if(EVAL_METHOD=="c_index"){
+        df_cox_value_aux <- rbind(df_cox_value_aux, lst_cox_value[[i]]$c_index)
+      }else if(EVAL_METHOD=="BRIER"){
+        df_cox_value_aux <- rbind(df_cox_value_aux, lst_cox_value[[i]]$BRIER)
+      }
+    }
+    if(EVAL_METHOD=="BRIER"){
+      df_cox_value_aux <- 1 - df_cox_value_aux #maximize 1-brier
+    }
+
+    rownames(df_cox_value_aux) <- vector_aux
+    #index <- which.max(rowSums(df_cox_value_aux)) #MAX VAR_MEDIA
+    #index <- which.max(df_cox_value_aux[,"Y"]) #MAX Y?
+    index <- which.max(df_cox_value_aux) #MAX CONCORDANCE
+    best_c_index_aux <- df_cox_value_aux[index]
+
+    p_val[rownames(df_cox_value_aux)] <- df_cox_value_aux
+
+    if(best_c_index >= best_c_index_aux || abs(best_c_index_aux-best_c_index) <= MIN_AUC_INCREASE){
+      FLAG = FALSE
+      if(verbose){
+        message(paste0("End: \n"), paste0(paste0("Value ", names(best_keepX), ": ", unlist(purrr::map(best_keepX, ~unique(.)))), "\n"), paste0("Pred. Value: ", round(best_c_index, 4), "\n"))
+      }
+    }else{
+      best_c_index <- best_c_index_aux
+      best_keepX <- vector_aux[[index]]
+      if(verbose){
+        message(paste0("New Vector found: \n"), paste0(paste0("Value ", names(best_keepX), ": ", unlist(purrr::map(best_keepX, ~unique(.)))), "\n"), paste0("Pred. Value: ", round(best_c_index_aux, 4), "\n"))
       }
     }
   }

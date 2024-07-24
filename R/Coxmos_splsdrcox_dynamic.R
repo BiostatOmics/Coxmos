@@ -300,8 +300,10 @@ splsdrcox_dynamic <- function (X, Y,
   #### ### ### ### ### ### ### ### ### ###
   plotVAR <- NULL
   if(is.null(vector)){
-    lst_BV <- getBestVector(Xh, DR_coxph, Yh, n.comp, max.iter, vector, MIN_AUC_INCREASE, MIN_NVAR = MIN_NVAR, MAX_NVAR = MAX_NVAR, cut_points = n.cut_points,
-                           EVAL_METHOD = EVAL_METHOD, EVAL_EVALUATOR = pred.method, PARALLEL = FALSE, mode = "spls", times = times, max_time_points = max_time_points, verbose = verbose)
+    lst_BV <- getBestVector(Xh = Xh, DR_coxph = DR_coxph, Yh = Yh, n.comp = n.comp, max.iter = max.iter, vector = vector,
+                            MIN_AUC_INCREASE = MIN_AUC_INCREASE, MIN_NVAR = MIN_NVAR, MAX_NVAR = MAX_NVAR, cut_points = n.cut_points,
+                           EVAL_METHOD = EVAL_METHOD, EVAL_EVALUATOR = pred.method, PARALLEL = FALSE, mode = "spls", times = times,
+                           max_time_points = max_time_points, verbose = verbose)
     keepX <- lst_BV$best.keepX
     plotVAR <- plot_VAR_eval(lst_BV, EVAL_METHOD = EVAL_METHOD)
   }else{
@@ -717,8 +719,8 @@ splsdrcox_dynamic <- function (X, Y,
 #' index_train <- caret::createDataPartition(Y_proteomic$event, p = .5, list = FALSE, times = 1)
 #' X_train <- X_proteomic[index_train,1:20]
 #' Y_train <- Y_proteomic[index_train,]
-#' cv.splsdrcox_dynamic_model <- cv.splsdrcox_dynamic(X_train, Y_train, max.ncomp = 1, vector = NULL,
-#' n_run = 1, k_folds = 2, x.center = TRUE, x.scale = TRUE)
+#' cv.splsdrcox_dynamic_model <- cv.splsdrcox_dynamic(X = X_train, Y = Y_train, max.ncomp = 1,
+#' vector = NULL, n_run = 1, k_folds = 2, x.center = TRUE, x.scale = TRUE)
 
 cv.splsdrcox_dynamic <- function (X, Y,
                                   max.ncomp = 8, vector = NULL,

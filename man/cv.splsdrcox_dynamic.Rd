@@ -225,7 +225,7 @@ set.seed(123)
 index_train <- caret::createDataPartition(Y_proteomic$event, p = .5, list = FALSE, times = 1)
 X_train <- X_proteomic[index_train,1:20]
 Y_train <- Y_proteomic[index_train,]
-cv.splsdrcox_dynamic_model <- cv.splsdrcox_dynamic(X_train, Y_train, max.ncomp = 1, vector = NULL,
+cv.splsdrcox_dynamic_model <- cv.splsdrcox_dynamic(X = X_train, Y = Y_train, max.ncomp = 1, vector = NULL,
 n_run = 1, k_folds = 2, x.center = TRUE, x.scale = TRUE)
 }
 \author{

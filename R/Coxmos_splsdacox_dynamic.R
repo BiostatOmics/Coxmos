@@ -231,6 +231,7 @@ splsdacox_dynamic <- function (X, Y,
   X_norm <- Xh
 
   #### MAX PREDICTORS
+  MAX_NVAR <- min(MAX_NVAR, ncol(X))
   n.comp <- check.maxPredictors(X, Y, MIN_EPV, n.comp)
 
   #### ### ### ### ### ### ### ### ### ###
