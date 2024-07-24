@@ -488,7 +488,9 @@ stepwise.coxph <- function(Time = NULL, Status = NULL, variable.list,
       AIC.value <- NULL
       for(k in 1:length(variable.list2)){
 
-        message(paste0("Testing Entering: ",k, "/", length(variable.list2), " - iteration ", iter))
+        if(verbose){
+          message(paste0("Testing Entering: ",k, "/", length(variable.list2), " - iteration ", iter))
+        }
         utils::flush.console()
 
         model <- tryCatch({
@@ -591,7 +593,9 @@ stepwise.coxph <- function(Time = NULL, Status = NULL, variable.list,
         AIC.value <- NULL
         for(k in 1:length(variable.list3)){
 
-          message(paste0("Testing Leaving: ",k, "/", length(variable.list3), " - iteration ", iter))
+          if(verbose){
+            message(paste0("Testing Leaving: ",k, "/", length(variable.list3), " - iteration ", iter))
+          }
 
           model <- tryCatch({
 
@@ -642,6 +646,7 @@ stepwise.coxph <- function(Time = NULL, Status = NULL, variable.list,
         out.x <- variable.list3[anova.pvalue == max(anova.pvalue, na.rm = TRUE) & anova.pvalue > sls]
         out.x.AIC <- AIC.value[anova.pvalue == max(anova.pvalue, na.rm = TRUE) & anova.pvalue > sls]
         out.x <- setdiff(out.x, NA)
+        out.x.AIC <- setdiff(out.x.AIC, NA)
         mv.pvalue <- mv.pvalue[which(variable.list3 %in% out.x)] # select just pval selected
 
         # mod: some out.x and out.x.AIC lesser than current value
