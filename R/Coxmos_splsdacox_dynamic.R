@@ -317,7 +317,7 @@ splsdacox_dynamic <- function (X, Y,
     }
   )
 
-  if(is.na(cox_model$fit) | is.null(cox_model$fit)){
+  if(all(is.na(cox_model$fit)) | all(is.null(cox_model$fit))){
     func_call <- match.call()
 
     t2 <- Sys.time()

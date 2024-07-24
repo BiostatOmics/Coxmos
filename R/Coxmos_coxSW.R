@@ -256,7 +256,7 @@ coxSW <- function(X, Y,
   }
 
   # if all NA, returna NULL model
-  if(all(is.na(model)) | is.null(model$survival_model)){
+  if(all(is.na(model)) | all(is.null(model$survival_model))){
     problem_flag = TRUE
     survival_model = NULL
     func_call <- match.call()
