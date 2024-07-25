@@ -4943,19 +4943,39 @@ eval_Coxmos_models <- function(lst_models, X_test, Y_test, pred.method = "cenROC
 
   names(lst_eval) <- names(lst_models)
 
+  # get BRIER times
+  brier_times <- NULL
+  for(m in names(lst_eval)){
+    brier_times <- c(brier_times, lst_eval[[m]]$brier.cox$times)
+  }
+  brier_times <- unique(brier_times)
+  brier_times <- brier_times[-which(is.na(brier_times))]
+
+  # get result vector
   lst_AUC <- list()
   lst_BRIER <- list()
   df <- NULL
   for(m in names(lst_eval)){
     lst_AUC[[m]] <- lst_eval[[m]]$lst_AUC_values
     lst_BRIER[[m]] <- lst_eval[[m]]$brier.cox
+
+    aux_vector <- c(m, lst_eval[[m]]$model_time, lst_eval[[m]]$comp.time,
+                   lst_eval[[m]]$aic.cox, lst_eval[[m]]$c_index.cox)
+
+    #if BRIER is NA, we cannot access to brier.cox$error
+    if(all(is.na(lst_eval[[m]]$brier.cox$error))){
+      aux_vector <- c(aux_vector, rep(NA, length(brier_times)))
+    }else{
+      aux_vector <- c(aux_vector, lst_BRIER[[m]]$error)
+    }
     #if AUC_values is NA, we cannot access to lst_AUC_values$AUC.vector
     if(!all(is.na(lst_eval[[m]]$lst_AUC_values))){
-      df <- rbind(df, c(m, lst_eval[[m]]$model_time, lst_eval[[m]]$comp.time, lst_eval[[m]]$aic.cox, lst_eval[[m]]$c_index.cox, lst_eval[[m]]$brier.cox$error, lst_eval[[m]]$lst_AUC_values$AUC.vector))
+      aux_vector <- c(aux_vector, lst_AUC[[m]]$AUC.vector)
     }else{
-      df <- rbind(df, c(m, lst_eval[[m]]$model_time, lst_eval[[m]]$comp.time, lst_eval[[m]]$aic.cox, lst_eval[[m]]$c_index.cox, lst_eval[[m]]$brier.cox$error, rep(NA, length(times))))
+      aux_vector <- c(m, rep(NA, length(times)))
     }
 
+    df <- rbind(df, aux_vector)
     df <- as.data.frame(df)
 
   }
