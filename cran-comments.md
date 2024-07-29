@@ -1,4 +1,4 @@
-# CRAN Submission Comments (2024-07-22)
+# CRAN Submission Comments (2024-07-25)
 This resubmission incorporates the following adjustments:
 
 - Functions 'save_ggplot' and 'save_ggplot_lst' updated to work with multiples formats.
@@ -19,6 +19,7 @@ This resubmission incorporates the following adjustments:
 - Function 'getBestVector' fixed.
 - Function 'getAUC_from_LP_2.0' fixed.
 - Function 'eval_Coxmos_models' fixed when I.Brier cannot be computed for the first model.
+  - Fixed problems with repeated times in I.Brier Score results.
 
 # CRAN Submission Comments (2024-03-20 & 2024-03-22)
 This resubmission incorporates the following adjustments:

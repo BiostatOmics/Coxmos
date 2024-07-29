@@ -4966,7 +4966,10 @@ eval_Coxmos_models <- function(lst_models, X_test, Y_test, pred.method = "cenROC
     if(all(is.na(lst_eval[[m]]$brier.cox$error))){
       aux_vector <- c(aux_vector, rep(NA, length(brier_times)))
     }else{
-      aux_vector <- c(aux_vector, lst_BRIER[[m]]$error)
+      # sometimes error repeat times
+      times_used <- lst_BRIER[[m]]$times
+      dup <- !duplicated(times_used)
+      aux_vector <- c(aux_vector, lst_BRIER[[m]]$error[dup])
     }
     #if AUC_values is NA, we cannot access to lst_AUC_values$AUC.vector
     if(!all(is.na(lst_eval[[m]]$lst_AUC_values))){
