@@ -5004,7 +5004,7 @@ eval_Coxmos_models <- function(lst_models, X_test, Y_test, pred.method = "cenROC
     new_df <- tidyr::pivot_longer(df, cols = starts_with("time_"), names_to = "time", values_to = "AUC",)
     new_df$time <- factor(new_df$time, levels = unique(new_df$time))
   }else{
-    colnames(df) <- c("method", "training.time","evaluating.time", "AIC", "c.index", paste0("brier_time_",lst_eval[[m]]$brier.cox$times), paste0("time_",final_times))
+    colnames(df) <- c("method", "training.time","evaluating.time", "AIC", "c.index", paste0("brier_time_",unique(lst_eval[[m]]$brier.cox$times)), paste0("time_",final_times))
     df <- as.data.frame(df)
     df$method <- factor(df$method, levels = unique(df$method))
     #df[,!colnames(df) %in% "method"] <- apply(df[,!colnames(df) %in% "method"], 2, as.numeric)
