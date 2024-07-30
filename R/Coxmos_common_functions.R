@@ -5848,6 +5848,11 @@ getCIndex_AUC_CoxModel_spls <- function(Xh, DR_coxph_ori, Yh, n.comp, keepX, sca
     }
   )
 
+  if(all(is.na(cox_model$fit))){
+    message("Model ran out of iterations and did not converge. Returning NAs for all metrics.")
+    return(list("c_index" = NA, "AUC" = NA, "BRIER" = NA))
+  }
+
   lp <- getLinealPredictors(cox = cox_model$fit, data = d)
 
   if(is.null(times)){

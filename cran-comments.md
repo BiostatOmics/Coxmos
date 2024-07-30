@@ -20,6 +20,7 @@ This resubmission incorporates the following adjustments:
 - Function 'getAUC_from_LP_2.0' fixed.
 - Function 'eval_Coxmos_models' fixed when I.Brier cannot be computed for the first model.
   - Fixed problems with repeated times in I.Brier Score results.
+- Function 'getCIndex_AUC_CoxModel_spls' fixed for managing models that do not converge.
 
 # CRAN Submission Comments (2024-03-20 & 2024-03-22)
 This resubmission incorporates the following adjustments:
