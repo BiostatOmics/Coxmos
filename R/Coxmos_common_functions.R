@@ -4019,6 +4019,7 @@ get_Coxmos_models2.0 <- function(method = "sPLS-ICOX",
                                                                       #y.center = y.center, y.scale = y.scale,
                                                                       remove_near_zero_variance = remove_near_zero_variance, remove_zero_variance = remove_zero_variance, toKeep.zv = toKeep.zv,
                                                                       remove_non_significant = remove_non_significant,  alpha = alpha,
+                                                                      EVAL_METHOD = EVAL_METHOD,
                                                                       max.iter = max.iter, times = times, pred.method = pred.method, max_time_points = max_time_points,
                                                                       MIN_EPV = MIN_EPV, returnData = returnData, verbose = verbose), .options = furrr_options(seed = TRUE))
 
@@ -4031,6 +4032,7 @@ get_Coxmos_models2.0 <- function(method = "sPLS-ICOX",
                                                                       #y.center = y.center, y.scale = y.scale,
                                                                       remove_near_zero_variance = remove_near_zero_variance, remove_zero_variance = remove_zero_variance, toKeep.zv = toKeep.zv,
                                                                       remove_non_significant = remove_non_significant, alpha = alpha,
+                                                                      EVAL_METHOD = EVAL_METHOD,
                                                                       max.iter = max.iter, times = times, pred.method = pred.method, max_time_points = max_time_points,
                                                                       MIN_EPV = MIN_EPV, returnData = returnData, verbose = verbose), .options = furrr_options(seed = TRUE))
       }
@@ -4077,6 +4079,7 @@ get_Coxmos_models2.0 <- function(method = "sPLS-ICOX",
                                                                #y.center = y.center, y.scale = y.scale,
                                                                remove_near_zero_variance = remove_near_zero_variance, remove_zero_variance = remove_zero_variance, toKeep.zv = toKeep.zv,
                                                                remove_non_significant = remove_non_significant, alpha = alpha,
+                                                               EVAL_METHOD = EVAL_METHOD,
                                                                max.iter = max.iter, times = times, pred.method = pred.method, max_time_points = max_time_points,
                                                                MIN_EPV = MIN_EPV, returnData = returnData, verbose = verbose))
       }else if(method==pkg.env$mb.splsdacox){
@@ -4088,6 +4091,7 @@ get_Coxmos_models2.0 <- function(method = "sPLS-ICOX",
                                                                #y.center = y.center, y.scale = y.scale,
                                                                remove_near_zero_variance = remove_near_zero_variance, remove_zero_variance = remove_zero_variance, toKeep.zv = toKeep.zv,
                                                                remove_non_significant = remove_non_significant, alpha = alpha,
+                                                               EVAL_METHOD = EVAL_METHOD,
                                                                max.iter = max.iter, times = times, pred.method = pred.method, max_time_points = max_time_points,
                                                                MIN_EPV = MIN_EPV, returnData = returnData, verbose = verbose))
 
@@ -4939,6 +4943,7 @@ eval_Coxmos_models <- function(lst_models, X_test, Y_test, pred.method = "cenROC
     future::plan("sequential")
   }else{
     lst_eval <- purrr::map(lst_models, ~evaluation_list_Coxmos(model = ., X_test = X_test, Y_test = Y_test, pred.method = pred.method, pred.attr = pred.attr, times = times, PARALLEL = FALSE, verbose = verbose, progress_bar = progress_bar))
+    # lst_eval <- evaluation_list_Coxmos(model = lst_models$cox, X_test = X_test, Y_test = Y_test, pred.method = pred.method, pred.attr = pred.attr, times = times, PARALLEL = FALSE, verbose = verbose, progress_bar = progress_bar)
   }
 
   names(lst_eval) <- names(lst_models)
