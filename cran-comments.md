@@ -23,6 +23,7 @@ This resubmission incorporates the following adjustments:
 - Function 'getCIndex_AUC_CoxModel_spls' fixed for managing models that do not converge.
 - Function 'get_Coxmos_models2.0' updated for MB functions to manage 'EVAL_METHOD' parameter.
 - Description of 'Dynamic' Functions updated to include all values for 'EVAL_METHOD'.
+- Function 'boxplot.performance' updated to split different type of evaluators.
 
 # CRAN Submission Comments (2024-03-20 & 2024-03-22)
 This resubmission incorporates the following adjustments:

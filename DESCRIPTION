@@ -59,14 +59,15 @@ Imports:
     tidyr,
     utils
 Suggests:
-    nsROC,
-    smoothROCtime,
-    survivalROC,
-    risksetROC,
     ggforce,
     knitr, 
+    nsROC,
+    patchwork,
     RColorConesa,
-    rmarkdown
+    risksetROC,
+    rmarkdown,
+    smoothROCtime,
+    survivalROC
 RdMacros:
     Rdpack
 LazyData: true
