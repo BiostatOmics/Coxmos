@@ -764,6 +764,8 @@ boxplot.performance <- function(df, x.var, y.var, x.fill = NULL, x.alpha = NULL,
 
     if(x.var %in% 'eval'){
 
+      message("Evaluator printing mode...")
+
       df$type <- ifelse(df$eval %in% c("risksetROC", "smoothROCtime_I"), "Additional Evaluators", "Standard Evaluators")
       df$type <- factor(df$type, levels = c("Standard Evaluators", "Additional Evaluators"))
 
@@ -807,7 +809,7 @@ boxplot.performance <- function(df, x.var, y.var, x.fill = NULL, x.alpha = NULL,
         ylab(ifelse(is.null(y.lab),toupper(y.var),y.lab)) +
         theme(legend.position = "none") +
         scale_fill_manual(values = colors_standard) +
-        ggtitle("Standard Evaluators")
+        ggtitle(label = title, subtitle = "Standard Evaluators")
 
       if(show.median & !is.null(median.val)){
         ggp1 <- ggp1 + scale_x_discrete(labels = x_names_standard)
@@ -825,7 +827,7 @@ boxplot.performance <- function(df, x.var, y.var, x.fill = NULL, x.alpha = NULL,
         ylab(ifelse(is.null(y.lab),toupper(y.var),y.lab)) +
         theme(legend.position = "none") +
         scale_fill_manual(values = colors_additional) +
-        ggtitle("Additional Evaluators")
+        ggtitle(label = NULL, subtitle = "Additional Evaluators")
 
       if(show.median & !is.null(median.val)){
         ggp2 <- ggp2 + scale_x_discrete(labels = x_names_additional)
@@ -849,7 +851,6 @@ boxplot.performance <- function(df, x.var, y.var, x.fill = NULL, x.alpha = NULL,
 
       # Join plots by 'patchwork'
       if(requireNamespace("patchwork", quietly = TRUE)){
-        library(patchwork)
         ggp <- (ggp1 + ggp2 + plot_layout(ncol = 2, widths = c(6, 4))) & theme(legend.position = "bottom")
       }else{
         ggp <- ggplot2::ggplot(df, aes_string(x = x.var, y = y.var, fill = x.var, alpha = x.alpha)) +
@@ -880,18 +881,119 @@ boxplot.performance <- function(df, x.var, y.var, x.fill = NULL, x.alpha = NULL,
     }
 
   }else{
-    ggp <- ggplot2::ggplot(df, aes_string(x = x.var, y = y.var, fill = x.fill, alpha = x.alpha)) +
-      geom_boxplot(position = position_dodge2(preserve = "single")) +
-      xlab(ifelse(is.null(x.lab), x.var, x.lab)) +
-      ylab(ifelse(is.null(y.lab),toupper(y.var),y.lab)) +
-      theme(legend.position = "bottom")
 
-    if(requireNamespace("RColorConesa", quietly = TRUE)){
-      ggp <- ggp + RColorConesa::scale_fill_conesa(palette = "complete")
-    }
+    if(x.var %in% 'eval'){
 
-    if(jitter){
-      ggp <- ggp + geom_point(position=position_jitterdodge(), color="black", size=1, alpha=0.25)
+      message("Evaluator printing mode...")
+
+      df$type <- ifelse(df$eval %in% c("risksetROC", "smoothROCtime_I"), "Additional Evaluators", "Standard Evaluators")
+      df$type <- factor(df$type, levels = c("Standard Evaluators", "Additional Evaluators"))
+
+      levels_standard <- levels(droplevels(unique(df[df$type %in% "Standard Evaluators",]$eval)))
+      levels_additional <- levels(droplevels(unique(df[df$type %in% "Additional Evaluators",]$eval)))
+
+      if(!is.null(median.val)){
+        names(median.val) <- levels(df[,x.var,drop = TRUE])
+        median.val <- round(median.val, round.median)
+
+        if(eval_method=="median"){
+          x_names_standard <- paste0(levels_standard, "\nMedian: ", median.val[levels_standard])
+          x_names_additional <- paste0(levels_additional, "\nMedian: ", median.val[levels_additional])
+        }else{
+          x_names_standard <- paste0(levels_standard, "\nMean: ", median.val[levels_standard])
+          x_names_additional <- paste0(levels_additional, "\nMean: ", median.val[levels_additional])
+        }
+      }
+
+      if(requireNamespace("RColorConesa", quietly = TRUE)){
+        # Obtaining RColorConesa colors
+        n_colors <- length(unique(df[,x.fill]))
+        colors <- RColorConesa::colorConesa(n_colors)
+      }else{
+        # Obtaining ggplot2 colors
+        gg_color_hue <- function(n) {
+          hues = seq(15, 375, length = n + 1)
+          hcl(h = hues, l = 65, c = 100)[1:n]
+        }
+        n_colors <- length(unique(df$eval))
+        colors <- gg_color_hue(n_colors)  # Aumentar en 2 para los colores adicionales
+      }
+
+      ggp1 <- ggplot2::ggplot(df[df$type %in% "Standard Evaluators",], aes_string(x = x.var, y = y.var, fill = x.fill, alpha = x.alpha)) +
+        geom_boxplot(position = position_dodge2(preserve = "single")) +
+        xlab(ifelse(is.null(x.lab), x.var, x.lab)) +
+        ylab(ifelse(is.null(y.lab),toupper(y.var),y.lab)) +
+        theme(legend.position = "bottom") +
+        scale_fill_manual(values = colors) +
+        ggtitle(label = title, subtitle = "Standard Evaluators")
+
+      if(show.median & !is.null(median.val)){
+        ggp1 <- ggp1 + scale_x_discrete(labels = x_names_standard)
+      }
+
+      if(!is.null(y.limit) & !y.var %in% y.limit.exception){
+        ggp1 <- ggp1 + scale_y_continuous(limits = y.limit, n.breaks = 15)
+      }else{
+        ggp1 <- ggp1 + scale_y_continuous(n.breaks = 15)
+      }
+
+      ggp2 <- ggplot2::ggplot(df[df$type %in% "Additional Evaluators",], aes_string(x = x.var, y = y.var, fill = x.fill, alpha = x.alpha)) +
+        geom_boxplot(position = position_dodge2(preserve = "single")) +
+        xlab(ifelse(is.null(x.lab), x.var, x.lab)) +
+        ylab(ifelse(is.null(y.lab),toupper(y.var),y.lab)) +
+        theme(legend.position = "bottom") +
+        scale_fill_manual(values = colors) +
+        ggtitle(label = NULL, subtitle = "Additional Evaluators")
+
+      if(show.median & !is.null(median.val)){
+        ggp2 <- ggp2 + scale_x_discrete(labels = x_names_additional)
+      }
+
+      if(!is.null(y.limit) & !y.var %in% y.limit.exception){
+        ggp2 <- ggp2 + scale_y_continuous(limits = y.limit, n.breaks = 15)
+      }else{
+        ggp2 <- ggp2 + scale_y_continuous(n.breaks = 15)
+      }
+
+      ggp1 <- ggp1 + theme(legend.text=element_text(size = legend_size_text), legend.title = element_text(size=legend_size_text, face = "bold"))
+      ggp1 <- ggp1 + guides(fill=guide_legend(title=legend_title))
+      ggp1 <- ggp1 + theme(axis.text.x = element_text(vjust = 0.5, size = x_axis_size_text))
+      ggp1 <- ggp1 + theme(axis.text.y = element_text(vjust = 0.5, hjust=1, size = y_axis_size_text))
+
+      ggp2 <- ggp2 + theme(legend.text=element_text(size = legend_size_text), legend.title = element_text(size=legend_size_text, face = "bold"))
+      ggp2 <- ggp2 + guides(fill=guide_legend(title=legend_title))
+      ggp2 <- ggp2 + theme(axis.text.x = element_text(vjust = 0.5, size = x_axis_size_text))
+      ggp2 <- ggp2 + theme(axis.text.y = element_text(vjust = 0.5, hjust=1, size = y_axis_size_text))
+
+      # Join plots by 'patchwork'
+      if(requireNamespace("patchwork", quietly = TRUE)){
+        ggp <- (ggp1 + ggp2 + plot_layout(ncol = 2, widths = c(6, 4))) & theme(legend.position = "bottom")
+      }else{
+        ggp <- ggplot2::ggplot(df, aes_string(x = x.var, y = y.var, fill = x.var, alpha = x.alpha)) +
+          geom_boxplot() +
+          xlab(ifelse(is.null(x.lab), x.var, x.lab)) +
+          ylab(ifelse(is.null(y.lab),toupper(y.var),y.lab)) +
+          theme(legend.position = "none")
+
+        if(requireNamespace("RColorConesa", quietly = TRUE)){
+          ggp <- ggp + RColorConesa::scale_fill_conesa(palette = "complete")
+        }
+      }
+
+    }else{
+      ggp <- ggplot2::ggplot(df, aes_string(x = x.var, y = y.var, fill = x.fill, alpha = x.alpha)) +
+        geom_boxplot(position = position_dodge2(preserve = "single")) +
+        xlab(ifelse(is.null(x.lab), x.var, x.lab)) +
+        ylab(ifelse(is.null(y.lab),toupper(y.var),y.lab)) +
+        theme(legend.position = "bottom")
+
+      if(requireNamespace("RColorConesa", quietly = TRUE)){
+        ggp <- ggp + RColorConesa::scale_fill_conesa(palette = "complete")
+      }
+
+      if(jitter){
+        ggp <- ggp + geom_point(position=position_jitterdodge(), color="black", size=1, alpha=0.25)
+      }
     }
 
   }
@@ -958,8 +1060,10 @@ boxplot.performance <- function(df, x.var, y.var, x.fill = NULL, x.alpha = NULL,
     ggp <- ggp + guides(alpha=guide_legend(title=alpha.lab))
   }
 
-  if(!is.null(title)){
-    ggp <- ggp + ggtitle(title)
+  if(!x.var %in% 'eval'){
+    if(!is.null(title)){
+      ggp <- ggp + ggtitle(title)
+    }
   }
 
   if(!x.var %in% 'eval'){
