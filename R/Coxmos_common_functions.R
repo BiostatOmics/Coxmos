@@ -882,6 +882,12 @@ check_class <- function(lst, class = "numeric"){
   }
 }
 
+checkX.colnames <- function(X){
+  if(is.null(colnames(X))){
+    stop("X matrix/data.frame must contain colnames.")
+  }
+}
+
 checkY.colnames <- function(Y){
   if(!all(colnames(Y) %in% c("event", "status", "time"))){
     stop_quietly("Y must contain 'event' or 'status' and 'time' columns.")

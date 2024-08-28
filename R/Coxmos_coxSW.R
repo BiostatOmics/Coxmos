@@ -170,6 +170,7 @@ coxSW <- function(X, Y,
   }
 
   #### REQUIREMENTS
+  checkX.colnames(X)
   checkY.colnames(Y)
   lst_check <- checkXY.class(X, Y, verbose = verbose)
   X <- lst_check$X

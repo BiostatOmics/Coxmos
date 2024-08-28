@@ -204,6 +204,7 @@ splsdrcox_dynamic <- function (X, Y,
   Y <- lst_check$Y
 
   #### REQUIREMENTS
+  checkX.colnames(X)
   checkY.colnames(Y)
   lst_check <- checkXY.class(X, Y, verbose = verbose)
   X <- lst_check$X
@@ -792,6 +793,7 @@ cv.splsdrcox_dynamic <- function (X, Y,
   pb_text <- "(:spin) [:bar] :percent [Elapsed time: :elapsedfull || Estimated remaining time: :penalty]"
 
   #### REQUIREMENTS
+  checkX.colnames(X)
   checkY.colnames(Y)
   lst_check <- checkXY.class(X, Y, verbose = verbose)
   X <- lst_check$X

@@ -193,6 +193,7 @@ splsdacox_dynamic <- function (X, Y,
   Y <- lst_check$Y
 
   #### REQUIREMENTS
+  checkX.colnames(X)
   checkY.colnames(Y)
   lst_check <- checkXY.class(X, Y, verbose = verbose)
   X <- lst_check$X
@@ -696,6 +697,7 @@ cv.splsdacox_dynamic <- function(X, Y,
   X <- checkColnamesIllegalChars(X)
 
   #### REQUIREMENTS
+  checkX.colnames(X)
   checkY.colnames(Y)
   lst_check <- checkXY.class(X, Y, verbose = verbose)
   X <- lst_check$X

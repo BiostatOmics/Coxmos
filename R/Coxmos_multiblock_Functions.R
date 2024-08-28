@@ -195,6 +195,14 @@ deleteNearZeroCoefficientOfVariation.mb <- function(X, LIMIT = 0.1){
   return(list("X" = newX, "variablesDeleted" = variablesDeleted, "coeff_variation" = coef_list))
 }
 
+checkX.colnames.mb <- function(X){
+  for(b in names(X)){
+    if(is.null(colnames(X[[b]]))){
+      stop("X matrix/data.frame must contain colnames in all of its blocks.")
+    }
+  }
+}
+
 checkXY.rownames.mb <- function(X, Y, verbose = TRUE){
   # Check if X and Y are matrices
   if (!isa(X, "list")){

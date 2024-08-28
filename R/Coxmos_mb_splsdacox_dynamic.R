@@ -195,6 +195,7 @@ mb.splsdacox <- function (X, Y,
   Y <- lst_check$Y
 
   #### REQUIREMENTS
+  checkX.colnames.mb(X)
   checkY.colnames(Y)
   lst_check <- checkXY.mb.class(X, Y, verbose = verbose)
   X <- lst_check$X
@@ -829,6 +830,7 @@ cv.mb.splsdacox <- function(X, Y,
   X <- checkColnamesIllegalChars.mb(X)
 
   #### REQUIREMENTS
+  checkX.colnames.mb(X)
   checkY.colnames(Y)
   lst_check <- checkXY.mb.class(X, Y, verbose = verbose)
 
