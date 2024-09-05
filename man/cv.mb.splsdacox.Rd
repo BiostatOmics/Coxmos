@@ -69,8 +69,8 @@ variables to use (default: 1000).}
 \item{n.cut_points}{Numeric. Number of cut points for searching the optimal number of variables.
 If only two cut points are selected, minimum and maximum size are used (default: 5).}
 
-\item{EVAL_METHOD}{Character. If EVAL_METHOD = "AUC", AUC metric will be use to compute the best
-number of variables. In other case, c-index metric will be used (default: "AUC").}
+\item{EVAL_METHOD}{Character. The selected metric will be use to compute the best
+number of variables. Must be one of the following: "AUC", "BRIER" or "c_index" (default: "AUC").}
 
 \item{n_run}{Numeric. Number of runs for cross validation (default: 3).}
 
@@ -90,7 +90,7 @@ be removed (default: TRUE).}
 filtering (default: NULL).}
 
 \item{remove_variance_at_fold_level}{Logical. If remove_variance_at_fold_level = TRUE, (near) zero
-variance will be removed at fold level (default: FALSE).}
+variance will be removed at fold level. Not recommended. (default: FALSE).}
 
 \item{remove_non_significant_models}{Logical. If remove_non_significant_models = TRUE,
 non-significant models are removed before computing the evaluation. A non-significant model is a

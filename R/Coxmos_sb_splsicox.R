@@ -379,7 +379,7 @@ sb.splsicox <- function(X, Y,
 #' @param toKeep.zv Character vector. Name of variables in X to not be deleted by (near) zero variance
 #' filtering (default: NULL).
 #' @param remove_variance_at_fold_level Logical. If remove_variance_at_fold_level = TRUE, (near) zero
-#' variance will be removed at fold level (default: FALSE).
+#' variance will be removed at fold level. Not recommended. (default: FALSE).
 #' @param remove_non_significant_models Logical. If remove_non_significant_models = TRUE,
 #' non-significant models are removed before computing the evaluation.
 #' @param remove_non_significant Logical. If remove_non_significant = TRUE, non-significant
@@ -577,7 +577,7 @@ cv.sb.splsicox <- function(X, Y,
   max.ncomp <- check.mb.ncomp(X, max.ncomp)
   max.ncomp <- check.mb.maxPredictors(X, Y, MIN_EPV, max.ncomp, verbose = verbose)
   if(MIN_COMP_TO_CHECK >= max.ncomp){
-    MIN_COMP_TO_CHECK = max.ncomp-1
+    MIN_COMP_TO_CHECK = max(max.ncomp-1, 1)
   }
 
   #### #
@@ -862,7 +862,7 @@ cv.sb.splsicox <- function(X, Y,
 #' @param toKeep.zv Character vector. Name of variables in X to not be deleted by (near) zero variance
 #' filtering (default: NULL).
 #' @param remove_variance_at_fold_level Logical. If remove_variance_at_fold_level = TRUE, (near) zero
-#' variance will be removed at fold level (default: FALSE).
+#' variance will be removed at fold level. Not recommended. (default: FALSE).
 #' @param remove_non_significant_models Logical. If remove_non_significant_models = TRUE,
 #' non-significant models are removed before computing the evaluation.
 #' @param remove_non_significant Logical. If remove_non_significant = TRUE, non-significant
@@ -1107,7 +1107,7 @@ cv.isb.splsicox <- function(X, Y,
   #### MAX PREDICTORS
   max.ncomp <- check.mb.maxPredictors(X, Y, MIN_EPV, max.ncomp, verbose = verbose)
   if(MIN_COMP_TO_CHECK >= max.ncomp){
-    MIN_COMP_TO_CHECK = max.ncomp-1
+    MIN_COMP_TO_CHECK = max(max.ncomp-1, 1)
   }
 
   # CREATE INDIVIDUAL MODELS

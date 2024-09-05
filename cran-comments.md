@@ -1,4 +1,4 @@
-# CRAN Submission Comments (2024-08-28)
+# CRAN Submission Comments (2024-09-05)
 This resubmission incorporates the following adjustments:
 
 - Functions 'save_ggplot' and 'save_ggplot_lst' updated to work with multiples formats.
@@ -25,6 +25,12 @@ This resubmission incorporates the following adjustments:
 - Description of 'Dynamic' Functions updated to include all values for 'EVAL_METHOD'.
 - Function 'boxplot.performance' updated to split different type of evaluators.
 - New function 'checkX.colnames' and 'checkX.colnames.mb' added in all methods.
+- Parameter 'EVAL_METHOD' updated in all functions that contains this parameter.
+- Function 'plot_evaluation' fixed to manage missin values for some times.
+- Function 'deleteZeroOrNearZeroVariance' updated to return percentage of unique values.
+- Function 'deleteZeroOrNearZeroVariance.mb' updated to return percentage of unique values per block.
+- Function 'deleteNearZeroCoefficientOfVariation.mb' fixed to return the deleted variables.
+- Updated MIN_COMP_TO_CHECK value in all methods.
 
 # CRAN Submission Comments (2024-03-20 & 2024-03-22)
 This resubmission incorporates the following adjustments:

@@ -60,6 +60,7 @@ Imports:
     utils
 Suggests:
     ggforce,
+    grDevices,
     knitr, 
     nsROC,
     patchwork,

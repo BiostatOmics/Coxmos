@@ -54,8 +54,8 @@ variables to use (default: 1000).}
 If only two cut points are selected, minimum and maximum size are used. For MB approaches as many
 as n.cut_points^n.blocks models will be computed as minimum (default: 5).}
 
-\item{EVAL_METHOD}{Character. If EVAL_METHOD = "AUC", AUC metric will be use to compute the best
-number of variables. The options are: "AUC", "BRIER", "c_index" (default: "AUC").}
+\item{EVAL_METHOD}{Character. The selected metric will be use to compute the best
+number of variables. Must be one of the following: "AUC", "BRIER" or "c_index" (default: "AUC").}
 
 \item{x.center}{Logical. If x.center = TRUE, X matrix is centered to zero means (default: TRUE).}
 

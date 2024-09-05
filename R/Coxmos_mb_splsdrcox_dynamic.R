@@ -39,8 +39,8 @@
 #' @param n.cut_points Numeric. Number of cut points for searching the optimal number of variables.
 #' If only two cut points are selected, minimum and maximum size are used. For MB approaches as many
 #' as n.cut_points^n.blocks models will be computed as minimum (default: 5).
-#' @param EVAL_METHOD Character. If EVAL_METHOD = "AUC", AUC metric will be use to compute the best
-#' number of variables. The options are: "AUC", "BRIER", "c_index" (default: "AUC").
+#' @param EVAL_METHOD Character. The selected metric will be use to compute the best
+#' number of variables. Must be one of the following: "AUC", "BRIER" or "c_index" (default: "AUC").
 #' @param x.center Logical. If x.center = TRUE, X matrix is centered to zero means (default: TRUE).
 #' @param x.scale Logical. If x.scale = TRUE, X matrix is scaled to unit variances (default: FALSE).
 #' @param remove_near_zero_variance Logical. If remove_near_zero_variance = TRUE, near zero variance
@@ -686,8 +686,8 @@ mb.splsdrcox <- function (X, Y,
 #' @param n.cut_points Numeric. Number of cut points for searching the optimal number of variables.
 #' If only two cut points are selected, minimum and maximum size are used. For MB approaches as many
 #' as n.cut_points^n.blocks models will be computed as minimum (default: 5).
-#' @param EVAL_METHOD Character. If EVAL_METHOD = "AUC", AUC metric will be use to compute the best
-#' number of variables. In other case, c-index metric will be used (default: "AUC").
+#' @param EVAL_METHOD Character. The selected metric will be use to compute the best
+#' number of variables. Must be one of the following: "AUC", "BRIER" or "c_index" (default: "AUC").
 #' @param n_run Numeric. Number of runs for cross validation (default: 3).
 #' @param k_folds Numeric. Number of folds for cross validation (default: 10).
 #' @param x.center Logical. If x.center = TRUE, X matrix is centered to zero means (default: TRUE).
@@ -699,7 +699,7 @@ mb.splsdrcox <- function (X, Y,
 #' @param toKeep.zv Character vector. Name of variables in X to not be deleted by (near) zero variance
 #' filtering (default: NULL).
 #' @param remove_variance_at_fold_level Logical. If remove_variance_at_fold_level = TRUE, (near)
-#' zero variance will be removed at fold level (default: FALSE).
+#' zero variance will be removed at fold level. Not recommended. (default: FALSE).
 #' @param remove_non_significant_models Logical. If remove_non_significant_models = TRUE,
 #' non-significant models are removed before computing the evaluation. A non-significant model is a
 #' model with at least one component/variable with a P-Value higher than the alpha cutoff.
@@ -897,7 +897,7 @@ cv.mb.splsdrcox <- function(X, Y,
   max.ncomp <- check.mb.ncomp(X, max.ncomp)
   max.ncomp <- check.mb.maxPredictors(X, Y, MIN_EPV, max.ncomp, verbose = verbose)
   if(MIN_COMP_TO_CHECK >= max.ncomp){
-    MIN_COMP_TO_CHECK = max.ncomp-1
+    MIN_COMP_TO_CHECK = max(max.ncomp-1, 1)
   }
 
   #### #

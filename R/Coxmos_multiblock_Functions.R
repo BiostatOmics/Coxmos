@@ -82,7 +82,7 @@ getEPV.mb <- function(X,Y){
 #' @param remove_near_zero_variance Logical. If remove_near_zero_variance = TRUE, near zero variance
 #' variables will be removed (default: TRUE).
 #' @param remove_zero_variance Logical. If remove_zero_variance = TRUE, zero variance variables will
-#' be removed (default: TRUE).
+#' be removed (default: FALSE).
 #' @param toKeep.zv Character vector. Name of variables in X to not be deleted by (near) zero variance
 #' filtering (default: NULL).
 #' @param freqCut Numeric. Cutoff for the ratio of the most common value to the second most common
@@ -102,16 +102,21 @@ getEPV.mb <- function(X,Y){
 #' X <- X_multiomic
 #' filter <- deleteZeroOrNearZeroVariance.mb(X, remove_near_zero_variance = TRUE)
 
-deleteZeroOrNearZeroVariance.mb <- function(X, remove_near_zero_variance = FALSE,
-                                            remove_zero_variance = TRUE,
+deleteZeroOrNearZeroVariance.mb <- function(X, remove_near_zero_variance = TRUE,
+                                            remove_zero_variance = FALSE,
                                             toKeep.zv = NULL, freqCut = 95/5){
 
   auxX <- X
-
   variablesDeleted <- NULL
+  perc_unique_values <- NULL
+
   if(remove_near_zero_variance){
     lst.zv <- purrr::map(auxX, ~deleteZeroVarianceVariables(data = ., info = TRUE, mustKeep = toKeep.zv, freqCut = freqCut))
+
+    #deleteZeroVarianceVariables(data = auxX$rnaseq, info = TRUE, mustKeep = toKeep.zv, freqCut = freqCut)
+
     variablesDeleted <- purrr::map(lst.zv, ~.$variablesDeleted[,1])
+    perc_unique_values <- purrr::map(lst.zv, ~.$perc_unique_values[,2,drop=F])
     if(any(unlist(lapply(variablesDeleted, is.null)))){ #if any not null
       for(n in names(variablesDeleted)){
         if(is.null(variablesDeleted[[n]])){
@@ -124,6 +129,7 @@ deleteZeroOrNearZeroVariance.mb <- function(X, remove_near_zero_variance = FALSE
   }else if(remove_zero_variance){
     lst.zv <- purrr::map(auxX, ~deleteZeroVarianceVariables(data = ., info = TRUE, mustKeep = toKeep.zv, onlyZero = TRUE))
     variablesDeleted <- purrr::map(lst.zv, ~.$variablesDeleted[,1])
+    perc_unique_values <- purrr::map(lst.zv, ~.$perc_unique_values[,2,drop=F])
     if(any(unlist(lapply(variablesDeleted, is.null)))){ #if any not null
       for(n in names(variablesDeleted)){
         if(is.null(variablesDeleted[[n]])){
@@ -135,7 +141,7 @@ deleteZeroOrNearZeroVariance.mb <- function(X, remove_near_zero_variance = FALSE
     }
   }
 
-  return(list(X = auxX, variablesDeleted = variablesDeleted))
+  return(list(X = auxX, variablesDeleted = variablesDeleted, perc_unique_values = perc_unique_values))
 
 }
 
@@ -181,7 +187,7 @@ deleteNearZeroCoefficientOfVariation.mb <- function(X, LIMIT = 0.1){
   newX <- X
   for(b in names(newX)){
     cvar <- apply(newX[[b]], 2, function(x){sd(x)/abs(mean(x))})
-    variablesDeleted[[b]] <- names(cvar)[which(cvar <= LIMIT)]
+    variablesDeleted[[b]] <- names(cvar)[which(cvar < LIMIT)]
     if(length(variablesDeleted[[b]])>0){
       newX[[b]] <- newX[[b]][,!colnames(newX[[b]]) %in% variablesDeleted[[b]]]
     }else{
@@ -189,8 +195,6 @@ deleteNearZeroCoefficientOfVariation.mb <- function(X, LIMIT = 0.1){
     }
     coef_list[[b]] <- cvar
   }
-
-  variablesDeleted <- purrr::map(variablesDeleted, ~{.==0;NULL})
 
   return(list("X" = newX, "variablesDeleted" = variablesDeleted, "coeff_variation" = coef_list))
 }
@@ -299,7 +303,7 @@ check.mb.maxPredictors <- function(X, Y, MIN_EPV, max.variables, verbose = FALSE
   }
 
   message(paste0("As we are working with a multiblock approach with ", length(X),
-                 " blocks, a maximum of ", round(max_n_predictors/length(X)), " components could be use."))
+                 " blocks, a maximum of ", round(max_n_predictors/length(X)), " components can be used."))
 
   max_n_predictors = round(max_n_predictors/length(X))
 

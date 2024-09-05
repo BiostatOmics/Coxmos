@@ -701,7 +701,7 @@ splsicox <- function(X, Y,
 #' @param toKeep.zv Character vector. Name of variables in X to not be deleted by (near) zero variance
 #' filtering (default: NULL).
 #' @param remove_variance_at_fold_level Logical. If remove_variance_at_fold_level = TRUE, (near) zero
-#' variance will be removed at fold level (default: FALSE).
+#' variance will be removed at fold level. Not recommended. (default: FALSE).
 #' @param remove_non_significant_models Logical. If remove_non_significant_models = TRUE,
 #' non-significant models are removed before computing the evaluation. A non-significant model is a
 #' model with at least one component/variable with a P-Value higher than the alpha cutoff.
@@ -877,7 +877,7 @@ cv.splsicox <- function (X, Y,
   max.ncomp <- check.ncomp(X, max.ncomp)
   max.ncomp <- check.maxPredictors(X, Y, MIN_EPV, max.ncomp)
   if(MIN_COMP_TO_CHECK >= max.ncomp){
-    MIN_COMP_TO_CHECK = max.ncomp-1
+    MIN_COMP_TO_CHECK = max(max.ncomp-1, 1)
   }
 
   #### REQUIREMENTS

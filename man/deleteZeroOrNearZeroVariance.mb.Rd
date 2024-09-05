@@ -6,8 +6,8 @@
 \usage{
 deleteZeroOrNearZeroVariance.mb(
   X,
-  remove_near_zero_variance = FALSE,
-  remove_zero_variance = TRUE,
+  remove_near_zero_variance = TRUE,
+  remove_zero_variance = FALSE,
   toKeep.zv = NULL,
   freqCut = 95/5
 )
@@ -20,7 +20,7 @@ be transform into binary variables.}
 variables will be removed (default: TRUE).}
 
 \item{remove_zero_variance}{Logical. If remove_zero_variance = TRUE, zero variance variables will
-be removed (default: TRUE).}
+be removed (default: FALSE).}
 
 \item{toKeep.zv}{Character vector. Name of variables in X to not be deleted by (near) zero variance
 filtering (default: NULL).}

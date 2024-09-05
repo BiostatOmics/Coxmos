@@ -77,7 +77,7 @@ be removed (default: TRUE).}
 variance filtering (default: NULL).}
 
 \item{remove_variance_at_fold_level}{Logical. If remove_variance_at_fold_level = TRUE, (near)
-zero variance will be removed at fold level (default: FALSE).}
+zero variance will be removed at fold level. Not recommended. (default: FALSE).}
 
 \item{remove_non_significant_models}{Logical. If remove_non_significant_models = TRUE,
 non-significant models are removed before computing the evaluation.}
@@ -104,8 +104,8 @@ continue evaluating higher values in the multiple tested parameters. If it is no
 'MIN_COMP_TO_CHECK' models and the minimum 'MIN_AUC' value is reached, the evaluation stops
 (default: 0.01).}
 
-\item{EVAL_METHOD}{Character. If EVAL_METHOD = "AUC", AUC metric will be use to compute the best
-number of variables. In other case, c-index metric will be used (default: "AUC").}
+\item{EVAL_METHOD}{Character. The selected metric will be use to compute the best
+number of variables. Must be one of the following: "AUC", "BRIER" or "c_index" (default: "AUC").}
 
 \item{w_AIC}{Numeric. Weight for AIC evaluator. All weights must sum 1 (default: 0).}
 

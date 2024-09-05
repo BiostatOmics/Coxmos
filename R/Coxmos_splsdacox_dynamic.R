@@ -63,8 +63,8 @@
 #' forward selection (default: FALSE).
 #' @param alpha Numeric. Numerical values are regarded as significant if they fall below the
 #' threshold (default: 0.05).
-#' @param EVAL_METHOD Character. If EVAL_METHOD = "AUC", AUC metric will be use to compute the best
-#' number of variables. In other case, c-index metric will be used (default: "AUC").
+#' @param EVAL_METHOD Character. The selected metric will be use to compute the best
+#' number of variables. Must be one of the following: "AUC", "BRIER" or "c_index" (default: "AUC").
 #' @param pred.method Character. AUC evaluation algorithm method for evaluate the model performance.
 #' Must be one of the following: "risksetROC", "survivalROC", "cenROC", "nsROC", "smoothROCtime_C",
 #' "smoothROCtime_I" (default: "cenROC").
@@ -531,7 +531,7 @@ splsdacox_dynamic <- function (X, Y,
 #' @param toKeep.zv Character vector. Name of variables in X to not be deleted by (near) zero
 #' variance filtering (default: NULL).
 #' @param remove_variance_at_fold_level Logical. If remove_variance_at_fold_level = TRUE, (near)
-#' zero variance will be removed at fold level (default: FALSE).
+#' zero variance will be removed at fold level. Not recommended. (default: FALSE).
 #' @param remove_non_significant_models Logical. If remove_non_significant_models = TRUE,
 #' non-significant models are removed before computing the evaluation.
 #' @param remove_non_significant Logical. If remove_non_significant = TRUE, non-significant
@@ -550,8 +550,8 @@ splsdacox_dynamic <- function (X, Y,
 #' continue evaluating higher values in the multiple tested parameters. If it is not reached for next
 #' 'MIN_COMP_TO_CHECK' models and the minimum 'MIN_AUC' value is reached, the evaluation stops
 #' (default: 0.01).
-#' @param EVAL_METHOD Character. If EVAL_METHOD = "AUC", AUC metric will be use to compute the best
-#' number of variables. In other case, c-index metric will be used (default: "AUC").
+#' @param EVAL_METHOD Character. The selected metric will be use to compute the best
+#' number of variables. Must be one of the following: "AUC", "BRIER" or "c_index" (default: "AUC").
 #' @param pred.method Character. AUC evaluation algorithm method for evaluate the model performance.
 #' Must be one of the following: "risksetROC", "survivalROC", "cenROC", "nsROC", "smoothROCtime_C",
 #' "smoothROCtime_I" (default: "cenROC").
@@ -715,7 +715,7 @@ cv.splsdacox_dynamic <- function(X, Y,
   max.ncomp <- check.ncomp(X, max.ncomp)
   max.ncomp <- check.maxPredictors(X, Y, MIN_EPV, max.ncomp, verbose = verbose)
   if(MIN_COMP_TO_CHECK >= max.ncomp){
-    MIN_COMP_TO_CHECK = max.ncomp-1
+    MIN_COMP_TO_CHECK = max(max.ncomp-1, 1)
   }
 
   #### REQUIREMENTS

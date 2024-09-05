@@ -666,9 +666,9 @@ plot_evaluation <- function(eval_results, evaluation = "AUC", pred.attr = "mean"
         next
       }else{
         vector <- c(m, c,
-                    mean(eval_results$df[eval_results$df$method==m,c,drop = TRUE]),
-                    median(eval_results$df[eval_results$df$method==m,c,drop = TRUE]),
-                    sd(eval_results$df[eval_results$df$method==m,c,drop = TRUE]))
+                    mean(eval_results$df[eval_results$df$method==m,c,drop = TRUE], na.rm = T),
+                    median(eval_results$df[eval_results$df$method==m,c,drop = TRUE], na.rm = T),
+                    sd(eval_results$df[eval_results$df$method==m,c,drop = TRUE], na.rm = T))
         table <- rbind(table, vector)
       }
     }
@@ -685,6 +685,14 @@ plot_evaluation <- function(eval_results, evaluation = "AUC", pred.attr = "mean"
   table$sd <- as.numeric(table$sd)
 
   return(list("lst_plots" = lst_ggp, "lst_plot_comparisons" = lst_plot_comparisons, df = table))
+}
+
+####
+
+# Obtaining ggplot2 colors
+gg_color_hue <- function(n) {
+  hues = seq(15, 375, length = n + 1)
+  grDevices::hcl(h = hues, l = 65, c = 100)[1:n]
 }
 
 boxplot.performance <- function(df, x.var, y.var, x.fill = NULL, x.alpha = NULL, x.lab = NULL,
@@ -788,17 +796,12 @@ boxplot.performance <- function(df, x.var, y.var, x.fill = NULL, x.alpha = NULL,
       if(requireNamespace("RColorConesa", quietly = TRUE)){
         # Obtaining RColorConesa colors
         n_colors <- length(unique(df$eval))
-        colors <- RColorConesa::colorConesa(n_colors)  # Aumentar en 2 para los colores adicionales
+        colors <- RColorConesa::colorConesa(n_colors)   # Increase by 2for additional colors
         colors_standard <- colors[1:length(unique(df[df$type %in% "Standard Evaluators", "eval"]))]  # Primeros n colores para los Standard Evaluators
         colors_additional <- colors[(length(colors_standard) + 1):length(colors)]  # Últimos 2 colores para los Additional Evaluators
       }else{
-        # Obtaining ggplot2 colors
-        gg_color_hue <- function(n) {
-          hues = seq(15, 375, length = n + 1)
-          hcl(h = hues, l = 65, c = 100)[1:n]
-        }
         n_colors <- length(unique(df$eval))
-        colors <- gg_color_hue(n_colors)  # Aumentar en 2 para los colores adicionales
+        colors <- gg_color_hue(n_colors)   # Increase by 2for additional colors
         colors_standard <- colors[1:length(unique(df[df$type %in% "Standard Evaluators", "eval"]))]  # Primeros n colores para los Standard Evaluators
         colors_additional <- colors[(length(colors_standard) + 1):length(colors)]  # Últimos 2 colores para los Additional Evaluators
       }
@@ -851,7 +854,7 @@ boxplot.performance <- function(df, x.var, y.var, x.fill = NULL, x.alpha = NULL,
 
       # Join plots by 'patchwork'
       if(requireNamespace("patchwork", quietly = TRUE)){
-        ggp <- (ggp1 + ggp2 + plot_layout(ncol = 2, widths = c(6, 4))) & theme(legend.position = "bottom")
+        ggp <- (ggp1 + ggp2 + patchwork::plot_layout(ncol = 2, widths = c(6, 4))) & theme(legend.position = "bottom")
       }else{
         ggp <- ggplot2::ggplot(df, aes_string(x = x.var, y = y.var, fill = x.var, alpha = x.alpha)) +
           geom_boxplot() +
@@ -910,13 +913,10 @@ boxplot.performance <- function(df, x.var, y.var, x.fill = NULL, x.alpha = NULL,
         n_colors <- length(unique(df[,x.fill]))
         colors <- RColorConesa::colorConesa(n_colors)
       }else{
-        # Obtaining ggplot2 colors
-        gg_color_hue <- function(n) {
-          hues = seq(15, 375, length = n + 1)
-          hcl(h = hues, l = 65, c = 100)[1:n]
-        }
         n_colors <- length(unique(df$eval))
-        colors <- gg_color_hue(n_colors)  # Aumentar en 2 para los colores adicionales
+
+        # Obtaining ggplot2 colors
+        colors <- gg_color_hue(n_colors)  # Increase by 2for additional colors
       }
 
       ggp1 <- ggplot2::ggplot(df[df$type %in% "Standard Evaluators",], aes_string(x = x.var, y = y.var, fill = x.fill, alpha = x.alpha)) +
@@ -967,7 +967,7 @@ boxplot.performance <- function(df, x.var, y.var, x.fill = NULL, x.alpha = NULL,
 
       # Join plots by 'patchwork'
       if(requireNamespace("patchwork", quietly = TRUE)){
-        ggp <- (ggp1 + ggp2 + plot_layout(ncol = 2, widths = c(6, 4))) & theme(legend.position = "bottom")
+        ggp <- (ggp1 + ggp2 + patchwork::plot_layout(ncol = 2, widths = c(6, 4))) & theme(legend.position = "bottom")
       }else{
         ggp <- ggplot2::ggplot(df, aes_string(x = x.var, y = y.var, fill = x.var, alpha = x.alpha)) +
           geom_boxplot() +
