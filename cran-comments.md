@@ -31,6 +31,11 @@ This resubmission incorporates the following adjustments:
 - Function 'deleteZeroOrNearZeroVariance.mb' updated to return percentage of unique values per block.
 - Function 'deleteNearZeroCoefficientOfVariation.mb' fixed to return the deleted variables.
 - Updated MIN_COMP_TO_CHECK value in all methods.
+- Function 'plot_Coxmos.MB.PLS.model' fixed for MB models.
+- The function 'plot_Coxmos.MB.PLS.model' has been fixed in the Biplot method. It now normalizes loadings to align with score values.
+- Functions 'MB' now generates an optimized DESIGN matrix if design is NULL.
+  - Fixed the use of design matrix.
+- New function 'getDesign.MB' for computing design automatically.
 
 # CRAN Submission Comments (2024-03-20 & 2024-03-22)
 This resubmission incorporates the following adjustments:

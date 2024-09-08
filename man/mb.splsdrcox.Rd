@@ -9,6 +9,7 @@ mb.splsdrcox(
   Y,
   n.comp = 4,
   vector = NULL,
+  design = NULL,
   MIN_NVAR = 10,
   MAX_NVAR = 10000,
   n.cut_points = 5,
@@ -43,6 +44,10 @@ event observations.}
 \item{vector}{Numeric vector. Used for computing best number of variables. As many values as
 components have to be provided. If vector = NULL, an automatic detection is perform (default: NULL). If
 vector is a list, must be named as the names of X param followed by the number of variables to select.}
+
+\item{design}{Numeric matrix. Matrix of size (number of blocks in X) x (number of blocks in X) with
+values between 0 and 1. Each value indicates the strength of the relationship to be modeled between
+two blocks; a value of 0 indicates no relationship, 1 is the maximum value. If NULL, auto-design is computed (default: NULL).}
 
 \item{MIN_NVAR}{Numeric. Minimum range size for computing cut points to select the best number of
 variables to use (default: 10).}

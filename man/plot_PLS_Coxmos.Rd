@@ -47,7 +47,7 @@ size (default: TRUE).}
 
 \item{text.size}{Numeric. Text size (default: 2).}
 
-\item{overlaps}{Numeric. Number of overlaps to show when plotting loading names (default: 10).}
+\item{overlaps}{Numeric. Number of overlaps to show when plotting loading names. Recommended to be the same as top parameter (default: 10).}
 }
 \value{
 A list of two elements.

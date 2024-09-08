@@ -32,6 +32,9 @@
 #' @param vector Numeric vector or list. Used for computing best number of variables. As many values as
 #' components have to be provided. If vector = NULL, an automatic detection is perform (default: NULL). If
 #' vector is a list, must be named as the names of X param followed by the number of variables to select.
+#' @param design Numeric matrix. Matrix of size (number of blocks in X) x (number of blocks in X) with
+#' values between 0 and 1. Each value indicates the strength of the relationship to be modeled between
+#' two blocks; a value of 0 indicates no relationship, 1 is the maximum value. If NULL, auto-design is computed (default: NULL).
 #' @param MIN_NVAR Numeric. Minimum range size for computing cut points to select the best number of
 #' variables to use (default: 10).
 #' @param MAX_NVAR Numeric. Maximum range size for computing cut points to select the best number of
@@ -156,7 +159,7 @@
 #' }
 
 mb.splsdacox <- function (X, Y,
-                          n.comp = 4, vector = NULL,
+                          n.comp = 4, vector = NULL, design = NULL,
                           MIN_NVAR = 10, MAX_NVAR = 10000, n.cut_points = 5, EVAL_METHOD = "AUC",
                           x.center = TRUE, x.scale = FALSE,
                           remove_near_zero_variance = TRUE, remove_zero_variance = TRUE, toKeep.zv = NULL,
@@ -248,10 +251,10 @@ mb.splsdacox <- function (X, Y,
   ### ##         MB.sPLSDA-COX             ### ##
   #### ### ### ### ### ### ### ### ### ### ### ##
 
-  # set up a full design where every block is connected
-  design = matrix(1, ncol = length(Xh), nrow = length(Xh),
-                  dimnames = list(c(names(Xh)), c(names(Xh))))
-  diag(design) =  0
+  # AUTO DESIGN - https://mixomicsteam.github.io/mixOmics-Vignette/id_06.html#id_06:diablo-design
+  if(is.null(design)){
+    design <- getDesign.MB(Xh)
+  }
 
   #### ### ### ### ### ### ### ### ### ###
   # DIVIDE Y VENCERAS - BEST VECTOR SIZE #
@@ -300,7 +303,8 @@ mb.splsdacox <- function (X, Y,
     }
   }
 
-  mb.splsda <- mixOmics::block.splsda(Xh, Yh[,"event"], scale = FALSE, ncomp = n.comp, keepX = keepX, max.iter = max.iter, near.zero.var = FALSE, all.outputs = TRUE)
+  mb.splsda <- mixOmics::block.splsda(Xh, Yh[,"event"], scale = FALSE, ncomp = n.comp, keepX = keepX, design = design,
+                                      max.iter = max.iter, near.zero.var = FALSE, all.outputs = TRUE)
 
   #PREDICTION
   #both methods return same values
@@ -653,6 +657,9 @@ mb.splsdacox <- function (X, Y,
 #' @param vector Numeric vector. Used for computing best number of variables. As many values as
 #' components have to be provided. If vector = NULL, an automatic detection is perform (default: NULL). If
 #' vector is a list, must be named as the names of X param followed by the number of variables to select.
+#' @param design Numeric matrix. Matrix of size (number of blocks in X) x (number of blocks in X) with
+#' values between 0 and 1. Each value indicates the strength of the relationship to be modeled between
+#' two blocks; a value of 0 indicates no relationship, 1 is the maximum value. If NULL, auto-design is computed (default: NULL).
 #' @param MIN_NVAR Numeric. Minimum range size for computing cut points to select the best number of
 #' variables to use (default: 10).
 #' @param MAX_NVAR Numeric. Maximum range size for computing cut points to select the best number of
@@ -733,6 +740,7 @@ mb.splsdacox <- function (X, Y,
 #'
 #' \code{opt.comp}: Optimal component selected by the best_model.
 #' \code{opt.nvar}: Optimal number of variables selected by the best_model.
+#' \code{design}: Design matrix used for computing the MultiBlocks models.
 #'
 #' \code{plot_AIC}: AIC plot by each hyper-parameter.
 #' \code{plot_c_index}: C-Index plot by each hyper-parameter.
@@ -767,7 +775,7 @@ mb.splsdacox <- function (X, Y,
 #' }
 
 cv.mb.splsdacox <- function(X, Y,
-                            max.ncomp = 8, vector = NULL,
+                            max.ncomp = 8, vector = NULL, design = NULL,
                             MIN_NVAR = 10, MAX_NVAR = 10000, n.cut_points = 5, EVAL_METHOD = "AUC",
                             n_run = 3, k_folds = 10,
                             x.center = TRUE, x.scale = FALSE,
@@ -871,6 +879,14 @@ cv.mb.splsdacox <- function(X, Y,
     MIN_COMP_TO_CHECK = max(max.ncomp-1, 1)
   }
 
+  # AUTO DESIGN - https://mixomicsteam.github.io/mixOmics-Vignette/id_06.html#id_06:diablo-design
+  if(is.null(design)){
+    #### SCALING
+    lst_scale <- XY.mb.scale(X, Y, x.center, x.scale, y.center, y.scale)
+    Xh <- lst_scale$Xh
+    design <- getDesign.MB(Xh)
+  }
+
   #### #
   # CV #
   #### #
@@ -897,7 +913,7 @@ cv.mb.splsdacox <- function(X, Y,
   comp_model_lst <- get_Coxmos_models2.0(method = pkg.env$mb.splsdacox,
                                          X_train = X, Y_train = Y,
                                          lst_X_train = lst_train_indexes, lst_Y_train = lst_train_indexes,
-                                         max.ncomp = max.ncomp, penalty.list = NULL, EN.alpha.list = NULL, max.variables = NULL, vector = vector,
+                                         max.ncomp = max.ncomp, penalty.list = NULL, EN.alpha.list = NULL, max.variables = NULL, vector = vector, design = design,
                                          n_run = n_run, k_folds = k_folds,
                                          MIN_NVAR = MIN_NVAR, MAX_NVAR = MAX_NVAR, MIN_AUC_INCREASE = MIN_AUC_INCREASE, EVAL_METHOD = EVAL_METHOD,
                                          n.cut_points = n.cut_points,
@@ -1069,9 +1085,9 @@ cv.mb.splsdacox <- function(X, Y,
 
   # invisible(gc())
   if(return_models){
-    return(cv.mb.splsdacox_class(list(best_model_info = best_model_info, df_results_folds = df_results_evals_fold, df_results_runs = df_results_evals_run, df_results_comps = df_results_evals_comp, lst_models = comp_model_lst, pred.method = pred.method, opt.comp = best_model_info$n.comps, opt.nvar = best_n_var, plot_AIC = ggp_AIC, plot_c_index = ggp_c_index, plot_BRIER = ggp_BRIER, plot_AUC = ggp_AUC, class = pkg.env$cv.mb.splsdacox, lst_train_indexes = lst_train_indexes, lst_test_indexes = lst_test_indexes, time = time)))
+    return(cv.mb.splsdacox_class(list(best_model_info = best_model_info, df_results_folds = df_results_evals_fold, df_results_runs = df_results_evals_run, df_results_comps = df_results_evals_comp, lst_models = comp_model_lst, pred.method = pred.method, opt.comp = best_model_info$n.comps, opt.nvar = best_n_var, design = design, plot_AIC = ggp_AIC, plot_c_index = ggp_c_index, plot_BRIER = ggp_BRIER, plot_AUC = ggp_AUC, class = pkg.env$cv.mb.splsdacox, lst_train_indexes = lst_train_indexes, lst_test_indexes = lst_test_indexes, time = time)))
   }else{
-    return(cv.mb.splsdacox_class(list(best_model_info = best_model_info, df_results_folds = df_results_evals_fold, df_results_runs = df_results_evals_run, df_results_comps = df_results_evals_comp, lst_models = NULL, pred.method = pred.method, opt.comp = best_model_info$n.comps, opt.nvar = best_n_var, plot_AIC = ggp_AIC, plot_c_index = ggp_c_index, plot_BRIER = ggp_BRIER, plot_AUC = ggp_AUC, class = pkg.env$cv.mb.splsdacox, lst_train_indexes = lst_train_indexes, lst_test_indexes = lst_test_indexes, time = time)))
+    return(cv.mb.splsdacox_class(list(best_model_info = best_model_info, df_results_folds = df_results_evals_fold, df_results_runs = df_results_evals_run, df_results_comps = df_results_evals_comp, lst_models = NULL, pred.method = pred.method, opt.comp = best_model_info$n.comps, opt.nvar = best_n_var, design = design, plot_AIC = ggp_AIC, plot_c_index = ggp_c_index, plot_BRIER = ggp_BRIER, plot_AUC = ggp_AUC, class = pkg.env$cv.mb.splsdacox, lst_train_indexes = lst_train_indexes, lst_test_indexes = lst_test_indexes, time = time)))
   }
 }
 

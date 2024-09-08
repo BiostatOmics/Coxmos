@@ -2064,7 +2064,7 @@ plot_divergent.biplot <- function(X, Y, NAMEVAR1, NAMEVAR2, BREAKTIME, x.text = 
 #' size (default: TRUE).
 #' @param colorReverse Logical. Reverse palette colors (default: FALSE).
 #' @param text.size Numeric. Text size (default: 2).
-#' @param overlaps Numeric. Number of overlaps to show when plotting loading names (default: 10).
+#' @param overlaps Numeric. Number of overlaps to show when plotting loading names. Recommended to be the same as top parameter (default: 10).
 #'
 #' @return A list of two elements.
 #' \code{plot}: Score, Loading or Biplot graph in 'ggplot2' format.
@@ -2590,7 +2590,6 @@ plot_Coxmos.MB.PLS.model <- function(model, comp = c(1,2), mode = "scores", fact
           }
         }
 
-
         subdata_loading = NULL
         ggp <- ggplot(as.data.frame(df))
 
@@ -2605,8 +2604,8 @@ plot_Coxmos.MB.PLS.model <- function(model, comp = c(1,2), mode = "scores", fact
 
         if("R2" %in% names(model)){
           txt.expression <- paste0("Scores (",attr(aux.model, "model"),") - ", block, " - ")
-          r2_1 <- round(model$R2[[comp[1]]], 4)
-          r2_2 <- round(model$R2[[comp[2]]], 4)
+          r2_1 <- round(model$R2[[block]][[comp[1]]], 4)
+          r2_2 <- round(model$R2[[block]][[comp[2]]], 4)
           r2 <- round(sum(r2_1, r2_2), 4)
 
           if(FLAG_1_COMP){
@@ -2694,8 +2693,8 @@ plot_Coxmos.MB.PLS.model <- function(model, comp = c(1,2), mode = "scores", fact
 
         if("R2" %in% names(model)){
           txt.expression <- paste0("Loadings (",attr(aux.model, "model"),") - ", block, " - ")
-          r2_1 <- round(model$R2[[comp[1]]], 4)
-          r2_2 <- round(model$R2[[comp[2]]], 4)
+          r2_1 <- round(model$R2[[block]][[comp[1]]], 4)
+          r2_2 <- round(model$R2[[block]][[comp[2]]], 4)
           r2 <- round(sum(r2_1, r2_2), 4)
           if(FLAG_1_COMP){
             ggp <- ggp + ggtitle(label = bquote(.(txt.expression) ~R^2 == .(r2))) +
@@ -2734,7 +2733,6 @@ plot_Coxmos.MB.PLS.model <- function(model, comp = c(1,2), mode = "scores", fact
 
       }else if(mode=="biplot"){
 
-
         if(attr(aux.model, "model") %in% c(pkg.env$sb.splsicox, pkg.env$sb.splsdrcox, pkg.env$isb.splsicox, pkg.env$isb.splsdrcox)){
           if(ncol(aux.model[[4]][[block]]$X$loadings)==1){
             message("The model has only 1 component")
@@ -2747,12 +2745,24 @@ plot_Coxmos.MB.PLS.model <- function(model, comp = c(1,2), mode = "scores", fact
             df_loading <- as.data.frame(cbind(aux.model[[4]][[block]]$X$loadings[,1], aux.model[[4]][[block]]$X$loadings[,1]))
             max.loadings <- apply(abs(df_loading), 2, max)
             max.scores <- apply(abs(df), 2, max)
+
+            # Escalar los loadings para ajustarlos a los scores
+            factor_escala <- max.scores / max.loadings
+            df_loading <- as.matrix(df_loading) %*% diag(factor_escala)
+            df_loading <- as.data.frame(df_loading)
+            colnames(df_loading) <- names(factor_escala)
           }else{
             df <- as.data.frame(aux.model[[4]][[block]]$X$scores)
 
             df_loading <- as.data.frame(aux.model[[4]][[block]]$X$loadings)
             max.loadings <- apply(abs(df_loading), 2, max)
             max.scores <- apply(abs(df), 2, max)
+
+            # Escalar los loadings para ajustarlos a los scores
+            factor_escala <- max.scores / max.loadings
+            df_loading <- as.matrix(df_loading) %*% diag(factor_escala)
+            df_loading <- as.data.frame(df_loading)
+            colnames(df_loading) <- names(factor_escala)
           }
         }else{ #multiblock
           if(ncol(aux.model$X$loadings[[block]])==1){
@@ -2764,19 +2774,37 @@ plot_Coxmos.MB.PLS.model <- function(model, comp = c(1,2), mode = "scores", fact
             colnames(df) <- c("p1", "p2")
 
             df_loading <- as.data.frame(cbind(aux.model$X$loadings[[block]][,1], aux.model$X$loadings[[block]][,1]))
+            #sometimes all 0s
+            df_loading <- df_loading[which(rowSums(df_loading) != 0),]
+
             max.loadings <- apply(abs(df_loading), 2, max)
             max.scores <- apply(abs(df), 2, max)
+
+            # Escalar los loadings para ajustarlos a los scores
+            factor_escala <- max.scores / max.loadings
+            df_loading <- as.matrix(df_loading) %*% diag(factor_escala)
+            df_loading <- as.data.frame(df_loading)
+            colnames(df_loading) <- names(factor_escala)
           }else{
             df <- as.data.frame(aux.model$X$scores[[block]])
 
             df_loading <- as.data.frame(aux.model$X$loadings[[block]])
+            #sometimes all 0s
+            df_loading <- df_loading[which(rowSums(df_loading) != 0),]
+
             max.loadings <- apply(abs(df_loading), 2, max)
             max.scores <- apply(abs(df), 2, max)
+
+            # Escalar los loadings para ajustarlos a los scores
+            factor_escala <- max.scores / max.loadings
+            df_loading <- as.matrix(df_loading) %*% diag(factor_escala)
+            df_loading <- as.data.frame(df_loading)
+            colnames(df_loading) <- names(factor_escala)
           }
         }
 
         #scale scores to -1,1
-        df <- norm01(df[,comp])*2-1
+        # df <- norm01(df[,comp])*2-1
         ggp <- ggplot(as.data.frame(df))
 
         if(nrow(df) > MAX_POINTS){
@@ -2790,8 +2818,8 @@ plot_Coxmos.MB.PLS.model <- function(model, comp = c(1,2), mode = "scores", fact
 
         if("R2" %in% names(model)){
           txt.expression <- paste0("Biplot (",attr(aux.model, "model"),") - ", block, " - ")
-          r2_1 <- round(model$R2[[comp[1]]], 4)
-          r2_2 <- round(model$R2[[comp[2]]], 4)
+          r2_1 <- round(model$R2[[block]][[comp[1]]], 4)
+          r2_2 <- round(model$R2[[block]][[comp[2]]], 4)
           r2 <- round(sum(r2_1, r2_2), 4)
 
           if(FLAG_1_COMP){

@@ -872,3 +872,48 @@ getBestVectorMB <- function(Xh, DR_coxph = NULL, Yh, n.comp, max.iter, vector, M
   keepX <- best_keepX
   return(list(best.keepX = keepX, p_val = p_val))
 }
+
+#' getDesign.MB
+#' @description Computes a new design matrix for the multi-block data by running individual PLS
+#' between all omics and calculating its correlation.
+#'
+#' @details The `getDesign.MB` function follows the suggestion made by the mixOmics group
+#' for computing design matrices for their algorithms. For more information, check
+#' https://mixomicsteam.github.io/mixOmics-Vignette/id_06.html#id_06:diablo-design.
+#'
+#' @param Xh List of explanatory blocks.
+#' @return A design matrix optimized for the X multi-omic data.
+#'
+#' @author Pedro Salguero Garcia. Maintainer: pedsalga@upv.edu.es
+#'
+#' @export
+#'
+#' @examples
+#' data("X_multiomic")
+#' X <- X_multiomic
+#' design <- getDesign.MB(X)
+#'
+getDesign.MB <- function(Xh){
+  # set up a full design where every block is connected
+  design = matrix(1, ncol = length(Xh), nrow = length(Xh),
+                  dimnames = list(c(names(Xh)), c(names(Xh))))
+  diag(design) =  0
+
+  # AUTO DESIGN - https://mixomicsteam.github.io/mixOmics-Vignette/id_06.html#id_06:diablo-design
+  for(i in 1:(nrow(design)-1)){
+    b <- rownames(design)[[i]]
+    for(j in (i+1):nrow(design)){
+      o <- rownames(design)[[j]]
+      if(b == o){
+        design[i,j] = 0
+      }else{
+        aux_pls <- mixOmics::pls(Xh[[b]], Xh[[o]], ncomp = 1)
+        aux_cor <- cor(aux_pls$variates$X, aux_pls$variates$Y)
+        aux_cor <- round(aux_cor, 1)
+        design[i,j] <- aux_cor
+        design[j,i] <- aux_cor
+      }
+    }
+  }
+  return(design)
+}

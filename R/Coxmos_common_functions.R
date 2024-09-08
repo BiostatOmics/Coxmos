@@ -3901,7 +3901,7 @@ getSubModel.mb <- function(model, comp, remove_non_significant){
 # lst_Y_train now are train indexes - same input
 get_Coxmos_models2.0 <- function(method = "sPLS-ICOX",
                                  X_train, Y_train,
-                                 lst_X_train, lst_Y_train, vector = NULL,
+                                 lst_X_train, lst_Y_train, vector = NULL, design = NULL,
                                  max.ncomp, penalty.list = NULL, EN.alpha.list = NULL, max.variables = 50,
                                  n_run, k_folds,
                                  MIN_NVAR = 10, MAX_NVAR = 10000, MIN_AUC_INCREASE = 0.01,
@@ -4020,7 +4020,7 @@ get_Coxmos_models2.0 <- function(method = "sPLS-ICOX",
       }else if(method==pkg.env$mb.splsdacox){
         lst_all_models <- furrr::future_map(lst_inputs, ~mb.splsdacox(X = lapply(X_train, function(x, ind){x[ind,]}, ind = lst_X_train[[.$run]][[.$fold]]),
                                                                       Y = data.matrix(Y_train[lst_Y_train[[.$run]][[.$fold]],]),
-                                                                      n.comp = .$comp, vector = vector,
+                                                                      n.comp = .$comp, vector = vector, design = design,
                                                                       MIN_NVAR = MIN_NVAR, MAX_NVAR = MAX_NVAR, MIN_AUC_INCREASE = MIN_AUC_INCREASE,
                                                                       x.center = x.center, x.scale = x.scale,
                                                                       #y.center = y.center, y.scale = y.scale,
@@ -4033,7 +4033,7 @@ get_Coxmos_models2.0 <- function(method = "sPLS-ICOX",
       }else if(method==pkg.env$mb.splsdrcox){
         lst_all_models <- furrr::future_map(lst_inputs, ~mb.splsdrcox(X = lapply(X_train, function(x, ind){x[ind,]}, ind = lst_X_train[[.$run]][[.$fold]]),
                                                                       Y = data.matrix(Y_train[lst_Y_train[[.$run]][[.$fold]],]),
-                                                                      n.comp = .$comp, vector = vector,
+                                                                      n.comp = .$comp, vector = vector, design = design,
                                                                       MIN_NVAR = MIN_NVAR, MAX_NVAR = MAX_NVAR, MIN_AUC_INCREASE = MIN_AUC_INCREASE,
                                                                       x.center = x.center, x.scale = x.scale,
                                                                       #y.center = y.center, y.scale = y.scale,
@@ -4080,7 +4080,7 @@ get_Coxmos_models2.0 <- function(method = "sPLS-ICOX",
       }else if(method==pkg.env$mb.splsdrcox){
         lst_all_models <- purrr::map(lst_inputs, ~mb.splsdrcox(X = lapply(X_train, function(x, ind){x[ind,]}, ind = lst_X_train[[.$run]][[.$fold]]),
                                                                Y = data.matrix(Y_train[lst_Y_train[[.$run]][[.$fold]],]),
-                                                               n.comp = .$comp, vector = vector,
+                                                               n.comp = .$comp, vector = vector, design = design,
                                                                MIN_NVAR = MIN_NVAR, MAX_NVAR = MAX_NVAR, MIN_AUC_INCREASE = MIN_AUC_INCREASE,
                                                                x.center = x.center, x.scale = x.scale,
                                                                #y.center = y.center, y.scale = y.scale,
@@ -4092,7 +4092,7 @@ get_Coxmos_models2.0 <- function(method = "sPLS-ICOX",
       }else if(method==pkg.env$mb.splsdacox){
         lst_all_models <- purrr::map(lst_inputs, ~mb.splsdacox(X = lapply(X_train, function(x, ind){x[ind,]}, ind = lst_X_train[[.$run]][[.$fold]]),
                                                                Y = data.matrix(Y_train[lst_Y_train[[.$run]][[.$fold]],]),
-                                                               n.comp = .$comp, vector = vector,
+                                                               n.comp = .$comp, vector = vector, design = design,
                                                                MIN_NVAR = MIN_NVAR, MAX_NVAR = MAX_NVAR, MIN_AUC_INCREASE = MIN_AUC_INCREASE,
                                                                x.center = x.center, x.scale = x.scale,
                                                                #y.center = y.center, y.scale = y.scale,
@@ -4776,9 +4776,9 @@ checkTestTimesVSTrainTimes <- function(lst_models, Y_test){
 #' @description
 #' The `eval_Coxmos_models` function facilitates the comprehensive evaluation of multiple Coxmos
 #' models in a concurrent manner. It is designed to provide a detailed assessment of the models'
-#' performance by calculating: C-Index, Integrative Brier Score and the Area Under the Curve (AUC) for each model at specified time points.
-#' The results generated by this function are primed for visualization using the `plot_evaluation()`
-#' function.
+#' performance by calculating: C-Index, Integrative Brier Score and the Area Under the Curve (AUC)
+#' for each model at specified time points. The results generated by this function are primed for
+#' visualization using the `plot_evaluation()` function.
 #'
 #' @details
 #' The function begins by validating the names of the models provided in the `lst_models` list and
@@ -4791,6 +4791,7 @@ checkTestTimesVSTrainTimes <- function(lst_models, Y_test){
 #' process, especially when dealing with a large number of models. The function employs various
 #' evaluation methods, as specified by the `pred.method` parameter, to compute the AUC values. These
 #' methods include but are not limited to "risksetROC", "survivalROC", and "cenROC".
+#' The metric Integrative Brier Score is computed by survcomp::sbrier.score2proba() function.
 #'
 #' Post-evaluation, the function collates the results, including training times, AIC values, c-index,
 #' Brier scores, and AUC values for each time point. The results are then transformed into a
