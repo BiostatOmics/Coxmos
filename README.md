@@ -73,7 +73,7 @@ folder.
 
 In order to use Coxmos, you will need the following items:
 
-- A explanatory X matrix.
+- An explanatory X matrix.
 - A response survival Y matrix (with two columns, "time" and "event").
 
 Please note that two toy datasets are included in the package. Details to load and use them can be 
