@@ -23,7 +23,7 @@
 #' available, such as centering and scaling of the explanatory variables, and removal of variables
 #' with near-zero or zero variance.
 #'
-#' @param X Numeric matrix or data.frame. Explanatory variables. Qualitative variables must be
+#' @param X List of numeric matrices or data.frames. Explanatory variables. Qualitative variables must be
 #' transform into binary variables.
 #' @param Y Numeric matrix or data.frame. Response variables. Object must have two columns named as
 #' "time" and "event". For event column, accepted values are: 0/1 or FALSE/TRUE for censored and
@@ -154,7 +154,7 @@
 
 mb.splsdrcox <- function (X, Y,
                           n.comp = 4, vector = NULL, design = NULL,
-                          MIN_NVAR = 10, MAX_NVAR = 10000, n.cut_points = 5, EVAL_METHOD = "AUC",
+                          MIN_NVAR = 10, MAX_NVAR = NULL, n.cut_points = 5, EVAL_METHOD = "AUC",
                           x.center = TRUE, x.scale = FALSE,
                           remove_near_zero_variance = TRUE, remove_zero_variance = TRUE, toKeep.zv = NULL,
                           remove_non_significant = TRUE, alpha = 0.05,
@@ -173,10 +173,15 @@ mb.splsdrcox <- function (X, Y,
   params_with_limits <- list("alpha" = alpha, "MIN_AUC_INCREASE" = MIN_AUC_INCREASE)
   check_min0_max1_variables(params_with_limits)
 
-  numeric_params <- list("n.comp" = n.comp, "MIN_NVAR" = MIN_NVAR, "MAX_NVAR" = MAX_NVAR,
+  numeric_params <- list("n.comp" = n.comp, "MIN_NVAR" = MIN_NVAR,
                          "n.cut_points" = n.cut_points,
                          "max_time_points" = max_time_points,
                          "MIN_EPV" = MIN_EPV, "tol" = tol, "max.iter" = max.iter)
+
+  if(!is.null(MAX_NVAR)){
+    numeric_params$MAX_NVAR <- MAX_NVAR
+  }
+
   check_class(numeric_params, class = "numeric")
 
   logical_params <- list("x.center" = unlist(x.center), "x.scale" = unlist(x.scale),
@@ -194,6 +199,9 @@ mb.splsdrcox <- function (X, Y,
   lst_check <- checkXY.rownames.mb(X, Y, verbose = verbose)
   X <- lst_check$X
   Y <- lst_check$Y
+
+  #### Check colnames
+  X <- checkColnamesIllegalChars.mb(X)
 
   #### REQUIREMENTS
   checkX.colnames.mb(X)
@@ -236,6 +244,8 @@ mb.splsdrcox <- function (X, Y,
 
   #### MAX PREDICTORS
   n.comp <- check.mb.maxPredictors(X, Y, MIN_EPV, n.comp, verbose = verbose)
+  max_comps <- min(unlist(purrr::map(X, ~ncol(.))))
+  n.comp <- min(n.comp, max_comps)
 
   E <- list()
   R2 <- list()
@@ -331,57 +341,7 @@ mb.splsdrcox <- function (X, Y,
                                   scale = FALSE, all.outputs = TRUE, near.zero.var = FALSE)
 
   #PREDICTION
-  #both methods return same values
-  # but second with pseudo inverse matrix
-  predplsfit <- tryCatch(
-    # Specifying expression
-    # pmax - coefficients to be non-zero
-    expr = {
-      predict(mb.spls, newdata=Xh) #mixomics
-    },
-    error = function(e){
-      if(verbose){
-        message("Predicting values using a pseudo-inverse matrix...\n")
-      }
-      # Estimation matrix W, P and C
-      predict <- list()
-      for(block in names(mb.spls$X)){
-        if(block == "Y"){
-          next
-        }
-        Pmat = crossprod(mb.spls$X[[block]], mb.spls$variates[[block]])
-        Cmat = crossprod(mb.spls$X$Y, mb.spls$variates[[block]])
-        Wmat = mb.spls$loadings[[block]]
-        # PW <- tryCatch(expr = {MASS::ginv(t(Pmat) %*% Wmat)},
-        #                error = function(e){
-        #                  if(verbose){
-        #                    message(e$message)
-        #                  }
-        #                  NA
-        #                })
-
-        PW <- list()
-        for(i in 1:n.comp){
-          PW[[i]] <- tryCatch(expr = {MASS::ginv(t(Pmat[,1:i]) %*% Wmat[,1:i])},
-                              error = function(e){
-                                if(verbose){
-                                  message(e$message)
-                                }
-                                NA
-                              })
-        }
-
-
-        Ypred = lapply(1:n.comp, function(x){Xh[[block]] %*% Wmat[, 1:x] %*% PW[[x]] %*% t(Cmat)[1:x, ]})
-        Ypred = sapply(Ypred, function(x){x}, simplify = "array")
-        predict[[block]] = array(Ypred, c(nrow(mb.spls$X[[block]]), ncol(mb.spls$X$Y), n.comp)) # in case one observation and only one Y, we need array() to keep it an array with a third dimension being ncomp
-      }
-
-      predplsfit <- list()
-      predplsfit$predict <- predict
-      predplsfit
-    }
-  )
+  predplsfit <- predict_mixOmics.mb.pls(mb.spls, Xh, n.comp)
 
   for(block in names(predplsfit$predict)){
     E[[block]] <- list()
@@ -611,6 +571,13 @@ mb.splsdrcox <- function (X, Y,
     survival_model <- removeInfoSurvivalModel(survival_model)
   }
 
+  all_scores <- NULL
+  for(b in names(Ts)){
+    aux_scores <- Ts[[b]]
+    colnames(aux_scores) <- paste0(colnames(aux_scores), "_", b)
+    all_scores <- cbind(all_scores, aux_scores)
+  }
+
   t2 <- Sys.time()
   time <- difftime(t2,t1,units = "mins")
 
@@ -620,6 +587,7 @@ mb.splsdrcox <- function (X, Y,
                                           "weightings" = if(returnData) W else NA,
                                           "W.star" = W.star,
                                           "scores" = Ts,
+                                          "scores_all" = all_scores,
                                           "E" = if(returnData) E else NA,
                                           "x.mean" = xmeans, "x.sd" = xsds),
                                  Y = list("deviance_residuals" = if(returnData) DR_coxph_ori else NA,
@@ -674,7 +642,7 @@ mb.splsdrcox <- function (X, Y,
 #' option to expedite the cross-validation process, especially beneficial for large datasets. However,
 #' users should be cautious about potential high RAM consumption when using this option.
 #'
-#' @param X Numeric matrix or data.frame. Explanatory variables. Qualitative variables must be
+#' @param X List of numeric matrices or data.frames. Explanatory variables. Qualitative variables must be
 #' transform into binary variables.
 #' @param Y Numeric matrix or data.frame. Response variables. Object must have two columns named as
 #' "time" and "event". For event column, accepted values are: 0/1 or FALSE/TRUE for censored and
@@ -804,7 +772,7 @@ mb.splsdrcox <- function (X, Y,
 
 cv.mb.splsdrcox <- function(X, Y,
                             max.ncomp = 8, vector = NULL, design = NULL,
-                            MIN_NVAR = 10, MAX_NVAR = 10000, n.cut_points = 5, EVAL_METHOD = "AUC",
+                            MIN_NVAR = 10, MAX_NVAR = NULL, n.cut_points = 5, EVAL_METHOD = "AUC",
                             n_run = 3, k_folds = 10,
                             x.center = TRUE, x.scale = FALSE,
                             remove_near_zero_variance = TRUE, remove_zero_variance = TRUE, toKeep.zv = NULL,
@@ -832,21 +800,26 @@ cv.mb.splsdrcox <- function(X, Y,
 
   #### Check values classes and ranges
   params_with_limits <- list("MIN_AUC_INCREASE" = MIN_AUC_INCREASE, "MIN_AUC" = MIN_AUC, "alpha" = alpha,
-                 "w_AIC" = w_AIC, "w_c.index" = w_c.index, "w_AUC" = w_AUC, "w_BRIER" = w_BRIER)
+                             "w_AIC" = w_AIC, "w_c.index" = w_c.index, "w_AUC" = w_AUC, "w_BRIER" = w_BRIER)
   check_min0_max1_variables(params_with_limits)
 
-  numeric_params <- list("max.ncomp" = max.ncomp, "MIN_NVAR" = MIN_NVAR, "MAX_NVAR" = MAX_NVAR, "n.cut_points" = n.cut_points,
-                  "n_run" = n_run, "k_folds" = k_folds, "max_time_points" = max_time_points,
-                  "MIN_COMP_TO_CHECK" = MIN_COMP_TO_CHECK, "MIN_EPV" = MIN_EPV, "seed" = seed, "tol" = tol)
+  numeric_params <- list("max.ncomp" = max.ncomp, "MIN_NVAR" = MIN_NVAR, "n.cut_points" = n.cut_points,
+                         "n_run" = n_run, "k_folds" = k_folds, "max_time_points" = max_time_points,
+                         "MIN_COMP_TO_CHECK" = MIN_COMP_TO_CHECK, "MIN_EPV" = MIN_EPV, "seed" = seed, "tol" = tol)
+
+  if(!is.null(MAX_NVAR)){
+    numeric_params$MAX_NVAR <- MAX_NVAR
+  }
+
   check_class(numeric_params, class = "numeric")
 
   logical_params <- list("x.center" = unlist(x.center), "x.scale" = unlist(x.scale),
                          #"y.center" = y.center, "y.scale" = y.scale,
-                      "remove_near_zero_variance" = remove_near_zero_variance, "remove_zero_variance" = remove_zero_variance,
-                      "remove_variance_at_fold_level" = remove_variance_at_fold_level,
-                      "remove_non_significant_models" = remove_non_significant_models,
-                      "remove_non_significant" = remove_non_significant,
-                      "return_models" = return_models,"returnData" = returnData, "verbose" = verbose, "PARALLEL" = PARALLEL)
+                         "remove_near_zero_variance" = remove_near_zero_variance, "remove_zero_variance" = remove_zero_variance,
+                         "remove_variance_at_fold_level" = remove_variance_at_fold_level,
+                         "remove_non_significant_models" = remove_non_significant_models,
+                         "remove_non_significant" = remove_non_significant,
+                         "return_models" = return_models,"returnData" = returnData, "verbose" = verbose, "PARALLEL" = PARALLEL)
   check_class(logical_params, class = "logical")
 
   character_params <- list("EVAL_METHOD" = EVAL_METHOD, "pred.attr" = pred.attr, "pred.method" = pred.method)
@@ -862,7 +835,7 @@ cv.mb.splsdrcox <- function(X, Y,
   X <- lst_check$X
   Y <- lst_check$Y
 
-  #### Illegal chars in colnames
+  #### Check colnames
   X <- checkColnamesIllegalChars.mb(X)
 
   #### REQUIREMENTS
@@ -941,20 +914,20 @@ cv.mb.splsdrcox <- function(X, Y,
   total_models <- 1 * k_folds * n_run
 
   comp_model_lst <- get_Coxmos_models2.0(method = pkg.env$mb.splsdrcox,
-                                        X_train = X, Y_train = Y,
-                                        lst_X_train = lst_train_indexes, lst_Y_train = lst_train_indexes,
-                                        max.ncomp = max.ncomp, penalty.list = NULL, EN.alpha.list = NULL, max.variables = NULL, vector = vector, design = design,
-                                        n_run = n_run, k_folds = k_folds,
-                                        MIN_NVAR = MIN_NVAR, MAX_NVAR = MAX_NVAR, MIN_AUC_INCREASE = MIN_AUC_INCREASE, EVAL_METHOD = EVAL_METHOD,
-                                        n.cut_points = n.cut_points,
-                                        x.center = x.center, x.scale = x.scale,
-                                        y.center = y.center, y.scale = y.scale,
-                                        remove_near_zero_variance = remove_variance_at_fold_level, remove_zero_variance = FALSE, toKeep.zv = NULL,
-                                        alpha = alpha, MIN_EPV = MIN_EPV,
-                                        remove_non_significant = remove_non_significant, tol = tol,
-                                        max.iter = max.iter, times = times, pred.method = pred.method, max_time_points = max_time_points,
-                                        returnData = returnData, total_models = total_models,
-                                        PARALLEL = PARALLEL, verbose = verbose)
+                                         X_train = X, Y_train = Y,
+                                         lst_X_train = lst_train_indexes, lst_Y_train = lst_train_indexes,
+                                         max.ncomp = max.ncomp, penalty.list = NULL, EN.alpha.list = NULL, max.variables = NULL, vector = vector, design = design,
+                                         n_run = n_run, k_folds = k_folds,
+                                         MIN_NVAR = MIN_NVAR, MAX_NVAR = MAX_NVAR, MIN_AUC_INCREASE = MIN_AUC_INCREASE, EVAL_METHOD = EVAL_METHOD,
+                                         n.cut_points = n.cut_points,
+                                         x.center = x.center, x.scale = x.scale,
+                                         y.center = y.center, y.scale = y.scale,
+                                         remove_near_zero_variance = remove_variance_at_fold_level, remove_zero_variance = FALSE, toKeep.zv = NULL,
+                                         alpha = alpha, MIN_EPV = MIN_EPV,
+                                         remove_non_significant = remove_non_significant, tol = tol,
+                                         max.iter = max.iter, times = times, pred.method = pred.method, max_time_points = max_time_points,
+                                         returnData = returnData, total_models = total_models,
+                                         PARALLEL = PARALLEL, verbose = verbose)
 
   # already check in Coxmos_models
   # if(all(is.na(unlist(lst_model)))){
@@ -1134,4 +1107,70 @@ cv.mb.splsdrcox_class = function(pls_model, ...) {
   model = structure(pls_model, class = pkg.env$model_class,
                     model = pkg.env$cv.mb.splsdrcox)
   return(model)
+}
+
+#### ### #
+# EXTRAS #
+#### ### #
+
+predict_mixOmics.mb.pls <- function(mb.spls, Xh, n.comp, verbose = TRUE){
+  #PREDICTION
+  #both methods return same values
+  # but second with pseudo inverse matrix
+  predplsfit <- tryCatch(
+    # Specifying expression
+    # pmax - coefficients to be non-zero
+    expr = {
+      predict(object = mb.spls, newdata=Xh) #mixomics
+    },
+    error = function(e){
+      if(verbose){
+        message("Predicting values using a pseudo-inverse matrix...\n")
+      }
+      # Estimation matrix W, P and C
+      predict <- list()
+      scores <- list()
+      for(block in names(mb.spls$X)){
+        if(block == "Y"){
+          next
+        }
+        Pmat = crossprod(mb.spls$X[[block]], mb.spls$variates[[block]])
+        if(class(mb.spls)[[1]] %in% "block.splsda"){
+          Cmat = crossprod(as.matrix(as.numeric(as.character(mb.spls$Y))), mb.spls$variates[[block]])
+        }else{
+          Cmat = crossprod(mb.spls$X$Y, mb.spls$variates[[block]])
+        }
+        Wmat = mb.spls$loadings[[block]]
+        # PW <- tryCatch(expr = {MASS::ginv(t(Pmat) %*% Wmat)},
+        #                error = function(e){
+        #                  if(verbose){
+        #                    message(e$message)
+        #                  }
+        #                  NA
+        #                })
+
+        PW <- list()
+        for(i in 1:n.comp){
+          PW[[i]] <- tryCatch(expr = {MASS::ginv(t(Pmat[,1:i]) %*% Wmat[,1:i])},
+                              error = function(e){
+                                if(verbose){
+                                  message(e$message)
+                                }
+                                NA
+                              })
+        }
+
+        scores[[block]] = Xh[[block]] %*% Wmat[, 1:n.comp]
+        Ypred = lapply(1:n.comp, function(x){Xh[[block]] %*% Wmat[, 1:x] %*% PW[[x]] %*% t(Cmat)[1:x, ]})
+        Ypred = sapply(Ypred, function(x){x}, simplify = "array")
+        predict[[block]] = array(Ypred, c(nrow(mb.spls$X[[block]]), ncol(mb.spls$X$Y), n.comp)) # in case one observation and only one Y, we need array() to keep it an array with a third dimension being ncomp
+      }
+
+      predplsfit <- list()
+      predplsfit$predict <- predict
+      predplsfit$variates <- scores
+      predplsfit
+    }
+  )
+  return(predplsfit)
 }

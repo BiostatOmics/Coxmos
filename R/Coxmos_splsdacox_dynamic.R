@@ -149,11 +149,11 @@
 #' data("Y_proteomic")
 #' X <- X_proteomic[,1:20]
 #' Y <- Y_proteomic
-#' splsdacox_dynamic(X, Y, n.comp = 2, vector = NULL, x.center = TRUE, x.scale = TRUE)
+#' splsdacox(X, Y, n.comp = 2, vector = NULL, x.center = TRUE, x.scale = TRUE)
 
-splsdacox_dynamic <- function (X, Y,
+splsdacox <- function(X, Y,
                                n.comp = 4, vector = NULL,
-                               MIN_NVAR = 10, MAX_NVAR = 1000, n.cut_points = 5,
+                               MIN_NVAR = 10, MAX_NVAR = NULL, n.cut_points = 5,
                                MIN_AUC_INCREASE = 0.01,
                                x.center = TRUE, x.scale = FALSE,
                                remove_near_zero_variance = TRUE, remove_zero_variance = TRUE,
@@ -173,9 +173,14 @@ splsdacox_dynamic <- function (X, Y,
   params_with_limits <- list("alpha" = alpha, "MIN_AUC_INCREASE" = MIN_AUC_INCREASE)
   check_min0_max1_variables(params_with_limits)
 
-  numeric_params <- list("n.comp" = n.comp, "MIN_NVAR" = MIN_NVAR, "MAX_NVAR" = MAX_NVAR, "n.cut_points" = n.cut_points,
+  numeric_params <- list("n.comp" = n.comp, "MIN_NVAR" = MIN_NVAR, "n.cut_points" = n.cut_points,
                   "max_time_points" = max_time_points,
                   "MIN_EPV" = MIN_EPV, "tol" = tol, "max.iter" = max.iter)
+
+  if(!is.null(MAX_NVAR)){
+    numeric_params$MAX_NVAR <- MAX_NVAR
+  }
+
   check_class(numeric_params, class = "numeric")
 
   logical_params <- list("x.center" = x.center, "x.scale" = x.scale,
@@ -191,6 +196,9 @@ splsdacox_dynamic <- function (X, Y,
   lst_check <- checkXY.rownames(X, Y, verbose = verbose)
   X <- lst_check$X
   Y <- lst_check$Y
+
+  #### Check colnames in X for Illegal Chars (affect cox formulas)
+  X <- checkColnamesIllegalChars(X)
 
   #### REQUIREMENTS
   checkX.colnames(X)
@@ -627,18 +635,18 @@ splsdacox_dynamic <- function (X, Y,
 #' index_train <- caret::createDataPartition(Y_proteomic$event, p = .5, list = FALSE, times = 1)
 #' X_train <- X_proteomic[index_train,1:50]
 #' Y_train <- Y_proteomic[index_train,]
-#' cv.splsdacox_dynamic_model <- cv.splsdacox_dynamic(X_train, Y_train, max.ncomp = 2, vector = NULL,
+#' cv.splsdacox_dynamic_model <- cv.splsdacox(X_train, Y_train, max.ncomp = 2, vector = NULL,
 #' n_run = 1, k_folds = 2, x.center = TRUE, x.scale = TRUE)
 
-cv.splsdacox_dynamic <- function(X, Y,
+cv.splsdacox <- function(X, Y,
                         max.ncomp = 8, vector = NULL,
+                        MIN_NVAR = 10, MAX_NVAR = NULL, n.cut_points = 5,
+                        MIN_AUC_INCREASE = 0.01,
                         n_run = 3, k_folds = 10,
                         x.center = TRUE, x.scale = FALSE,
                         remove_near_zero_variance = TRUE, remove_zero_variance = TRUE, toKeep.zv = NULL,
                         remove_variance_at_fold_level = FALSE,
                         remove_non_significant_models = FALSE, remove_non_significant = FALSE, alpha = 0.05,
-                        MIN_NVAR = 10, MAX_NVAR = 1000, n.cut_points = 5,
-                        MIN_AUC_INCREASE = 0.01,
                         EVAL_METHOD = "AUC",
                         w_AIC = 0, w_c.index = 0, w_AUC = 1, w_BRIER = 0, times = NULL,
                         max_time_points = 15,
@@ -666,9 +674,14 @@ cv.splsdacox_dynamic <- function(X, Y,
                  "w_AIC" = w_AIC, "w_c.index" = w_c.index, "w_AUC" = w_AUC, "w_BRIER" = w_BRIER)
   check_min0_max1_variables(params_with_limits)
 
-  numeric_params <- list("max.ncomp" = max.ncomp, "MIN_NVAR" = MIN_NVAR, "MAX_NVAR" = MAX_NVAR, "n.cut_points" = n.cut_points,
+  numeric_params <- list("max.ncomp" = max.ncomp, "MIN_NVAR" = MIN_NVAR, "n.cut_points" = n.cut_points,
                   "n_run" = n_run, "k_folds" = k_folds, "max_time_points" = max_time_points,
                   "MIN_COMP_TO_CHECK" = MIN_COMP_TO_CHECK, "MIN_EPV" = MIN_EPV, "seed" = seed, "tol" = tol)
+
+  if(!is.null(MAX_NVAR)){
+    numeric_params$MAX_NVAR <- MAX_NVAR
+  }
+
   check_class(numeric_params, class = "numeric")
 
   logical_params <- list("x.center" = x.center, "x.scale" = x.scale,

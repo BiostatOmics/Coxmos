@@ -160,14 +160,7 @@ coxSW <- function(X, Y,
   Y <- lst_check$Y
 
   #### Check colnames in X for Illegal Chars (affect cox formulas)
-  old_colnames <- colnames(X)
-  colnames(X) <- transformIllegalChars(old_colnames)
-  if(all(old_colnames %in% colnames(X))){
-    #colnames changed
-    FLAG_COLNAMES = TRUE
-  }else{
-    FLAG_COLNAMES = FALSE
-  }
+  X <- checkColnamesIllegalChars(X)
 
   #### REQUIREMENTS
   checkX.colnames(X)

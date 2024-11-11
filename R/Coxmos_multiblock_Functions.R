@@ -2,6 +2,7 @@ checkColnamesIllegalChars.mb <- function(X){
 
   for(block in names(X)){
     new_cn_X <- deleteIllegalChars(colnames(X[[block]]))
+    new_cn_X <- transformIllegalChars(new_cn_X)
 
     if(length(unique(new_cn_X)) == length(unique(colnames(X[[block]])))){
       colnames(X[[block]]) <- new_cn_X
@@ -28,7 +29,7 @@ checkColnamesIllegalChars.mb <- function(X){
 #' binary values, delineating censored (either 0 or FALSE) and event (either 1 or TRUE) observations.
 #' To ensure the integrity of the data and the precision of the computation, the function is equipped
 #' with an error mechanism that activates if the "event" column remains undetected.
-#' @param X Numeric matrix or data.frame. Explanatory variables. Qualitative variables must be transform
+#' @param X List of numeric matrices or data.frames. Explanatory variables. Qualitative variables must be transform
 #' into binary variables.
 #' @param Y Numeric matrix or data.frame. Response variables. Object must have two columns named as
 #' "time" and "event". For event column, accepted values are: 0/1 or FALSE/TRUE for censored and event
@@ -357,8 +358,8 @@ splitData_Iterations_Folds.mb <- function(X, Y, n_run, k_folds, seed = 123){
 
   for(i in 1:n_run){
     testIndex <- caret::createFolds(Y[,"event"],
-                                     k = k_folds,
-                                     list = TRUE)
+                                    k = k_folds,
+                                    list = TRUE)
 
     #for each fold, take the others as train
     lst_X_data_train_aux <- purrr::map(X, ~lapply(testIndex, function(ind, dat) dat[-ind,], dat = .))
@@ -559,7 +560,7 @@ getVarExpModel_block.spls <- function(Xh, DR_coxph_ori, n.comp, keepX, scale = F
 }
 
 getBestVectorMB <- function(Xh, DR_coxph = NULL, Yh, n.comp, max.iter, vector, MIN_AUC_INCREASE,
-                            MIN_NVAR = 10, MAX_NVAR = 10000, cut_points = 5, EVAL_METHOD = "AUC",
+                            MIN_NVAR = 1, MAX_NVAR = NULL, cut_points = 5, EVAL_METHOD = "AUC",
                             EVAL_EVALUATOR = "cenROC", PARALLEL = FALSE, mode = "spls", times = NULL,
                             max_time_points = 15, verbose = FALSE){
 
@@ -572,10 +573,22 @@ getBestVectorMB <- function(Xh, DR_coxph = NULL, Yh, n.comp, max.iter, vector, M
   }
 
   max_ncol <- purrr::map(Xh, ~ncol(.))
+  if(is.null(MAX_NVAR)){
+    MAX_NVAR <- max_ncol
+  }
+
+  if(!length(MAX_NVAR) == length(names(Xh))){
+    MAX_NVAR <- rep(MAX_NVAR[[1]], length(names(Xh)))
+    names(MAX_NVAR) <- names(Xh)
+  }
+  if(!length(MIN_NVAR) == length(names(Xh))){
+    MIN_NVAR <- rep(MIN_NVAR[[1]], length(names(Xh)))
+    names(MIN_NVAR) <- names(Xh)
+  }
 
   if(is.null(vector)){
     #vector <- purrr::map(names(Xh), ~c(min(MIN_NVAR, max_ncol[[.]]), (max_ncol[[.]]+min(MIN_NVAR, max_ncol[[.]]))/2, min(max_ncol[[.]], MAX_NVAR)))
-    vector <- purrr::map(names(Xh), ~getVectorCuts(vector = c(min(MIN_NVAR, max_ncol[[.]]):min(max_ncol[[.]], MAX_NVAR)), cut_points = cut_points, verbose = verbose))
+    vector <- purrr::map(names(Xh), ~getVectorCuts(vector = c(min(MIN_NVAR[[.]], max_ncol[[.]]):min(max_ncol[[.]], MAX_NVAR[[.]])), cut_points = cut_points, verbose = verbose))
     names(vector) <- names(Xh)
   }else{
     #check vector is a list, and each value is less than the max.variables of that block

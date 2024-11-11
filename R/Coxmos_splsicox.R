@@ -155,19 +155,22 @@ splsicox <- function(X, Y,
   check_min0_max1_variables(params_with_limits)
 
   numeric_params <- list("n.comp" = n.comp,
-                  "MIN_EPV" = MIN_EPV, "tol" = tol)
+                         "MIN_EPV" = MIN_EPV, "tol" = tol)
   check_class(numeric_params, class = "numeric")
 
   logical_params <- list("x.center" = x.center, "x.scale" = x.scale,
                          #"y.center" = y.center, "y.scale" = y.scale,
-                      "remove_near_zero_variance" = remove_near_zero_variance, "remove_zero_variance" = remove_zero_variance,
-                      "remove_non_significant" = remove_non_significant, "returnData" = returnData, "verbose" = verbose)
+                         "remove_near_zero_variance" = remove_near_zero_variance, "remove_zero_variance" = remove_zero_variance,
+                         "remove_non_significant" = remove_non_significant, "returnData" = returnData, "verbose" = verbose)
   check_class(logical_params, class = "logical")
 
   #### Check rownames
   lst_check <- checkXY.rownames(X, Y, verbose = verbose)
   X <- lst_check$X
   Y <- lst_check$Y
+
+  #### Check colnames in X for Illegal Chars (affect cox formulas)
+  X <- checkColnamesIllegalChars(X)
 
   #### REQUIREMENTS
   checkX.colnames(X)
@@ -231,19 +234,6 @@ splsicox <- function(X, Y,
   stopped = FALSE
   for(h in 1:n.comp){
 
-    # Break if residuals is not the solution because in some cases, it is not a problem to compute wh vector. !!!!
-
-    # #residuals^2
-    # residuals <- sqrt(colSums(Xh^2, na.rm = TRUE))
-    #
-    # #break iteration
-    # if(any(residuals<tol)){
-    #   bad_var <- paste0(names(residuals)[residuals < tol], collapse = ", ")
-    #   message(paste0(paste0("Individual COX model cannot be computed for variables (", bad_var, "). Stopped at component ", h, ".")))
-    #   stopped = TRUE
-    #   break
-    # }
-
     #### ### ### ### ### ### ### ### ### ### ### #
     #                                            #
     #     Weight computation for each model      #
@@ -255,55 +245,14 @@ splsicox <- function(X, Y,
     #### ### ### ##
 
     #2. wh <- individual cox regression vector
-    if(length(XXNA)>0){
-      Xh[XXNA] <- 0
-    }
 
-    #Sometimes, fit can not be compute by NA at cox calculus, we cannot avoid printing the NAs matrix... !!!!
     # returning wh[,1] coefficients and wh[,2] p-values
-    # wh does not have NA, already removed
+    # using Ts as extra information but Xh is already deflacted...
+    # have to be as NULL
+    wh <- getIndividualCox(data = cbind(Xh, Yh), time_var = "time", event_var = "event", score_data = NULL, verbose = verbose)
 
-    wh <- getIndividualCox(data = cbind(Xh, Yh), time_var = "time", event_var = "event", score_data = Ts, verbose = verbose)
-    # wh2 <- tryCatch(
-    #   # Specifying expression
-    #   expr = {
-    #     as.data.frame(t(apply(Xh, 2, function(x){
-    #       eps = 1e-14
-    #       control <- survival::coxph.control(eps = eps, toler.chol = .Machine$double.eps^0.90,
-    #                                          iter.max = 220, toler.inf = sqrt(eps), outer.max = 100, timefix = TRUE)
-    #       fit <- survival::coxph(survival::Surv(time = time,
-    #                                             event = event,
-    #                                             type = "right") ~ ., as.data.frame(cbind(Ts,x)),
-    #                              control = control,
-    #                              singular.ok = TRUE)
-    #
-    #       if(length(getPvalFromCox(fit))==1){
-    #         aux <- c(fit$coefficients["x"], getPvalFromCox(fit))
-    #       }else{
-    #         aux <- c(fit$coefficients["x"], getPvalFromCox(fit)["x"]) #cause variable of study is called 'x' and we extract new coefficient taking into account components already computed
-    #       }
-    #       aux
-    #     })))
-    #   },
-    #   # Specifying error message
-    #   error = function(e){
-    #     message(paste0("splsicox: ", e))
-    #     # invisible(gc())
-    #     return(NA)
-    #     #if error we could return beta=0 (no significant) instead a NA!!!
-    #   }
-    # )
-
-    # if(any(is.na(wh))){
-    #   message(paste0(paste0("Individual COX model cannot be computed for variables (", paste0(rownames(wh)[is.na(wh[,1])], collapse = ", ") ,").")))
-    #
-    #   #wh <- wh[-which(is.na(wh[,1])),]
-    #   #replace for beta of 0, and p-value of 1
-    #   wh[which(is.na(wh[,1])),] <- c(rep(0, length(rownames(wh)[is.na(wh[,1])])), rep(1, length(rownames(wh)[is.na(wh[,1])])))
-    #
-    #   #stopped = TRUE
-    #   #break
-    # }
+    # use the same order as Xh
+    wh <- wh[colnames(Xh),]
 
     if(all(is.na(wh))){
       message(paste0("Stopping at component ", h-1, ": The weight vector could not be computed.."))
@@ -331,10 +280,10 @@ splsicox <- function(X, Y,
 
     nm <- rownames(wh)
     nm_keep <- var_by_component[[h]]
-    wh <- wh[,1,drop = TRUE]
+    wh <- wh[,1,drop = TRUE] #keep only coefficients
     names(wh) <- nm
 
-    sub_wh <- wh[nm_keep]
+    sub_wh <- wh[nm_keep] #keep only coeff not zero
 
     #3. wh <- wh / ||wh||
     wh_norm <- data.frame(wh)
@@ -345,17 +294,9 @@ splsicox <- function(X, Y,
 
     #4. t = Xh wh / wh'wh
     #4. t = Xh wh_norm (solo si wh ya normalizado)
-    #normalization for NAs
-    if(length(XXNA)>0){
-      Xh[XXNA[,nm_keep]] <- 0
-    }
 
-    if(length(XXNA)>0){
-      # th <- (Xh[,nm_keep,drop = FALSE] %*% sub_wh_norm)/((!XXNA[,nm_keep,drop = FALSE]) %*% sub_wh_norm^2) # do not remember why
-      th <- (Xh[,nm_keep,drop = FALSE] %*% sub_wh_norm)
-    }else{
-      th <- (Xh[,nm_keep,drop = FALSE] %*% sub_wh_norm)
-    }
+    # th <- (Xh[,nm_keep,drop = FALSE] %*% sub_wh_norm)/((!XXNA[,nm_keep,drop = FALSE]) %*% sub_wh_norm^2) # do not remember why
+    th <- Xh[,nm_keep,drop = FALSE] %*% sub_wh_norm
 
     #th <- t(lm(t(Xh)~0 + sub_wh_norm)$coefficients)/((!XXNA)%*%(sub_wh_norm^2))
 
@@ -370,23 +311,15 @@ splsicox <- function(X, Y,
     ph <- data.frame(wh)
     ph[,1] <- 0
 
-    if(length(XXNA)>0){
-      # sub_ph <- t(t(th) %*% Xh[,nm_keep,drop = FALSE]) / (t((!XXNA[,nm_keep,drop = FALSE])) %*% th^2) # do not remember why
-      sub_ph <- t(t(th) %*% Xh[,nm_keep,drop = FALSE]) / (as.vector(t(th) %*% th))
-    }else{
-      sub_ph <- t(t(th) %*% Xh[,nm_keep,drop = FALSE]) / (as.vector(t(th) %*% th))
-    }
+    sub_ph <- t((t(th) %*% Xh[,nm_keep,drop = FALSE]) / (as.vector(t(th) %*% th)))
 
     ph[nm_keep,] <- sub_ph
-    # temppp <- rep(0,res$nc)
-    # for (jj in 1:(res$nc)) {
-    #   temppp[jj] <- crossprod(temptt,XXwotNA[,jj])/drop(crossprod((!XXNA)[,jj],temptt^2))
-    # }
 
     #6. Residuals
     #res$residXX <- XXwotNA-temptt%*%temppp #residuals to the new matrix to get next components
-    Xh_sub <- Xh[,nm_keep,drop = FALSE] - th %*% t(sub_ph)
-    Xh[,nm_keep] <- Xh_sub
+    # Xh_aux <- Xh[,nm_keep] - (th %*% t(sub_ph))
+    # Xh[,nm_keep] <- Xh_aux
+    Xh[,nm_keep] <- Xh[,nm_keep,drop=F] - (th %*% t(sub_ph))
 
     Ts <- cbind(Ts, th)
     P <- cbind(P, as.matrix(ph))
@@ -426,12 +359,6 @@ splsicox <- function(X, Y,
                                class = pkg.env$splsicox,
                                time = time)))
   }
-
-  ### DELETE VARIABLES ALL 0s (in all components)
-  rm_var <- names(which(rowSums(W)==0))
-  W <- W[!rownames(W) %in% rm_var,,drop = FALSE]
-  W_norm <- W_norm[!rownames(W_norm) %in% rm_var,,drop = FALSE]
-  P <- P[!rownames(P) %in% rm_var,,drop = FALSE]
 
   colnames(Ts) <- paste0("comp_", 1:h)
   colnames(P) <- paste0("comp_", 1:h)
@@ -539,20 +466,22 @@ splsicox <- function(X, Y,
     Ts = Ts[,1:h,drop = FALSE]
     E = E[1:h]
     n.comp = ncol(Ts)
+    var_by_component = var_by_component[1:h]
   }
 
   #or if we filter some components
   if(h != length(names(cox_model$fit$coefficients))){
     if(verbose){
-      message(paste0("Updating vectors. Final model select ", length(names(cox_model$fit$coefficients))," components instead of ", n.comp,"."))
+      message(paste0("Updating matrices Final model select ", length(names(cox_model$fit$coefficients))," components instead of ", n.comp,"."))
     }
-    #update all values
-    which_to_keep <- which(colnames(W) %in% names(cox_model$fit$coefficients))
 
+    #update all values
     W <- W[,names(cox_model$fit$coefficients),drop = FALSE]
     W_norm = W_norm[,names(cox_model$fit$coefficients),drop = FALSE]
     P = P[,names(cox_model$fit$coefficients),drop = FALSE]
     Ts = Ts[,names(cox_model$fit$coefficients),drop = FALSE]
+
+    which_to_keep <- which(colnames(W) %in% names(cox_model$fit$coefficients))
 
     E = E[which_to_keep]
     n.comp = which_to_keep
@@ -595,6 +524,9 @@ splsicox <- function(X, Y,
 
   # What happen when you cannot compute W.star but you have P and W?
   W.star <- W %*% PW
+  # In this case, the way to compute the SCORES is by using the W_norm matrix
+  # cannot work with W PW
+  # W.star <- W_norm
 
   rownames(Ts) <- rownames(X)
   colnames(W.star) <- colnames(W)
@@ -619,17 +551,17 @@ splsicox <- function(X, Y,
 
   # invisible(gc())
   return(splsicox_class(list(X = list("data" = if(returnData) X_norm else NA,
-                                      "weightings" = if(returnData) W else NA,
-                                      "weightings_norm" = if(returnData) W_norm else NA,
+                                      "weightings" = W,
+                                      "weightings_norm" = W_norm, #important for predictions
                                       "W.star" = W.star,
                                       "loadings" = P,
                                       "scores" = Ts,
                                       "E" = if(returnData) E else NA,
                                       "x.mean" = xmeans, "x.sd" = xsds),
-                            Y = list("data" = Yh,
-                                     "y.mean" = ymeans, "y.sd" = ysds),
-                            survival_model = survival_model,
-                            n.comp = h,
+                             Y = list("data" = Yh,
+                                      "y.mean" = ymeans, "y.sd" = ysds),
+                             survival_model = survival_model,
+                             n.comp = h,
                             penalty = penalty,
                             var_by_component = var_by_component, #variables selected for each component
                             call = if(returnData) func_call else NA,

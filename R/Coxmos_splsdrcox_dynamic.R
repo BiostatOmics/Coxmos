@@ -160,15 +160,14 @@
 #' data("Y_proteomic")
 #' X <- X_proteomic[,1:50]
 #' Y <- Y_proteomic
-#' splsdrcox_dynamic(X, Y, n.comp = 3, vector = NULL, x.center = TRUE, x.scale = TRUE)
+#' splsdrcox(X, Y, n.comp = 3, vector = NULL, x.center = TRUE, x.scale = TRUE)
 
-splsdrcox_dynamic <- function (X, Y,
+splsdrcox <- function(X, Y,
                                n.comp = 4, vector = NULL,
-                               MIN_NVAR = 10, MAX_NVAR = 1000, n.cut_points = 5,
+                               MIN_NVAR = 10, MAX_NVAR = NULL, n.cut_points = 5,
                                MIN_AUC_INCREASE = 0.01,
                                x.center = TRUE, x.scale = FALSE,
-                               remove_near_zero_variance = TRUE, remove_zero_variance = TRUE,
-                               toKeep.zv = NULL,
+                               remove_near_zero_variance = TRUE, remove_zero_variance = TRUE, toKeep.zv = NULL,
                                remove_non_significant = FALSE, alpha = 0.05,
                                EVAL_METHOD = "AUC", pred.method = "cenROC", max.iter = 200,
                                times = NULL, max_time_points = 15,
@@ -184,15 +183,20 @@ splsdrcox_dynamic <- function (X, Y,
   params_with_limits <- list("alpha" = alpha, "MIN_AUC_INCREASE" = MIN_AUC_INCREASE)
   check_min0_max1_variables(params_with_limits)
 
-  numeric_params <- list("n.comp" = n.comp, "MIN_NVAR" = MIN_NVAR, "MAX_NVAR" = MAX_NVAR, "n.cut_points" = n.cut_points,
-                  "max_time_points" = max_time_points,
-                  "MIN_EPV" = MIN_EPV, "tol" = tol, "max.iter" = max.iter)
+  numeric_params <- list("n.comp" = n.comp, "MIN_NVAR" = MIN_NVAR, "n.cut_points" = n.cut_points,
+                         "max_time_points" = max_time_points,
+                         "MIN_EPV" = MIN_EPV, "tol" = tol, "max.iter" = max.iter)
+
+  if(!is.null(MAX_NVAR)){
+    numeric_params$MAX_NVAR <- MAX_NVAR
+  }
+
   check_class(numeric_params, class = "numeric")
 
   logical_params <- list("x.center" = x.center, "x.scale" = x.scale,
                          #"y.center" = y.center, "y.scale" = y.scale,
-                      "remove_near_zero_variance" = remove_near_zero_variance, "remove_zero_variance" = remove_zero_variance,
-                      "remove_non_significant" = remove_non_significant, "returnData" = returnData, "verbose" = verbose)
+                         "remove_near_zero_variance" = remove_near_zero_variance, "remove_zero_variance" = remove_zero_variance,
+                         "remove_non_significant" = remove_non_significant, "returnData" = returnData, "verbose" = verbose)
   check_class(logical_params, class = "logical")
 
   character_params <- list("EVAL_METHOD" = EVAL_METHOD, "pred.method" = pred.method)
@@ -202,6 +206,9 @@ splsdrcox_dynamic <- function (X, Y,
   lst_check <- checkXY.rownames(X, Y, verbose = verbose)
   X <- lst_check$X
   Y <- lst_check$Y
+
+  #### Check colnames in X for Illegal Chars (affect cox formulas)
+  X <- checkColnamesIllegalChars(X)
 
   #### REQUIREMENTS
   checkX.colnames(X)
@@ -303,8 +310,8 @@ splsdrcox_dynamic <- function (X, Y,
   if(is.null(vector)){
     lst_BV <- getBestVector(Xh = Xh, DR_coxph = DR_coxph, Yh = Yh, n.comp = n.comp, max.iter = max.iter, vector = vector,
                             MIN_AUC_INCREASE = MIN_AUC_INCREASE, MIN_NVAR = MIN_NVAR, MAX_NVAR = MAX_NVAR, cut_points = n.cut_points,
-                           EVAL_METHOD = EVAL_METHOD, EVAL_EVALUATOR = pred.method, PARALLEL = FALSE, mode = "spls", times = times,
-                           max_time_points = max_time_points, verbose = verbose)
+                            EVAL_METHOD = EVAL_METHOD, EVAL_EVALUATOR = pred.method, PARALLEL = FALSE, mode = "spls", times = times,
+                            max_time_points = max_time_points, verbose = verbose)
     keepX <- lst_BV$best.keepX
     plotVAR <- plot_VAR_eval(lst_BV, EVAL_METHOD = EVAL_METHOD)
   }else{
@@ -320,11 +327,11 @@ splsdrcox_dynamic <- function (X, Y,
         keepX <- ncol(X)
       }
     }else{
-        message("Vector does not has the proper structure. Optimizing best n.variables by using your vector as start vector.")
-        lst_BV <- getBestVector(Xh, DR_coxph, Yh, n.comp, max.iter, vector = NULL, MIN_AUC_INCREASE, MIN_NVAR = MIN_NVAR, MAX_NVAR = MAX_NVAR, cut_points = n.cut_points,
-                                 EVAL_METHOD = EVAL_METHOD, EVAL_EVALUATOR = pred.method, PARALLEL = FALSE, mode = "spls", times = times, max_time_points = max_time_points, verbose = verbose)
-        keepX <- lst_BV$best.keepX
-        plotVAR <- plot_VAR_eval(lst_BV, EVAL_METHOD = EVAL_METHOD)
+      message("Vector does not has the proper structure. Optimizing best n.variables by using your vector as start vector.")
+      lst_BV <- getBestVector(Xh, DR_coxph, Yh, n.comp, max.iter, vector = NULL, MIN_AUC_INCREASE, MIN_NVAR = MIN_NVAR, MAX_NVAR = MAX_NVAR, cut_points = n.cut_points,
+                              EVAL_METHOD = EVAL_METHOD, EVAL_EVALUATOR = pred.method, PARALLEL = FALSE, mode = "spls", times = times, max_time_points = max_time_points, verbose = verbose)
+      keepX <- lst_BV$best.keepX
+      plotVAR <- plot_VAR_eval(lst_BV, EVAL_METHOD = EVAL_METHOD)
     }
   }
 
@@ -336,8 +343,8 @@ splsdrcox_dynamic <- function (X, Y,
 
   # PREDICTION
 
-  # both functions work fine (predict and predict_mixOmixs.pls)
-  # predplsfit <- predict_mixOmixs.pls(spls, newdata=Xh[,rownames(spls$loadings$X),drop = FALSE])
+  # both functions work fine (predict and predict_mixOmics.pls)
+  # predplsfit <- predict_mixOmics.pls(spls, newdata=Xh[,rownames(spls$loadings$X),drop = FALSE])
   # predplsfit <- predict(spls, newdata=Xh[,rownames(spls$loadings$X),drop = FALSE])
 
   # sometimes solve(t(P) %*% W) in predict can cause an error
@@ -613,6 +620,13 @@ splsdrcox_dynamic <- function (X, Y,
 #' (default: 8).
 #' @param vector Numeric vector. Used for computing best number of variables. As many values as
 #' components have to be provided. If vector = NULL, an automatic detection is perform (default: NULL).
+#' @param MIN_NVAR Numeric. Minimum range size for computing cut points to select the best number of
+#' variables to use (default: 10).
+#' @param MAX_NVAR Numeric. Maximum range size for computing cut points to select the best number of
+#' variables to use (default: 1000).
+#' @param n.cut_points Numeric. Number of cut points for searching the optimal number of variables.
+#' If only two cut points are selected, minimum and maximum size are used. For MB approaches as many
+#' as n.cut_points^n.blocks models will be computed as minimum (default: 5).
 #' @param n_run Numeric. Number of runs for cross validation (default: 3).
 #' @param k_folds Numeric. Number of folds for cross validation (default: 10).
 #' @param x.center Logical. If x.center = TRUE, X matrix is centered to zero means (default: TRUE).
@@ -633,13 +647,6 @@ splsdrcox_dynamic <- function (X, Y,
 #' forward selection (default: FALSE).
 #' @param alpha Numeric. Numerical values are regarded as significant if they fall below the
 #' threshold (default: 0.05).
-#' @param MIN_NVAR Numeric. Minimum range size for computing cut points to select the best number of
-#' variables to use (default: 10).
-#' @param MAX_NVAR Numeric. Maximum range size for computing cut points to select the best number of
-#' variables to use (default: 1000).
-#' @param n.cut_points Numeric. Number of cut points for searching the optimal number of variables.
-#' If only two cut points are selected, minimum and maximum size are used. For MB approaches as many
-#' as n.cut_points^n.blocks models will be computed as minimum (default: 5).
 #' @param MIN_AUC_INCREASE Numeric. Minimum improvement between different cross validation models to
 #' continue evaluating higher values in the multiple tested parameters. If it is not reached for next
 #' 'MIN_COMP_TO_CHECK' models and the minimum 'MIN_AUC' value is reached, the evaluation stops (default: 0.01).
@@ -720,20 +727,20 @@ splsdrcox_dynamic <- function (X, Y,
 #' index_train <- caret::createDataPartition(Y_proteomic$event, p = .5, list = FALSE, times = 1)
 #' X_train <- X_proteomic[index_train,1:20]
 #' Y_train <- Y_proteomic[index_train,]
-#' cv.splsdrcox_dynamic_model <- cv.splsdrcox_dynamic(X = X_train, Y = Y_train, max.ncomp = 1,
+#' cv.splsdrcox_dynamic_model <- cv.splsdrcox(X = X_train, Y = Y_train, max.ncomp = 1,
 #' vector = NULL, n_run = 1, k_folds = 2, x.center = TRUE, x.scale = TRUE)
 
-cv.splsdrcox_dynamic <- function (X, Y,
+cv.splsdrcox <- function(X, Y,
                                   max.ncomp = 8, vector = NULL,
-                                  n_run = 3, k_folds = 10,
-                                  x.center = TRUE, x.scale = FALSE,
-                                  remove_near_zero_variance = TRUE, remove_zero_variance = TRUE,
-                                  toKeep.zv = NULL, remove_variance_at_fold_level = FALSE,
-                                  remove_non_significant_models = FALSE, remove_non_significant = FALSE,
-                                  alpha = 0.05,
-                                  MIN_NVAR = 10, MAX_NVAR = 1000, n.cut_points = 5,
+                                  MIN_NVAR = 10, MAX_NVAR = NULL, n.cut_points = 5,
                                   MIN_AUC_INCREASE = 0.01,
                                   EVAL_METHOD = "AUC",
+                                  n_run = 3, k_folds = 10,
+                                  x.center = TRUE, x.scale = FALSE,
+                                  remove_near_zero_variance = TRUE, remove_zero_variance = TRUE, toKeep.zv = NULL,
+                                  remove_variance_at_fold_level = FALSE,
+                                  remove_non_significant_models = FALSE, remove_non_significant = FALSE,
+                                  alpha = 0.05,
                                   w_AIC = 0, w_c.index = 0, w_AUC = 1, w_BRIER = 0, times = NULL,
                                   max_time_points = 15,
                                   MIN_AUC = 0.8, MIN_COMP_TO_CHECK = 3,
@@ -757,21 +764,26 @@ cv.splsdrcox_dynamic <- function (X, Y,
 
   #### Check values classes and ranges
   params_with_limits <- list("MIN_AUC_INCREASE" = MIN_AUC_INCREASE, "MIN_AUC" = MIN_AUC, "alpha" = alpha,
-                 "w_AIC" = w_AIC, "w_c.index" = w_c.index, "w_AUC" = w_AUC, "w_BRIER" = w_BRIER)
+                             "w_AIC" = w_AIC, "w_c.index" = w_c.index, "w_AUC" = w_AUC, "w_BRIER" = w_BRIER)
   check_min0_max1_variables(params_with_limits)
 
-  numeric_params <- list("max.ncomp" = max.ncomp, "MIN_NVAR" = MIN_NVAR, "MAX_NVAR" = MAX_NVAR, "n.cut_points" = n.cut_points,
-                  "n_run" = n_run, "k_folds" = k_folds, "max_time_points" = max_time_points,
-                  "MIN_COMP_TO_CHECK" = MIN_COMP_TO_CHECK, "MIN_EPV" = MIN_EPV, "seed" = seed, "tol" = tol)
+  numeric_params <- list("max.ncomp" = max.ncomp, "MIN_NVAR" = MIN_NVAR, "n.cut_points" = n.cut_points,
+                         "n_run" = n_run, "k_folds" = k_folds, "max_time_points" = max_time_points,
+                         "MIN_COMP_TO_CHECK" = MIN_COMP_TO_CHECK, "MIN_EPV" = MIN_EPV, "seed" = seed, "tol" = tol)
+
+  if(!is.null(MAX_NVAR)){
+    numeric_params$MAX_NVAR <- MAX_NVAR
+  }
+
   check_class(numeric_params, class = "numeric")
 
   logical_params <- list("x.center" = x.center, "x.scale" = x.scale,
                          #"y.center" = y.center, "y.scale" = y.scale,
-                      "remove_near_zero_variance" = remove_near_zero_variance, "remove_zero_variance" = remove_zero_variance,
-                      "remove_variance_at_fold_level" = remove_variance_at_fold_level,
-                      "remove_non_significant_models" = remove_non_significant_models,
-                      "remove_non_significant" = remove_non_significant,
-                      "return_models" = return_models,"returnData" = returnData, "verbose" = verbose, "PARALLEL" = PARALLEL)
+                         "remove_near_zero_variance" = remove_near_zero_variance, "remove_zero_variance" = remove_zero_variance,
+                         "remove_variance_at_fold_level" = remove_variance_at_fold_level,
+                         "remove_non_significant_models" = remove_non_significant_models,
+                         "remove_non_significant" = remove_non_significant,
+                         "return_models" = return_models,"returnData" = returnData, "verbose" = verbose, "PARALLEL" = PARALLEL)
   check_class(logical_params, class = "logical")
 
   character_params <- list("EVAL_METHOD" = EVAL_METHOD, "pred.attr" = pred.attr, "pred.method" = pred.method)
@@ -790,7 +802,7 @@ cv.splsdrcox_dynamic <- function (X, Y,
   #### Illegal chars in colnames
   X <- checkColnamesIllegalChars(X)
 
-  pb_text <- "(:spin) [:bar] :percent [Elapsed time: :elapsedfull || Estimated remaining time: :penalty]"
+  pb_text <- "(:spin) [:bar] :percent [Elapsed time: :elapsedfull || Estimated remaining time: :eta]"
 
   #### REQUIREMENTS
   checkX.colnames(X)
@@ -861,20 +873,20 @@ cv.splsdrcox_dynamic <- function (X, Y,
   total_models <- 1 * k_folds * n_run
 
   comp_model_lst  <- get_Coxmos_models2.0(method = pkg.env$splsdrcox_dynamic,
-                                         X_train = X, Y_train = Y,
-                                         lst_X_train = lst_train_indexes, lst_Y_train = lst_train_indexes,
-                                         max.ncomp = max.ncomp, penalty.list = NULL, EN.alpha.list = NULL, max.variables = NULL, vector = vector,
-                                         n_run = n_run, k_folds = k_folds,
-                                         MIN_NVAR = MIN_NVAR, MAX_NVAR = MAX_NVAR, MIN_AUC_INCREASE = MIN_AUC_INCREASE, EVAL_METHOD = EVAL_METHOD,
-                                         n.cut_points = n.cut_points,
-                                         x.center = x.center, x.scale = x.scale,
-                                         y.center = y.center, y.scale = y.scale,
-                                         remove_near_zero_variance = remove_variance_at_fold_level, remove_zero_variance = FALSE, toKeep.zv = NULL,
-                                         alpha = alpha, MIN_EPV = MIN_EPV,
-                                         remove_non_significant = remove_non_significant, tol = tol,
-                                         max.iter = max.iter, times = times, pred.method = pred.method, max_time_points = max_time_points,
-                                         returnData = returnData, total_models = total_models,
-                                         PARALLEL = PARALLEL, verbose = verbose)
+                                          X_train = X, Y_train = Y,
+                                          lst_X_train = lst_train_indexes, lst_Y_train = lst_train_indexes,
+                                          max.ncomp = max.ncomp, penalty.list = NULL, EN.alpha.list = NULL, max.variables = NULL, vector = vector,
+                                          n_run = n_run, k_folds = k_folds,
+                                          MIN_NVAR = MIN_NVAR, MAX_NVAR = MAX_NVAR, MIN_AUC_INCREASE = MIN_AUC_INCREASE, EVAL_METHOD = EVAL_METHOD,
+                                          n.cut_points = n.cut_points,
+                                          x.center = x.center, x.scale = x.scale,
+                                          y.center = y.center, y.scale = y.scale,
+                                          remove_near_zero_variance = remove_variance_at_fold_level, remove_zero_variance = FALSE, toKeep.zv = NULL,
+                                          alpha = alpha, MIN_EPV = MIN_EPV,
+                                          remove_non_significant = remove_non_significant, tol = tol,
+                                          max.iter = max.iter, times = times, pred.method = pred.method, max_time_points = max_time_points,
+                                          returnData = returnData, total_models = total_models,
+                                          PARALLEL = PARALLEL, verbose = verbose)
 
   if(all(is.null(comp_model_lst))){
     message(paste0("Best model could NOT be obtained. All models computed present problems. Try to remove variance at fold level. If problem persists, try to delete manually some problematic variables."))
@@ -1005,7 +1017,7 @@ cv.splsdrcox_dynamic <- function (X, Y,
   #### ###
   # PLOT #
   #### ###
-  lst_EVAL_PLOTS <- get_EVAL_PLOTS(fast_mode = fast_mode, best_model_info = best_model_info, w_AUC = w_AUC, w_BRIER = w_BRIER, max.ncomp = max.ncomp,
+  lst_EVAL_PLOTS <- get_EVAL_PLOTS(fast_mode = fast_mode, best_model_info = best_model_info, w_AUC = w_AUC, w_BRIER = w_BRIER, max.ncomp = max.ncomp, penalty.list = NULL,
                                    df_results_evals_fold = df_results_evals_fold, df_results_evals_run = df_results_evals_run, df_results_evals_comp = df_results_evals_comp,
                                    colname_AIC = "AIC", colname_c_index = "c_index", colname_AUC = "AUC", colname_BRIER = "BRIER", x.text = "Component")
 

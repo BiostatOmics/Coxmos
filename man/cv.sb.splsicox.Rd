@@ -41,7 +41,7 @@ cv.sb.splsicox(
 )
 }
 \arguments{
-\item{X}{Numeric matrix or data.frame. Explanatory variables. Qualitative variables must be
+\item{X}{List of numeric matrices or data.frames. Explanatory variables. Qualitative variables must be
 transform into binary variables.}
 
 \item{Y}{Numeric matrix or data.frame. Response variables. Object must have two columns named as

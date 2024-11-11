@@ -30,7 +30,7 @@ X_test <- X_proteomic[-index_train,1:50]
 Y_test <- Y_proteomic[-index_train,]
 splsicox.model <- splsicox(X_train, Y_train, n.comp = 2, penalty = 0.5, x.center = TRUE,
 x.scale = TRUE)
-splsdrcox.model <- splsdrcox(X_train, Y_train, n.comp = 2, penalty = 0.5, x.center = TRUE,
+splsdrcox.model <- splsdrcox_penalty(X_train, Y_train, n.comp = 2, penalty = 0.5, x.center = TRUE,
 x.scale = TRUE)
 lst_models = list("sPLSICOX" = splsicox.model, "sPLSDRCOX" = splsdrcox.model)
 lst_results = getAutoKM.list(type = "LP", lst_models)

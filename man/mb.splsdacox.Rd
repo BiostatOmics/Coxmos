@@ -10,8 +10,8 @@ mb.splsdacox(
   n.comp = 4,
   vector = NULL,
   design = NULL,
-  MIN_NVAR = 10,
-  MAX_NVAR = 10000,
+  MIN_NVAR = 1,
+  MAX_NVAR = NULL,
   n.cut_points = 5,
   EVAL_METHOD = "AUC",
   x.center = TRUE,
@@ -32,7 +32,7 @@ mb.splsdacox(
 )
 }
 \arguments{
-\item{X}{Numeric matrix or data.frame. Explanatory variables. Qualitative variables must be
+\item{X}{List of numeric matrices or data.frames. Explanatory variables. Qualitative variables must be
 transform into binary variables.}
 
 \item{Y}{Numeric matrix or data.frame. Response variables. Object must have two columns named as
@@ -156,10 +156,6 @@ elements:
 \code{B.hat}: PLS beta matrix
 
 \code{R2}: PLS R2
-
-\code{SCR}: PLS SCR
-
-\code{SCT}: PLS SCT
 
 \code{nzv}: Variables removed by remove_near_zero_variance or remove_zero_variance.
 

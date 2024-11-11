@@ -1,4 +1,4 @@
-# CRAN Submission Comments (2024-09-05)
+# CRAN Submission Comments (2024-11-11)
 This resubmission incorporates the following adjustments:
 
 - Functions 'save_ggplot' and 'save_ggplot_lst' updated to work with multiples formats.
@@ -6,10 +6,10 @@ This resubmission incorporates the following adjustments:
 - Function 'plot_time.list' have been updated to work with extra parameters to allow more customization.
 - Function 'checkTestTimesVSTrainTimes' updated to consider NA cases.
 - Function 'eval_Coxmos_models' updated to remove NA models cases.
-- Function 'evaluation_list_Coxmos' fixed for cox and coxSW cases: X_test colnames with 'transformIllegalChars()'.
+- Function 'evaluation_list_Coxmos' fixed for all cases with  'checkColnamesIllegalChars()'.
 - Function 'plot_pseudobeta.list' updated to work no PLS model case.
 - Functions 'getAUC_vector' and 'getAUC_from_LP_2.0' fixed for smoothROCtime_C and smoothROCtime_I.
-- Function 'getTestKM.list' and 'getTestKM' fixed for cox and coxSW cases: X_test colnames with 'transformIllegalChars()'.
+- Function 'getTestKM.list' and 'getTestKM' fixed for all cases: X_test colnames with 'checkColnamesIllegalChars()'.
 - Function 'coxSW' has been fixed in several aspects:
   - Now, AIC metric is also considered when selecting a new variable to enter or leave the old model.
   - Updated order of checking Cox models to avoid problems removing Infinity or NA values.
@@ -36,6 +36,29 @@ This resubmission incorporates the following adjustments:
 - Functions 'MB' now generates an optimized DESIGN matrix if design is NULL.
   - Fixed the use of design matrix.
 - New function 'getDesign.MB' for computing design automatically.
+- Function 'deleteNearZeroCoefficientOfVariation' updated to remove NAs if any.
+- Function 'splsdrcox' updated to work as doi:10.1093/bioinformatics/btu660 except for the penalty.
+- Function 'coxEN' updated to manage illegal chars in column names.
+- Function 'predict.Coxmos' fixed and checked for all methods.
+- Minor changes in 'sb.splsicox'.
+- Now, all algorithms transform Illegal Chars in columns to something manageable.
+- Functions 'getAUC_RUN_AND_COMP' and 'getAUC_RUN_AND_COMP_sPLS' updated to work with specific group of methods.
+- Function 'print.Coxmos' updated to manage iSB.
+- Miscellaneous changes in Plot functiones related to 'deleteIllegalChars'.
+- Function Rename: 'drcox' original functions were renamed to use the suffix '_penalty'.
+- Function Rename: '_dynamic' functions were renamed to use only the algorithm name.
+- Function 'coxEN' updated to select, as default, the maximum number of variables.
+- Function 'getBestVector' and 'getBestVector2' fixed.
+- Functions 'getCompKM' and 'getLPVarKM' fixed for MB algorithms.
+- New algorithms:
+  - New 'isb.splsicox_dynamic' and 'cv.isb.splsdacox_dynamic'.
+  - New 'isb.splsdrcox' and 'cv.isb.splsdrcox' algorithms.
+  - New 'sb.splsdrcox_dynamic', 'isb.splsdrcox_dynamic', 'cv.sb.splsdrcox_dynamic' and 'cv.isb.splsdrcox_dynamic' algorithms.
+  - New 'sb.splsdacox_dynamic', 'isb.splsdacox_dynamic', 'cv.sb.splsdacox_dynamic' and 'cv.isb.splsdacox_dynamic' algorithms.
+  - New annotations in common functions.
+- Function 'get_Coxmos_models2.0' updated to manage all new methods.
+- Function 'get_COX_evaluation_AIC_CINDEX' updated to manage all new methods.
+- Function 'get_COX_evaluation_BRIER_sPLS' updated to manage all new methods.
 
 # CRAN Submission Comments (2024-03-20 & 2024-03-22)
 This resubmission incorporates the following adjustments:

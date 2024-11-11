@@ -8,7 +8,7 @@ sb.splsicox(
   X,
   Y,
   n.comp = 4,
-  penalty = 1,
+  penalty = 0,
   x.center = TRUE,
   x.scale = FALSE,
   remove_near_zero_variance = TRUE,
@@ -22,7 +22,7 @@ sb.splsicox(
 )
 }
 \arguments{
-\item{X}{Numeric matrix or data.frame. Explanatory variables. Qualitative variables must be
+\item{X}{List of numeric matrices or data.frames. Explanatory variables. Qualitative variables must be
 transform into binary variables.}
 
 \item{Y}{Numeric matrix or data.frame. Response variables. Object must have two columns named as

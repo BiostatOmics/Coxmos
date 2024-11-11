@@ -124,25 +124,38 @@ sb.splsicox_model <- sb.splsicox(X = X_train, Y = Y_train,
 
 sb.splsicox_model
 
+## ----warning=T, eval=F--------------------------------------------------------
+#  cv.isb.splsicox_res <- cv.isb.splsicox(X = X_train, Y = Y_train,
+#                                       max.ncomp = 2, penalty.list = c(0.5,0.9),
+#                                       n_run = 2, k_folds = 5,
+#                                       x.center = x.center, x.scale = x.scale,
+#                                       remove_near_zero_variance = T, remove_zero_variance = F, toKeep.zv = NULL,
+#                                       remove_variance_at_fold_level = F,
+#                                       remove_non_significant_models = F, alpha = 0.05,
+#                                       w_AIC = 0, w_c.index = 0, w_AUC = 1, w_BRIER = 0, times = NULL, max_time_points = 15,
+#                                       MIN_AUC_INCREASE = 0.01, MIN_AUC = 0.8, MIN_COMP_TO_CHECK = 3,
+#                                       pred.attr = "mean", pred.method = "cenROC", fast_mode = F,
+#                                       MIN_EPV = 5, return_models = F, remove_non_significant = F, returnData = F,
+#                                       PARALLEL = F, verbose = F, seed = 123)
+#  
+#  cv.isb.splsicox_res
+
+## ---- fig.small=T, eval=F-----------------------------------------------------
+#  cv.isb.splsicox_res$list_cv_spls_models$mirna$plot_AUC
+#  cv.isb.splsicox_res$list_cv_spls_models$proteomic$plot_AUC
+
 ## ---- warning=F, eval=F-------------------------------------------------------
-#  isb.splsicox_model <- cv.isb.splsicox(X = X_train, Y = Y_train,
-#                                        max.ncomp = 2, penalty.list = c(0.5, 0.9),
-#                                        n_run = 2, k_folds = 5,
+#  isb.splsicox_model <- isb.splsicox(X = X_train, Y = Y_train, cv.isb = cv.isb.splsicox_res,
 #                                        x.center = x.center, x.scale = x.scale,
-#                                        remove_near_zero_variance = T, remove_zero_variance = F, toKeep.zv = NULL,
-#                                        remove_variance_at_fold_level = F,
-#                                        remove_non_significant_models = F, alpha = 0.05,
-#                                        w_AIC = 0, w_c.index = 0, w_AUC = 1, w_BRIER = 0, times = NULL, max_time_points = 15,
-#                                        MIN_AUC_INCREASE = 0.01, MIN_AUC = 0.8, MIN_COMP_TO_CHECK = 3,
-#                                        pred.attr = "mean", pred.method = "cenROC", fast_mode = F,
-#                                        MIN_EPV = 5, return_models = F, remove_non_significant = T,
-#                                        PARALLEL = F, verbose = F, seed = 123)
+#                                        remove_near_zero_variance = TRUE, remove_zero_variance = TRUE, toKeep.zv = NULL,
+#                                     remove_non_significant = FALSE, alpha = 0.05,
+#                                     MIN_EPV = 5, returnData = TRUE, verbose = FALSE)
 #  
 #  isb.splsicox_model
 
 ## ---- warning=F, eval=F-------------------------------------------------------
 #  cv.sb.splsdrcox_res <- cv.sb.splsdrcox(X = X_train, Y = Y_train,
-#                                         max.ncomp = 2, penalty.list = c(0.5,0.9),
+#                                         max.ncomp = 2, vector = NULL,
 #                                         n_run = 2, k_folds = 10,
 #                                         x.center = x.center, x.scale = x.scale,
 #                                         #y.center = FALSE, y.scale = FALSE,
@@ -161,7 +174,7 @@ sb.splsicox_model
 sb.splsdrcox_model <- sb.splsdrcox(X = X_train, 
                                    Y = Y_train, 
                                    n.comp = 2, #cv.sb.splsdrcox_res$opt.comp, 
-                                   penalty = 0.5, #cv.sb.splsdrcox_res$opt.penalty,
+                                   vector = list("mirna" = 484, "proteomic" = 369), #cv.sb.splsdrcox_res$opt.nvar,
                                    x.center = x.center, x.scale = x.scale,
                                    remove_near_zero_variance = T, remove_zero_variance = F, toKeep.zv = NULL, 
                                    remove_non_significant = T, alpha = 0.05, MIN_EPV = 5,
@@ -169,26 +182,39 @@ sb.splsdrcox_model <- sb.splsdrcox(X = X_train,
 
 sb.splsdrcox_model
 
+## ----warning=T, eval=F--------------------------------------------------------
+#  cv.isb.splsdrcox_res <- cv.isb.splsdrcox(X = X_train, Y = Y_train,
+#                                       max.ncomp = 2, vector = NULL,
+#                                       n_run = 2, k_folds = 5,
+#                                       x.center = x.center, x.scale = x.scale,
+#                                       remove_near_zero_variance = T, remove_zero_variance = F, toKeep.zv = NULL,
+#                                       remove_variance_at_fold_level = F,
+#                                       remove_non_significant_models = F, alpha = 0.05,
+#                                       w_AIC = 0, w_c.index = 0, w_AUC = 1, w_BRIER = 0, times = NULL, max_time_points = 15,
+#                                       MIN_AUC_INCREASE = 0.01, MIN_AUC = 0.8, MIN_COMP_TO_CHECK = 3,
+#                                       pred.attr = "mean", pred.method = "cenROC", fast_mode = F,
+#                                       MIN_EPV = 5, return_models = F, remove_non_significant = F, returnData = F,
+#                                       PARALLEL = F, verbose = F, seed = 123)
+#  
+#  cv.isb.splsdrcox_res
+
+## ---- fig.small=T, eval=F-----------------------------------------------------
+#  cv.isb.splsdrcox_res$list_cv_spls_models$mirna$plot_AUC
+#  cv.isb.splsdrcox_res$list_cv_spls_models$proteomic$plot_AUC
+
 ## ---- warning=F, eval=F-------------------------------------------------------
-#  isb.splsdrcox_model <- cv.isb.splsdrcox(X = X_train, Y = Y_train,
-#                                          max.ncomp = 2, penalty.list = c(0.5,0.9),
-#                                          n_run = 2, k_folds = 10,
-#                                          x.center = x.center, x.scale = x.scale,
-#                                          remove_near_zero_variance = T, remove_zero_variance = F, toKeep.zv = NULL,
-#                                          remove_variance_at_fold_level = F,
-#                                          remove_non_significant_models = F, alpha = 0.05,
-#                                          w_AIC = 0, w_c.index = 0, w_AUC = 1, w_BRIER = 0, times = NULL, max_time_points = 15,
-#                                          MIN_AUC_INCREASE = 0.01, MIN_AUC = 0.8, MIN_COMP_TO_CHECK = 3,
-#                                          pred.attr = "mean", pred.method = "cenROC", fast_mode = F,
-#                                          MIN_EPV = 5, return_models = F, remove_non_significant = T,
-#                                          PARALLEL = F, verbose = F, seed = 123)
+#  isb.splsdrcox_model <- isb.splsdrcox(X = X_train, Y = Y_train, cv.isb = cv.isb.splsdrcox_res,
+#                                     x.center = x.center, x.scale = x.scale,
+#                                     remove_near_zero_variance = TRUE, remove_zero_variance = TRUE, toKeep.zv = NULL,
+#                                     remove_non_significant = FALSE, alpha = 0.05,
+#                                     MIN_EPV = 5, returnData = TRUE, verbose = FALSE)
 #  
 #  isb.splsdrcox_model
 
 ## ---- warning=F, eval=F-------------------------------------------------------
 #  cv.mb.splsdrcox_res <- cv.mb.splsdrcox(X = X_train, Y = Y_train,
 #                                         max.ncomp = 2, vector = NULL, #NULL - autodetection
-#                                         MIN_NVAR = 10, MAX_NVAR = 1000, n.cut_points = 10, EVAL_METHOD = "AUC",
+#                                         MIN_NVAR = 10, MAX_NVAR = NULL, n.cut_points = 10, EVAL_METHOD = "AUC",
 #                                         n_run = 2, k_folds = 4,
 #                                         x.center = x.center, x.scale = x.scale,
 #                                         remove_near_zero_variance = T, remove_zero_variance = F, toKeep.zv = NULL,
@@ -250,8 +276,12 @@ mb.splsdacox_model
 ## -----------------------------------------------------------------------------
 lst_models <- list("SB.sPLS-ICOX" = sb.splsicox_model,
                    #"iSB.sPLS-ICOX" = isb.splsicox_model,
-                   "SB.sPLS-DRCOX" = sb.splsdrcox_model,
-                   #"iSB.sPLS-DRCOX" = isb.splsdrcox_model,
+                   "SB.sPLS-DRCOX-Dynamic" = sb.splsdrcox_model,
+                   #"iSB.sPLS-DRCOX-Dynamic" = isb.splsdrcox_model,
+                   #"SB.sPLS-DRCOX-Penalty" = sb.splsdrcox_penalty_model,
+                   #"iSB.sPLS-DRCOX-Penalty" = isb.splsdrcox_penalty_model,
+                   #"SB.sPLS-DACOX-Dynamic" = sb.splsdacox_model,
+                   #"iSB.sPLS-DACOX-Dynamic" = isb.splsdacox_model,
                    "MB.sPLS-DRCOX" = mb.splsdrcox_model,
                    "MB.sPLS-DACOX" = mb.splsdacox_model)
 
@@ -479,9 +509,9 @@ LST_KM_RES_VAR <- getAutoKM(type = "VAR",
                             only_sig = T, alpha = 0.05)
 
 ## ---- fig.small=T-------------------------------------------------------------
-LST_KM_RES_VAR$LST_PLOTS$mirna$`hsa-miR-21-5p`
-LST_KM_RES_VAR$LST_PLOTS$proteomic$`840`
-LST_KM_RES_VAR$LST_PLOTS$proteomic$`7535`
+LST_KM_RES_VAR$LST_PLOTS$mirna$hsa.minus.miR.minus.21.minus.5p
+LST_KM_RES_VAR$LST_PLOTS$proteomic$var_840
+LST_KM_RES_VAR$LST_PLOTS$proteomic$var_7535
 
 ## -----------------------------------------------------------------------------
 # lst_cutoff <- getCutoffAutoKM.list(LST_KM_RES_VAR)
@@ -499,9 +529,9 @@ LST_KM_TEST_VAR <- getTestKM(model = lst_models$`SB.sPLS-DRCOX`,
                              cutoff = lst_cutoff)
 
 ## ---- fig.small=T-------------------------------------------------------------
-LST_KM_TEST_VAR$mirna$`hsa-miR-21-5p`
-LST_KM_TEST_VAR$proteomic$`840`
-LST_KM_TEST_VAR$proteomic$`7535`
+LST_KM_TEST_VAR$mirna$hsa.minus.miR.minus.21.minus.5p
+LST_KM_TEST_VAR$proteomic$var_840
+LST_KM_TEST_VAR$proteomic$var_7535
 
 ## -----------------------------------------------------------------------------
 new_pat <- list()
@@ -509,63 +539,4 @@ for(b in names(X_test)){
   new_pat[[b]] <- X_test[[b]][1,,drop=F]
 }
 
-
-## -----------------------------------------------------------------------------
-knitr::kable(Y_test[rownames(new_pat$mirna),])
-
-## -----------------------------------------------------------------------------
-# ggp.simulated_beta_newPat <- plot_pseudobeta_newObservation.list(lst_models = lst_models, 
-#                                                              new_observation = new_pat,
-#                                                              error.bar = T, onlySig = T, alpha = 0.05,
-#                                                              zero.rm = T, auto.limits = T, show.betas = T, top = 20)
-
-ggp.simulated_beta_newPat <- plot_pseudobeta_newObservation(model = lst_models$`SB.sPLS-DRCOX`,
-                                                        new_observation = new_pat,
-                                                        error.bar = T, onlySig = T, alpha = 0.05,
-                                                        zero.rm = T, auto.limits = T, show.betas = T, top = 20)
-
-## ---- fig.small=T-------------------------------------------------------------
-ggp.simulated_beta_newPat$plot$mirna
-ggp.simulated_beta_newPat$plot$proteomic
-
-## -----------------------------------------------------------------------------
-pat_density <- plot_observation.eventDensity(observation = new_pat, 
-                                             model = lst_models$`SB.sPLS-DRCOX`, 
-                                             time = NULL, 
-                                             type = "lp")
-
-## ---- fig.small=T-------------------------------------------------------------
-pat_density
-
-## -----------------------------------------------------------------------------
-pat_histogram <- plot_observation.eventHistogram(observation = new_pat, 
-                                                 model = lst_models$`SB.sPLS-DRCOX`, 
-                                                 time = NULL, 
-                                                 type = "lp")
-
-## ---- fig.small=T-------------------------------------------------------------
-pat_histogram
-
-## -----------------------------------------------------------------------------
-sub_X_test <- list()
-for(b in names(X_test)){
-  sub_X_test[[b]] <- X_test[[b]][1:5,]
-}
-
-## -----------------------------------------------------------------------------
-knitr::kable(Y_test[rownames(sub_X_test$proteomic),])
-
-## -----------------------------------------------------------------------------
-# lst_cox.comparison <- plot_LP.multipleObservations.list(lst_models = lst_models,
-#                                                     new_observations = sub_X_test,
-#                                                     error.bar = T, zero.rm = T, onlySig = T,
-#                                                     alpha = 0.05, top = 5)
-
-lst_cox.comparison <- plot_LP.multipleObservations(model = lst_models$`SB.sPLS-DRCOX`,
-                                                   new_observations = sub_X_test,
-                                                   error.bar = T, zero.rm = T, onlySig = T,
-                                                   alpha = 0.05, top = 5)
-
-## ---- fig.small=T-------------------------------------------------------------
-lst_cox.comparison$plot
 

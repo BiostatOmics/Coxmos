@@ -8,7 +8,7 @@ coxEN(
   X,
   Y,
   EN.alpha = 0.5,
-  max.variables = 15,
+  max.variables = NULL,
   x.center = TRUE,
   x.scale = FALSE,
   remove_near_zero_variance = TRUE,
@@ -34,7 +34,8 @@ EN.alpha = 0 the ridge penalty (default: 0.5). NOTE: When ridge penalty is used,
 max.variables will not be used.}
 
 \item{max.variables}{Numeric. Maximum number of variables you want to keep in the cox model. If
-MIN_EPV is not meet, the value will be change automatically (default: 20).}
+NULL, the number of columns of X matrix is selected. When MIN_EPV is not meet, the value will be
+change automatically (default: NULL).}
 
 \item{x.center}{Logical. If x.center = TRUE, X matrix is centered to zero means (default: TRUE).}
 

@@ -45,7 +45,9 @@ library(ggplot2)
 data(iris)
 g <- ggplot(iris, aes(Sepal.Width, Sepal.Length, color = Species))
 g <- g + geom_point(size = 4)
-save_ggplot(g, folder = tempdir())
+file_path <- tempfile(fileext = ".png")
+ggsave(file_path, plot = g)
+unlink(file_path) # Eliminar el archivo temporal
 }
 }
 }

@@ -38,7 +38,7 @@
 #' high-dimensional settings, ensuring optimal feature selection, dimensionality reduction, and
 #' predictive modeling for each individual block in the dataset.
 #'
-#' @param X Numeric matrix or data.frame. Explanatory variables. Qualitative variables must be
+#' @param X List of numeric matrices or data.frames. Explanatory variables. Qualitative variables must be
 #' transform into binary variables.
 #' @param Y Numeric matrix or data.frame. Response variables. Object must have two columns named as
 #' "time" and "event". For event column, accepted values are: 0/1 or FALSE/TRUE for censored and
@@ -132,7 +132,7 @@
 #' sb.splsicox(X, Y, n.comp = 2, penalty = 0.5, x.center = TRUE, x.scale = TRUE)
 
 sb.splsicox <- function(X, Y,
-                        n.comp = 4, penalty = 1,
+                        n.comp = 4, penalty = 0,
                         x.center = TRUE, x.scale = FALSE,
                         remove_near_zero_variance = TRUE, remove_zero_variance = TRUE, toKeep.zv = NULL,
                         remove_non_significant = FALSE, alpha = 0.05,
@@ -166,6 +166,9 @@ sb.splsicox <- function(X, Y,
   X <- lst_check$X
   Y <- lst_check$Y
 
+  #### Check colnames
+  X <- checkColnamesIllegalChars.mb(X)
+
   #### REQUIREMENTS
   checkX.colnames.mb(X)
   checkY.colnames(Y)
@@ -182,10 +185,10 @@ sb.splsicox <- function(X, Y,
 
   #### ZERO VARIANCE - ALWAYS bc run/fold
   lst_dnz <- deleteZeroOrNearZeroVariance.mb(X = X,
-                                            remove_near_zero_variance = remove_near_zero_variance,
-                                            remove_zero_variance = remove_zero_variance,
-                                            toKeep.zv = toKeep.zv,
-                                            freqCut = FREQ_CUT)
+                                             remove_near_zero_variance = remove_near_zero_variance,
+                                             remove_zero_variance = remove_zero_variance,
+                                             toKeep.zv = toKeep.zv,
+                                             freqCut = FREQ_CUT)
   X <- lst_dnz$X
   variablesDeleted <- lst_dnz$variablesDeleted
 
@@ -227,6 +230,16 @@ sb.splsicox <- function(X, Y,
   #          returnData = FALSE, verbose = verbose)
 
   names(lst_sb.pls) <- names(Xh)
+
+  # CHECK - NO MODEL FOR BLOCKS
+  model0comp <- NULL
+  for(b in names(lst_sb.pls)){
+    if(lst_sb.pls[[b]]$n.comp == 0){
+      model0comp <- c(model0comp, b)
+    }
+  }
+
+  lst_sb.pls[model0comp] <- NULL
 
   # CHECK ALL MODELS SAME COMPONENTS
   aux_ncomp <- purrr::map(lst_sb.pls, ~ifelse("n.comp" %in% names(.),.$n.comp, NA))
@@ -295,12 +308,19 @@ sb.splsicox <- function(X, Y,
     survival_model <- survival_model
   }
 
+  all_scores <- NULL
+  for(b in names(lst_sb.pls)){
+    aux_scores <- lst_sb.pls[[b]]$X$scores
+    colnames(aux_scores) <- paste0(colnames(aux_scores), "_", b)
+    all_scores <- cbind(all_scores, aux_scores)
+  }
 
   t2 <- Sys.time()
   time <- difftime(t2,t1,units = "mins")
 
   # invisible(gc())
   return(sb.splsicox_class(list(X = list("data" = if(returnData) X_norm else NA,
+                                         "scores" = all_scores,
                                          "x.mean" = xmeans, "x.sd" = xsds),
                                 Y = list("data" = Yh,
                                          "y.mean" = ymeans, "y.sd" = ysds),
@@ -358,7 +378,7 @@ sb.splsicox <- function(X, Y,
 #' optimal feature selection, dimensionality reduction, and predictive modeling for each individual
 #' block in the dataset.
 #'
-#' @param X Numeric matrix or data.frame. Explanatory variables. Qualitative variables must be
+#' @param X List of numeric matrices or data.frames. Explanatory variables. Qualitative variables must be
 #' transform into binary variables.
 #' @param Y Numeric matrix or data.frame. Response variables. Object must have two columns named as
 #' "time" and "event". For event column, accepted values are: 0/1 or FALSE/TRUE for censored and
@@ -735,7 +755,7 @@ cv.sb.splsicox <- function(X, Y,
   # BEST MODEL #
   #### ### ### #
 
-  df_results_evals_comp <- cv.getScoreFromWeight(df_results_evals_comp, w_AIC, w_c.index, w_BRIER, w_AUC,
+  df_results_evals_comp <- cv.getScoreFromWeight(lst_cox_mean = df_results_evals_comp, w_AIC = w_AIC, w_c.index = w_c.index, w_BRIER = w_BRIER, w_AUC = w_AUC,
                                                  colname_AIC = "AIC", colname_c_index = "c_index", colname_AUC = "AUC", colname_BRIER = "BRIER")
 
   if(optimal_comp_flag){
@@ -805,421 +825,6 @@ cv.sb.splsicox <- function(X, Y,
   }
 }
 
-#' Cross validation cv.isb.splsicox
-#' @description This function performs cross-validated sparse partial least squares iterative single
-#' block for splsicox. The function returns the optimal number of components and the optimal sparsity
-#' penalty value based on cross-validation. The performance could be based on multiple metrics as
-#' Area Under the Curve (AUC), Brier Score or C-Index. Furthermore, the user could establish more
-#' than one metric simultaneously.
-#'
-#' @details
-#' The `cv.isb.splsicox` function performs cross-validation for the iterative single-block sparse
-#' partial least squares individual Cox analysis. Unlike the single-block (`sb`) approach, where
-#' each block is analyzed with the same number of components and penalties, the iterative
-#' single-block (`isb`) approach allows for the specification of different numbers of components and
-#' penalties for each block. This provides a more tailored analysis for each block, recognizing that
-#' different blocks may have varying complexities and relationships with the outcome.
-#'
-#' The function is designed to handle datasets with multiple blocks, processing each block
-#' individually in an iterative manner. This ensures a detailed examination of each block's
-#' contribution to the survival outcome without the interference of other blocks. This approach is
-#' distinct from multiblock methods where all blocks are analyzed simultaneously.
-#'
-#' The cross-validation process involves partitioning the dataset into multiple subsets (folds) and
-#' then iteratively training the model on a subset of the data while validating it on the remaining
-#' data. This helps in determining the optimal hyperparameters for the model, such as the number of
-#' latent components and the penalty for variable selection.
-#'
-#' Unlike the `sb` approach, which returns the optimal hyperparameters for further model training,
-#' the `isb` approach directly returns the final model. This model is constructed using the
-#' best-performing hyperparameters for each block, ensuring a more customized and potentially more
-#' accurate model.
-#'
-#' The function offers flexibility in specifying various hyperparameters and options for data
-#' preprocessing. The output provides a comprehensive overview of the cross-validation results,
-#' including metrics like AIC, C-Index, Brier Score, and AUC for each hyper-parameter combination.
-#' Visualization tools are also provided to aid in understanding the model's performance across
-#' different hyperparameters.
-#'
-#' @param X Numeric matrix or data.frame. Explanatory variables. Qualitative variables must be
-#' transform into binary variables.
-#' @param Y Numeric matrix or data.frame. Response variables. Object must have two columns named as
-#' "time" and "event". For event column, accepted values are: 0/1 or FALSE/TRUE for censored and
-#' event observations.
-#' @param max.ncomp Numeric. Maximum number of PLS components to compute for the cross validation
-#' (default: 8).
-#' @param penalty.list Numeric vector. Penalty for variable selection for the individual cox models.
-#' Variables with a lower P-Value than 1- "penalty" in the individual cox analysis will be keep
-#' for the sPLS-ICOX approach (default: seq(0.1,0.9,0.2)).
-#' @param n_run Numeric. Number of runs for cross validation (default: 3).
-#' @param k_folds Numeric. Number of folds for cross validation (default: 10).
-#' @param x.center Logical. If x.center = TRUE, X matrix is centered to zero means (default: TRUE).
-#' @param x.scale Logical. If x.scale = TRUE, X matrix is scaled to unit variances (default: FALSE).
-#' @param remove_near_zero_variance Logical. If remove_near_zero_variance = TRUE, near zero variance
-#' variables will be removed (default: TRUE).
-#' @param remove_zero_variance Logical. If remove_zero_variance = TRUE, zero variance variables will
-#' be removed (default: TRUE).
-#' @param toKeep.zv Character vector. Name of variables in X to not be deleted by (near) zero variance
-#' filtering (default: NULL).
-#' @param remove_variance_at_fold_level Logical. If remove_variance_at_fold_level = TRUE, (near) zero
-#' variance will be removed at fold level. Not recommended. (default: FALSE).
-#' @param remove_non_significant_models Logical. If remove_non_significant_models = TRUE,
-#' non-significant models are removed before computing the evaluation.
-#' @param remove_non_significant Logical. If remove_non_significant = TRUE, non-significant
-#' variables/components in final cox model will be removed until all variables are significant by
-#' forward selection (default: FALSE).
-#' @param alpha Numeric. Numerical values are regarded as significant if they fall below the
-#' threshold (default: 0.05).
-#' @param w_AIC Numeric. Weight for AIC evaluator. All weights must sum 1 (default: 0).
-#' @param w_c.index Numeric. Weight for C-Index evaluator. All weights must sum 1 (default: 0).
-#' @param w_AUC Numeric. Weight for AUC evaluator. All weights must sum 1 (default: 1).
-#' @param w_BRIER Numeric. Weight for BRIER SCORE evaluator. All weights must sum 1 (default: 0).
-#' @param times Numeric vector. Time points where the AUC will be evaluated. If NULL, a maximum of
-#' 'max_time_points' points will be selected equally distributed (default: NULL).
-#' @param max_time_points Numeric. Maximum number of time points to use for evaluating the model
-#' (default: 15).
-#' @param MIN_AUC_INCREASE Numeric. Minimum improvement between different cross validation models to
-#' continue evaluating higher values in the multiple tested parameters. If it is not reached for next
-#' 'MIN_COMP_TO_CHECK' models and the minimum 'MIN_AUC' value is reached, the evaluation stops
-#' (default: 0.01).
-#' @param MIN_AUC Numeric. Minimum AUC desire to reach cross-validation models. If the minimum is
-#' reached, the evaluation could stop if the improvement does not reach an AUC higher than adding the
-#' 'MIN_AUC_INCREASE' value (default: 0.8).
-#' @param MIN_COMP_TO_CHECK Numeric. Number of penalties/components to evaluate to check if the AUC
-#' improves. If for the next 'MIN_COMP_TO_CHECK' the AUC is not better and the 'MIN_AUC' is meet, the
-#' evaluation could stop (default: 3).
-#' @param pred.attr Character. Way to evaluate the metric selected. Must be one of the following:
-#' "mean" or "median" (default: "mean").
-#' @param pred.method Character. AUC evaluation algorithm method for evaluate the model performance.
-#' Must be one of the following: "risksetROC", "survivalROC", "cenROC", "nsROC", "smoothROCtime_C",
-#' "smoothROCtime_I" (default: "cenROC").
-#' @param fast_mode Logical. If fast_mode = TRUE, for each run, only one fold is evaluated
-#' simultaneously. If fast_mode = FALSE, for each run, all linear predictors are computed for test
-#' observations. Once all have their linear predictors, the evaluation is perform across all the
-#' observations together (default: FALSE).
-#' @param MIN_EPV Numeric. Minimum number of Events Per Variable (EPV) you want reach for the final
-#' cox model. Used to restrict the number of variables/components can be computed in final cox models.
-#' If the minimum is not meet, the model cannot be computed (default: 5).
-#' @param returnData Logical. Return original and normalized X and Y matrices (default: TRUE).
-#' @param return_models Logical. Return all models computed in cross validation (default: FALSE).
-#' @param PARALLEL Logical. Run the cross validation with multicore option. As many cores as your
-#' total cores - 1 will be used. It could lead to higher RAM consumption (default: FALSE).
-#' @param verbose Logical. If verbose = TRUE, extra messages could be displayed (default: FALSE).
-#' @param seed Number. Seed value for performing runs/folds divisions (default: 123).
-#'
-#' @return Instance of class "Coxmos" and model "sb.splsicox". The class contains the following
-#' elements:
-#' \code{X}: List of normalized X data information.
-#' \itemize{
-#'  \item \code{(data)}: normalized X matrix
-#'  \item \code{(weightings)}: PLS weights
-#'  \item \code{(weightings_norm)}: PLS normalize weights
-#'  \item \code{(W.star)}: PLS W* vector
-#'  \item \code{(scores)}: PLS scores/variates
-#'  \item \code{(x.mean)}: mean values for X matrix
-#'  \item \code{(x.sd)}: standard deviation for X matrix
-#'  }
-#' \code{Y}: List of normalized Y data information.
-#' \itemize{
-#'  \item \code{(deviance_residuals)}: deviance residual vector used as Y matrix in the sPLS.
-#'  \item \code{(dr.mean)}: mean values for deviance residuals Y matrix
-#'  \item \code{(dr.sd)}: standard deviation for deviance residuals Y matrix'
-#'  \item \code{(data)}: normalized X matrix
-#'  \item \code{(y.mean)}: mean values for Y matrix
-#'  \item \code{(y.sd)}: standard deviation for Y matrix'
-#'  }
-#' \code{survival_model}: List of survival model information.
-#' \itemize{
-#'  \item \code{fit}: coxph object.
-#'  \item \code{AIC}: AIC of cox model.
-#'  \item \code{BIC}: BIC of cox model.
-#'  \item \code{lp}: linear predictors for train data.
-#'  \item \code{coef}: Coefficients for cox model.
-#'  \item \code{YChapeau}: Y Chapeau residuals.
-#'  \item \code{Yresidus}: Y residuals.
-#' }
-#'
-#' \code{list_spls_models}: List of sPLS-ICOX models computed for each block.
-#'
-#' \code{n.comp}: Number of components selected.
-#'
-#' \code{penalty} Penalty applied.
-#'
-#' \code{call}: call function
-#'
-#' \code{X_input}: X input matrix
-#'
-#' \code{Y_input}: Y input matrix
-#'
-#' \code{nzv}: Variables removed by remove_near_zero_variance or remove_zero_variance.
-#'
-#' \code{nz_coeffvar}: Variables removed by coefficient variation near zero.
-#'
-#' \code{class}: Model class.
-#'
-#' \code{time}: time consumed for running the cox analysis.
-#'
-#' @author Pedro Salguero Garcia. Maintainer: pedsalga@upv.edu.es
-#'
-#' @export
-#'
-#' @examples
-#' data("X_multiomic")
-#' data("Y_multiomic")
-#' set.seed(123)
-#' index_train <- caret::createDataPartition(Y_multiomic$event, p = .5, list = FALSE, times = 1)
-#' X_train <- X_multiomic
-#' X_train$mirna <- X_train$mirna[index_train,1:20]
-#' X_train$proteomic <- X_train$proteomic[index_train,1:20]
-#' Y_train <- Y_multiomic[index_train,]
-#' isb.splsicox_model <- cv.isb.splsicox(X_train, Y_train, max.ncomp = 1, penalty.list = c(0.5),
-#' n_run = 1, k_folds = 2, x.center = TRUE, x.scale = TRUE)
-
-cv.isb.splsicox <- function(X, Y,
-                           max.ncomp = 8, penalty.list = seq(0.1,0.9,0.2),
-                           n_run = 3, k_folds = 10,
-                           x.center = TRUE, x.scale = FALSE,
-                           remove_near_zero_variance = TRUE, remove_zero_variance = TRUE, toKeep.zv = NULL,
-                           remove_variance_at_fold_level = FALSE,
-                           remove_non_significant_models = FALSE, remove_non_significant = FALSE, alpha = 0.05,
-                           w_AIC = 0, w_c.index = 0, w_AUC = 1, w_BRIER = 0, times = NULL,
-                           max_time_points = 15,
-                           MIN_AUC_INCREASE = 0.01, MIN_AUC = 0.8, MIN_COMP_TO_CHECK = 3,
-                           pred.attr = "mean", pred.method = "cenROC", fast_mode = FALSE,
-                           MIN_EPV = 5, returnData = TRUE, return_models = FALSE,
-                           PARALLEL = FALSE, verbose = FALSE, seed = 123){
-  # tol Numeric. Tolerance for solving: solve(t(P) %*% W) (default: 1e-15).
-  tol = 1e-10
-
-  t1 <- Sys.time()
-  y.center = y.scale = FALSE
-  FREQ_CUT <- 95/5
-
-  #### Check evaluator installed:
-  checkLibraryEvaluator(pred.method)
-
-  #### Check values classes and ranges
-  params_with_limits <- list("penalty.list" = penalty.list)
-  check_min0_less1_variables(params_with_limits)
-
-  params_with_limits <- list("MIN_AUC_INCREASE" = MIN_AUC_INCREASE, "MIN_AUC" = MIN_AUC, "alpha" = alpha,
-                 "w_AIC" = w_AIC, "w_c.index" = w_c.index, "w_AUC" = w_AUC, "w_BRIER" = w_BRIER)
-  check_min0_max1_variables(params_with_limits)
-
-  numeric_params <- list("max.ncomp" = max.ncomp,
-                  "n_run" = n_run, "k_folds" = k_folds, "max_time_points" = max_time_points,
-                  "MIN_COMP_TO_CHECK" = MIN_COMP_TO_CHECK, "MIN_EPV" = MIN_EPV, "seed" = seed, "tol" = tol)
-  check_class(numeric_params, class = "numeric")
-
-  logical_params <- list("x.center" = unlist(x.center), "x.scale" = unlist(x.scale),
-                         #"y.center" = y.center, "y.scale" = y.scale,
-                      "remove_near_zero_variance" = remove_near_zero_variance, "remove_zero_variance" = remove_zero_variance,
-                      "remove_variance_at_fold_level" = remove_variance_at_fold_level,
-                      "remove_non_significant_models" = remove_non_significant_models,
-                      "remove_non_significant" = remove_non_significant,
-                      "return_models" = return_models,"returnData" = returnData, "verbose" = verbose, "PARALLEL" = PARALLEL)
-  check_class(logical_params, class = "logical")
-
-  character_params <- list("pred.attr" = pred.attr, "pred.method" = pred.method)
-  check_class(character_params, class = "character")
-
-  #### FIX possible SEQ() problems
-  penalty.list <- as.character(penalty.list)
-  penalty.list <- as.numeric(penalty.list)
-
-  #### Check cv-folds
-  lst_checkFR <- checkFoldRuns(Y, n_run, k_folds, fast_mode)
-  n_run <- lst_checkFR$n_run
-  fast_mode <- lst_checkFR$fast_mode
-
-  #### Check rownames
-  lst_check <- checkXY.rownames.mb(X, Y, verbose = verbose)
-  X <- lst_check$X
-  Y <- lst_check$Y
-
-  #### Illegal chars in colnames
-  X <- checkColnamesIllegalChars.mb(X)
-
-  #### REQUIREMENTS
-  checkX.colnames.mb(X)
-  checkY.colnames(Y)
-  lst_check <- checkXY.mb.class(X, Y, verbose = verbose)
-  X <- lst_check$X
-  Y <- lst_check$Y
-
-  check.cv.weights(c(w_AIC, w_c.index, w_BRIER, w_AUC))
-  max.ncomp <- check.mb.ncomp(X, max.ncomp)
-
-  if(!pred.method %in% pkg.env$AUC_evaluators){
-    stop_quietly(paste0("pred.method must be one of the following: ", paste0(pkg.env$AUC_evaluators, collapse = ", ")))
-  }
-
-  #### Original data
-  X_original <- X
-  Y_original <- Y
-
-  time <- Y[,"time"]
-  event <- Y[,"event"]
-
-  #### SCALE
-  if(length(x.center)==1){
-    x.center <- rep(x.center, length(names(X)))
-    names(x.center) <- names(X)
-  }
-  if(length(x.scale)==1){
-    x.scale <- rep(x.scale, length(names(X)))
-    names(x.scale) <- names(X)
-  }
-
-  #### ZERO VARIANCE - ALWAYS
-  if(!remove_variance_at_fold_level & (remove_near_zero_variance | remove_zero_variance)){
-    lst_dnz <- deleteZeroOrNearZeroVariance.mb(X = X,
-                                               remove_near_zero_variance = remove_near_zero_variance,
-                                               remove_zero_variance = remove_zero_variance,
-                                               toKeep.zv = toKeep.zv,
-                                               freqCut = FREQ_CUT)
-    X <- lst_dnz$X
-    variablesDeleted <- lst_dnz$variablesDeleted
-  }else{
-    variablesDeleted <- NULL
-  }
-
-  #### COEF VARIATION
-  if(!remove_variance_at_fold_level & (remove_near_zero_variance | remove_zero_variance)){
-    lst_dnzc <- deleteNearZeroCoefficientOfVariation.mb(X = X)
-    X <- lst_dnzc$X
-    variablesDeleted_cvar <- lst_dnzc$variablesDeleted
-  }else{
-    variablesDeleted_cvar <- NULL
-  }
-
-  #### SCALING
-  lst_scale <- XY.mb.scale(X, Y, x.center, x.scale, y.center, y.scale)
-  Xh <- lst_scale$Xh
-  Yh <- lst_scale$Yh
-  xmeans <- lst_scale$xmeans
-  xsds <- lst_scale$xsds
-  ymeans <- lst_scale$ymeans
-  ysds <- lst_scale$ysds
-
-  X_norm <- Xh
-
-  #### MAX PREDICTORS
-  max.ncomp <- check.mb.maxPredictors(X, Y, MIN_EPV, max.ncomp, verbose = verbose)
-  if(MIN_COMP_TO_CHECK >= max.ncomp){
-    MIN_COMP_TO_CHECK = max(max.ncomp-1, 1)
-  }
-
-  # CREATE INDIVIDUAL MODELS
-  lst_sb.pls <- list()
-  for(b in names(Xh)){
-
-    message(paste0("\nRunning cross validation ", pkg.env$sb.splsicox, " for block: ", b, "\n"))
-    t1 <- Sys.time()
-
-    cv.splsdrcox_res <- cv.splsicox(X = Xh[[b]], Y = Yh,
-                                    max.ncomp = max.ncomp, penalty.list = penalty.list,
-                                    n_run = n_run, k_folds = k_folds, alpha = alpha, remove_non_significant_models = remove_non_significant_models,
-                                    w_AIC = w_AIC, w_c.index = w_c.index, w_BRIER = w_BRIER, w_AUC = w_AUC, times = times, max_time_points = max_time_points,
-                                    MIN_AUC_INCREASE = MIN_AUC_INCREASE, MIN_AUC = MIN_AUC, MIN_COMP_TO_CHECK = MIN_COMP_TO_CHECK,
-                                    x.scale = x.scale[[b]], x.center = x.center[[b]],
-                                    #y.scale = y.scale, y.center = y.center,
-                                    remove_near_zero_variance = remove_near_zero_variance, remove_zero_variance = FALSE, toKeep.zv = NULL,
-                                    remove_variance_at_fold_level = remove_variance_at_fold_level,
-                                    remove_non_significant = remove_non_significant,
-                                    fast_mode = fast_mode, return_models = return_models,
-                                    MIN_EPV = MIN_EPV, verbose = verbose,
-                                    pred.attr = pred.attr, pred.method = pred.method, seed = seed, PARALLEL = PARALLEL, returnData = FALSE)
-
-    lst_sb.pls[[b]] <- splsicox(X = Xh[[b]],
-                                Y = Yh,
-                                n.comp = cv.splsdrcox_res$opt.comp,
-                                penalty = cv.splsdrcox_res$opt.penalty,
-                                remove_near_zero_variance = remove_variance_at_fold_level, remove_zero_variance = FALSE, toKeep.zv = NULL,
-                                remove_non_significant = remove_non_significant, alpha = alpha,
-                                returnData = FALSE,
-                                x.center = x.center[[b]], x.scale = x.scale[[b]],
-                                #y.scale = y.scale, y.center = y.center,
-                                MIN_EPV = MIN_EPV, verbose = verbose)
-
-    t2 <- Sys.time()
-    time <- difftime(t2,t1,units = "mins")
-    if(verbose){
-      message(paste0("\nTime for block ", b , ": ", as.character(round(time, 2)), "\n"))
-    }
-  }
-
-  # CHECK ALL MODELS SAME COMPONENTS
-  aux_ncomp <- purrr::map(lst_sb.pls, ~ifelse("n.comp" %in% names(.),.$n.comp, NA))
-  aux_spv_penalty <- purrr::map(lst_sb.pls, ~.$penalty)
-
-  # CREATE COMBINE MODEL
-  data <- NULL
-  cn.merge <- NULL
-  for(b in names(lst_sb.pls)){
-
-    # NA or NULL
-    if(!isa(lst_sb.pls[[b]], "Coxmos")){
-      next
-    }
-
-    if(!is.null(lst_sb.pls[[b]]$survival_model)){
-      data <- cbind(data, lst_sb.pls[[b]]$X$scores)
-      cn.merge <- c(cn.merge, paste0(colnames(lst_sb.pls[[b]]$X$scores), "_", b))
-    }else{
-      next
-    }
-  }
-
-  colnames(data) <- cn.merge
-  cox_model <- cox(X = data, Y = Yh,
-                   x.center = FALSE, x.scale = FALSE,
-                   #y.center = FALSE, y.scale = FALSE,
-                   remove_non_significant = remove_non_significant,
-                   FORCE = TRUE)
-
-  # RETURN a MODEL with ALL significant Variables from complete, deleting one by one in backward method
-  # already performed in cox() function
-  if(remove_non_significant){
-    removed_variables <- cox_model$nsv
-  }else{
-    removed_variables <- NULL
-  }
-
-  #### ### #
-  # RETURN #
-  #### ### #
-  func_call <- match.call()
-
-  if(!returnData){
-    survival_model <- removeInfoSurvivalModel(cox_model$survival_model)
-  }else{
-    survival_model <- cox_model$survival_model
-  }
-
-  t2 <- Sys.time()
-  time <- difftime(t2,t1,units = "mins")
-
-  # invisible(gc())
-  return(isb.splsicox_class(list(X = list("data" = if(returnData) X_norm else NA,
-                                          "x.mean" = xmeans, "x.sd" = xsds),
-                                 Y = list("data" = Yh,
-                                          "y.mean" = ymeans, "y.sd" = ysds),
-                                 survival_model = survival_model,
-                                 list_spls_models = lst_sb.pls,
-                                 n.comp = aux_ncomp, #number of components used, but could be lesser than expected because not computed models
-                                 penalty = aux_spv_penalty,
-                                 call = if(returnData) func_call else NA,
-                                 X_input = if(returnData) X_original else NA,
-                                 Y_input = if(returnData) Y_original else NA,
-                                 alpha = alpha,
-                                 nsv = removed_variables,
-                                 nzv = variablesDeleted,
-                                 nz_coeffvar = variablesDeleted_cvar,
-                                 class = pkg.env$isb.splsicox,
-                                 time = time)))
-}
-
 ### ## ##
 # CLASS #
 ### ## ##
@@ -1227,12 +832,6 @@ cv.isb.splsicox <- function(X, Y,
 sb.splsicox_class = function(pls_model, ...) {
   model = structure(pls_model, class = pkg.env$model_class,
                     model = pkg.env$sb.splsicox)
-  return(model)
-}
-
-isb.splsicox_class = function(pls_model, ...) {
-  model = structure(pls_model, class = pkg.env$model_class,
-                    model = pkg.env$isb.splsicox)
   return(model)
 }
 

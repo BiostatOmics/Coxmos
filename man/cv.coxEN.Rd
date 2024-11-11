@@ -8,7 +8,7 @@ cv.coxEN(
   X,
   Y,
   EN.alpha.list = seq(0, 1, 0.1),
-  max.variables = 15,
+  max.variables = NULL,
   n_run = 3,
   k_folds = 10,
   x.center = TRUE,
@@ -53,7 +53,8 @@ validation. EN.alpha = 1 is the lasso penalty, and EN.alpha = 0 the ridge penalt
 (default: seq(0,1,0.1)).}
 
 \item{max.variables}{Numeric. Maximum number of variables you want to keep in the cox model. If
-MIN_EPV is not meet, the value will be change automatically (default: 20).}
+NULL, the number of columns of X matrix is selected. When MIN_EPV is not meet, the value will be
+change automatically (default: NULL).}
 
 \item{n_run}{Numeric. Number of runs for cross validation (default: 3).}
 

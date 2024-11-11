@@ -11,7 +11,7 @@ cv.mb.splsdacox(
   vector = NULL,
   design = NULL,
   MIN_NVAR = 10,
-  MAX_NVAR = 10000,
+  MAX_NVAR = NULL,
   n.cut_points = 5,
   EVAL_METHOD = "AUC",
   n_run = 3,
@@ -47,7 +47,7 @@ cv.mb.splsdacox(
 )
 }
 \arguments{
-\item{X}{Numeric matrix or data.frame. Explanatory variables. Qualitative variables must be
+\item{X}{List of numeric matrices or data.frames. Explanatory variables. Qualitative variables must be
 transform into binary variables.}
 
 \item{Y}{Numeric matrix or data.frame. Response variables. Object must have two columns named as

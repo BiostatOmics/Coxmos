@@ -95,7 +95,7 @@ X_test <- X_proteomic[-index_train,1:50]
 Y_test <- Y_proteomic[-index_train,]
 
 model_icox <- splsicox(X_train, Y_train, n.comp = 2)
-model_drcox <- splsdrcox(X_train, Y_train, n.comp = 2)
+model_drcox <- splsdrcox_penalty(X_train, Y_train, n.comp = 2)
 lst_models <- list("splsicox" = model_icox, "splsdrcox" = model_drcox)
 eval_Coxmos_models(lst_models, X_test, Y_test, pred.method = "cenROC")
 }

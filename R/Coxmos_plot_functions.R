@@ -27,7 +27,9 @@
 #' data(iris)
 #' g <- ggplot(iris, aes(Sepal.Width, Sepal.Length, color = Species))
 #' g <- g + geom_point(size = 4)
-#' save_ggplot(g, folder = tempdir())
+#' file_path <- tempfile(fileext = ".png")
+#' ggsave(file_path, plot = g)
+#' unlink(file_path) # Eliminar el archivo temporal
 #' }
 #' }
 
@@ -2119,6 +2121,97 @@ plot_PLS_Coxmos <- function(model, comp = c(1,2), mode = "scores", factor = NULL
 
 }
 
+plot_pls_1comp <- function(matrix, mode = "loadings", factor_col = NULL, n_top = 10) {
+
+  # Verificar el modo
+  if (!mode %in% c("loadings", "scores", "biplot")) {
+    stop("mode is not correct.")
+  }
+
+  # Convertir la matriz de loadings en un data.frame
+  df_loadings <- as.data.frame(matrix)
+  if(!is.null(factor_col)){
+    df_loadings <- cbind(df_loadings, factor_col)
+  }
+
+  # Asegurarse de que p1 está en los nombres de columnas
+  if (!"p1" %in% colnames(df_loadings)) {
+    stop("The matrix must contain a column named 'p1'")
+  }
+
+  # Añadir nombres de las variables como columna
+  df_loadings$Variable <- rownames(matrix)
+
+  # Ordenar por los valores absolutos de los loadings para identificar las más relevantes
+  df_loadings <- df_loadings[order(abs(df_loadings$p1), decreasing = TRUE), ]
+
+  # Seleccionar las n variables más importantes
+  df_top_loadings <- if (!is.null(n_top)) {
+    head(df_loadings, n_top)
+  } else {
+    df_loadings
+  }
+
+  # Configuración del color
+  color <- NULL
+
+  if (requireNamespace("RColorConesa", quietly = TRUE)) {
+    if (mode == "scores") {
+      if(!is.null(factor_col)){
+        color <- RColorConesa::colorConesa(length(levels(factor_col)))
+      }else{
+        color <- RColorConesa::colorConesa(1)
+      }
+    } else {
+      if(!is.null(factor_col)){
+        color <- RColorConesa::colorConesa(length(levels(factor_col)), palette = "cold")
+      }else{
+        color <- RColorConesa::colorConesa(1, palette = "cold")
+      }
+    }
+  } else {
+    if (mode == "scores") {
+      if(!is.null(factor_col)){
+        color <- colours()[length(levels(factor_col))]
+      }else{
+        color <- "orange"
+      }
+
+    } else {
+      if(!is.null(factor_col)){
+        color <- grDevices::colours()[length(levels(factor_col))]
+      }else{
+        color <- "steelblue"
+      }
+    }
+  }
+
+  Variable <- df_loadings$Variable
+  p1 <- df_loadings$p1
+
+  # Crear el gráfico usando ggplot
+  if(!is.null(factor_col)){
+    p <- ggplot(df_top_loadings, aes(x = reorder(Variable, p1), y = p1, fill = factor_col)) +
+      geom_bar(stat = "identity") +
+      scale_fill_manual(values = color) +
+      coord_flip() +
+      labs(title = paste0(mode, " Plot"),
+           x = ifelse(mode == "scores", "Observations", "Variables"),
+           y = paste0(mode, " (comp.1)"),
+           fill = "Group") +
+      theme_minimal()
+  }else{
+    p <- ggplot(df_top_loadings, aes(x = reorder(Variable, p1), y = p1, fill = color)) +
+      geom_bar(stat = "identity") +
+      coord_flip() +
+      labs(title = paste0(mode, " Plot"),
+           x = ifelse(mode == "scores", "Observations", "Variables"),
+           y = paste0(mode, " (comp.1)")) +
+      theme_minimal() +
+      theme(legend.position = "none")
+  }
+}
+
 #' plot_Coxmos.PLS.model
 #'
 #' @description
@@ -2199,7 +2292,7 @@ plot_Coxmos.PLS.model <- function(model, comp = c(1,2), mode = "scores", factor 
     factor <- factor(model$Y$data[,"event"])
   }
 
-  if(!isa(aux.model,pkg.env$model_class)){
+  if(!isa(aux.model, pkg.env$model_class)){
     stop_quietly("'model' must be a Coxmos object.")
   }else if(attr(aux.model, "model") %in% c(pkg.env$multiblock_methods)){
     stop_quietly("For single block models, use the function 'plot_Coxmos.MB.PLS.model'")
@@ -2207,6 +2300,9 @@ plot_Coxmos.PLS.model <- function(model, comp = c(1,2), mode = "scores", factor 
     stop_quietly("'model' must be a Coxmos object PLS class ('sPLS-ICOX','sPLS-DRCOX','sPLS-DRCOX-Dynamic', or 'sPLS-DACOX-Dynamic'.")
   }
 
+  #### ### #
+  # SCORES #
+  #### ### #
   if(mode=="scores"){
 
     if(ncol(aux.model$X$scores)==1){
@@ -2214,8 +2310,25 @@ plot_Coxmos.PLS.model <- function(model, comp = c(1,2), mode = "scores", factor 
 
       FLAG_1_COMP = TRUE
 
-      df <- cbind(aux.model$X$scores[,1], aux.model$X$scores[,1])
-      colnames(df) <- c("p1", "p2")
+      df <- cbind(aux.model$X$scores[,1])
+      colnames(df) <- c("p1")
+
+      ggp <- plot_pls_1comp(matrix = df, mode = "scores", factor_col = factor, n_top = top)
+
+      if("R2" %in% names(aux.model)){
+        txt.expression <- paste0("Scores (",attr(aux.model, "model"),") - ")
+        r2_1 <- round(aux.model$R2[[comp[1]]], 4)
+        r2 <- round(sum(unlist(aux.model$R2)), 4)
+        ggp <- ggp + ggtitle(label = bquote(.(txt.expression) ~R^2 == .(r2))) +
+            ylab(label = paste0("comp_",as.character(1), " (", as.character(r2_1*100), " %)"))
+      }else{
+          txt.expression <- paste0("Scores (",attr(aux.model, "model"),")")
+          ggp <- ggp + ggtitle(label = bquote(.(txt.expression))) +
+            ylab(label = paste0("comp_",as.character(1)))
+      }
+
+      return(list(plot = ggp, outliers = NULL))
+
     }else{
       df <- as.data.frame(aux.model$X$scores)
     }
@@ -2237,26 +2350,14 @@ plot_Coxmos.PLS.model <- function(model, comp = c(1,2), mode = "scores", factor 
       r2_1 <- round(model$R2[[comp[1]]], 4)
       r2_2 <- round(model$R2[[comp[2]]], 4)
       r2 <- round(sum(unlist(model$R2)), 4)
-      if(FLAG_1_COMP){
-        ggp <- ggp + ggtitle(label = bquote(.(txt.expression) ~R^2 == .(r2))) +
-          xlab(label = paste0("comp_",as.character(1), " (", as.character(r2_1*100), " %)")) +
-          ylab(label = paste0("comp_",as.character(1), " (", as.character(r2_2*100), " %)"))
-      }else{
-        ggp <- ggp + ggtitle(label = bquote(.(txt.expression) ~R^2 == .(r2))) +
-          xlab(label = paste0("comp_",as.character(comp[1]), " (", as.character(r2_1*100), " %)")) +
-          ylab(label = paste0("comp_",as.character(comp[2]), " (", as.character(r2_2*100), " %)"))
-      }
+      ggp <- ggp + ggtitle(label = bquote(.(txt.expression) ~R^2 == .(r2))) +
+        xlab(label = paste0("comp_",as.character(comp[1]), " (", as.character(r2_1*100), " %)")) +
+        ylab(label = paste0("comp_",as.character(comp[2]), " (", as.character(r2_2*100), " %)"))
     }else{
       txt.expression <- paste0("Scores (",attr(aux.model, "model"),")")
-      if(FLAG_1_COMP){
-        ggp <- ggp + ggtitle(label = bquote(.(txt.expression))) +
-          xlab(label = paste0("comp_",as.character(1))) +
-          ylab(label = paste0("comp_",as.character(1)))
-      }else{
-        ggp <- ggp + ggtitle(label = bquote(.(txt.expression))) +
-          xlab(label = paste0("comp_",as.character(comp[1]))) +
-          ylab(label = paste0("comp_",as.character(comp[2])))
-      }
+      ggp <- ggp + ggtitle(label = bquote(.(txt.expression))) +
+        xlab(label = paste0("comp_",as.character(comp[1]))) +
+        ylab(label = paste0("comp_",as.character(comp[2])))
     }
 
     if(requireNamespace("RColorConesa", quietly = TRUE)){
@@ -2265,6 +2366,9 @@ plot_Coxmos.PLS.model <- function(model, comp = c(1,2), mode = "scores", factor 
         RColorConesa::scale_fill_conesa(reverse = colorReverse)
     }
 
+  #### ### ###
+  # LOADINGS #
+  #### ### ###
   }else if(mode=="loadings"){
 
     if(ncol(aux.model$X$loadings)==1){
@@ -2272,8 +2376,24 @@ plot_Coxmos.PLS.model <- function(model, comp = c(1,2), mode = "scores", factor 
 
       FLAG_1_COMP = TRUE
 
-      df <- as.data.frame(cbind(aux.model$X$loadings,aux.model$X$loadings))
-      colnames(df) <- c("p1", "p2")
+      df <- cbind(aux.model$X$loadings[,1])
+      colnames(df) <- c("p1")
+
+      ggp <- plot_pls_1comp(matrix = df, mode = "loadings", n_top = top)
+
+      if("R2" %in% names(aux.model)){
+        txt.expression <- paste0("Loadings (",attr(aux.model, "model"),") - ")
+        r2_1 <- round(aux.model$R2[[comp[1]]], 4)
+        r2 <- round(sum(unlist(aux.model$R2)), 4)
+        ggp <- ggp + ggtitle(label = bquote(.(txt.expression) ~R^2 == .(r2))) +
+          ylab(label = paste0("comp_",as.character(1), " (", as.character(r2_1*100), " %)"))
+      }else{
+        txt.expression <- paste0("Loadings (",attr(aux.model, "model"),")")
+        ggp <- ggp + ggtitle(label = bquote(.(txt.expression))) +
+          ylab(label = paste0("comp_",as.character(1)))
+      }
+
+      return(list(plot = ggp, outliers = NULL))
 
     }else{
       df <- as.data.frame(aux.model$X$loadings)
@@ -2341,18 +2461,49 @@ plot_Coxmos.PLS.model <- function(model, comp = c(1,2), mode = "scores", factor 
       }
     }
 
+  #### ### #
+  # BIPLOT #
+  #### ### #
   }else if(mode=="biplot"){
     if(ncol(aux.model$X$loadings)==1){
       message("The model has only 1 component")
 
       FLAG_1_COMP = TRUE
 
-      df <- as.data.frame(cbind(aux.model$X$scores, aux.model$X$scores))
-      colnames(df) <- c("p1", "p2")
+      df <- cbind(aux.model$X$loadings[,1])
+      colnames(df) <- c("p1")
+      ggp_loadings <- plot_pls_1comp(matrix = df, mode = "loadings", n_top = top)
 
-      df_loading <- as.data.frame(cbind(aux.model$X$loadings[,1], aux.model$X$loadings[,1]))
-      max.loadings <- apply(abs(df_loading), 2, max)
-      max.scores <- apply(abs(df), 2, max)
+      df <- cbind(aux.model$X$scores[,1])
+      colnames(df) <- c("p1")
+      LIMIT_SCORES <- 200
+      if(nrow(df)>LIMIT_SCORES){
+        top <- LIMIT_SCORES
+      }else{
+        top <- NULL
+      }
+      ggp_scores <- plot_pls_1comp(matrix = df, mode = "scores", factor_col = factor, n_top = top)
+
+      if("R2" %in% names(aux.model)){
+        txt.expression <- paste0("Loadings (",attr(aux.model, "model"),") - ")
+        r2_1 <- round(aux.model$R2[[comp[1]]], 4)
+        r2 <- round(sum(unlist(aux.model$R2)), 4)
+        # ggp_loadings <- ggp_loadings + ggtitle(label = bquote(.(txt.expression) ~R^2 == .(r2))) +
+        #   ylab(label = paste0("comp_",as.character(1), " (", as.character(r2_1*100), " %)"))
+        ggp_scores <- ggp_scores + ggtitle(label = bquote(.(txt.expression) ~R^2 == .(r2))) +
+          ylab(label = paste0("comp_",as.character(1), " (", as.character(r2_1*100), " %)"))
+      }else{
+        txt.expression <- paste0("Loadings (",attr(aux.model, "model"),")")
+        # ggp_loadings <- ggp_loadings + ggtitle(label = bquote(.(txt.expression))) +
+        #   ylab(label = paste0("comp_",as.character(1)))
+        ggp_scores <- ggp_scores + ggtitle(label = bquote(.(txt.expression))) +
+          ylab(label = paste0("comp_",as.character(1)))
+      }
+
+      pp <- ggpubr::ggarrange(ggp_scores, ggp_loadings, ncol = 2, widths = c(0.5, 0.5), align = "h")
+
+      return(list(plot = pp, outliers = NULL))
+
     }else{
       df <- as.data.frame(aux.model$X$scores)
 
@@ -2564,27 +2715,64 @@ plot_Coxmos.MB.PLS.model <- function(model, comp = c(1,2), mode = "scores", fact
 
       FLAG_1_COMP = FALSE
 
+      ### ### ###
+      ### SCORES #
+      ### ### ###
       if(mode=="scores"){
 
-        if(attr(aux.model, "model") %in% c(pkg.env$sb.splsicox, pkg.env$sb.splsdrcox, pkg.env$isb.splsicox, pkg.env$isb.splsdrcox)){
-          if(ncol(aux.model[[4]][[block]]$X$scores)==1){
+        if(attr(aux.model, "model") %in% c(pkg.env$singleblock_methods)){
+          if(ncol(aux.model$list_spls_models[[block]]$X$scores)==1){
             message("The model has only 1 component")
 
             FLAG_1_COMP = TRUE
 
-            df <- cbind(aux.model[[4]][[block]]$X$scores[,1], aux.model[[4]][[block]]$X$scores[,1])
-            colnames(df) <- c("p1", "p2")
+            df <- cbind(aux.model$list_spls_models[[block]]$X$scores[,1])
+            colnames(df) <- c("p1")
+
+            ggp <- plot_pls_1comp(matrix = df, mode = "scores", factor_col = factor, n_top = top)
+
+            if("R2" %in% names(aux.model)){
+              txt.expression <- paste0("Scores (",attr(aux.model, "model"),") - ")
+              r2_1 <- round(aux.model$R2[[comp[1]]], 4)
+              r2 <- round(sum(unlist(aux.model$R2)), 4)
+              ggp <- ggp + ggtitle(label = bquote(.(txt.expression) ~R^2 == .(r2))) +
+                ylab(label = paste0("comp_",as.character(1), " (", as.character(r2_1*100), " %)"))
+            }else{
+              txt.expression <- paste0("Scores (",attr(aux.model, "model"),")")
+              ggp <- ggp + ggtitle(label = bquote(.(txt.expression))) +
+                ylab(label = paste0("comp_",as.character(1)))
+            }
+
+            return(list(plot = ggp, outliers = NULL))
           }else{
-            df <- as.data.frame(aux.model[[4]][[block]]$X$scores)
+            df <- as.data.frame(aux.model$list_spls_models[[block]]$X$scores)
           }
         }else{ #multiblock
           if(ncol(aux.model$X$scores[[block]])==1){
+
             message("The model has only 1 component")
 
             FLAG_1_COMP = TRUE
 
-            df <- cbind(aux.model$X$scores[[block]][,1], aux.model$X$scores[[block]][,1])
-            colnames(df) <- c("p1", "p2")
+            df <- cbind(aux.model$X$scores[[block]][,1])
+            colnames(df) <- c("p1")
+
+            ggp <- plot_pls_1comp(matrix = df, mode = "scores", factor_col = factor, n_top = top)
+
+            if("R2" %in% names(aux.model)){
+              txt.expression <- paste0("Scores (",attr(aux.model, "model"),") - ")
+              r2_1 <- round(aux.model$R2[[comp[1]]], 4)
+              r2 <- round(sum(unlist(aux.model$R2)), 4)
+              ggp <- ggp + ggtitle(label = bquote(.(txt.expression) ~R^2 == .(r2))) +
+                ylab(label = paste0("comp_",as.character(1), " (", as.character(r2_1*100), " %)"))
+            }else{
+              txt.expression <- paste0("Scores (",attr(aux.model, "model"),")")
+              ggp <- ggp + ggtitle(label = bquote(.(txt.expression))) +
+                ylab(label = paste0("comp_",as.character(1)))
+            }
+
+            return(list(plot = ggp, outliers = NULL))
+
           }else{
             df <- as.data.frame(aux.model$X$scores[[block]])
           }
@@ -2639,18 +2827,37 @@ plot_Coxmos.MB.PLS.model <- function(model, comp = c(1,2), mode = "scores", fact
             RColorConesa::scale_fill_conesa(reverse = colorReverse)
         }
 
+      #### ### ### #
+      ### LOADINGS #
+      #### ### ### #
       }else if(mode=="loadings"){
 
-        if(attr(aux.model, "model") %in% c(pkg.env$sb.splsicox, pkg.env$sb.splsdrcox, pkg.env$isb.splsicox, pkg.env$isb.splsdrcox)){
-          if(ncol(aux.model[[4]][[block]]$X$loadings)==1){
+        if(attr(aux.model, "model") %in% c(pkg.env$singleblock_methods)){
+          if(ncol(aux.model$list_spls_models[[block]]$X$loadings)==1){
             message("The model has only 1 component")
 
             FLAG_1_COMP = TRUE
 
-            df <- cbind(aux.model[[4]][[block]]$X$loadings[,1], aux.model[[4]][[block]]$X$loadings[,1])
-            colnames(df) <- c("p1", "p2")
+            df <- cbind(aux.model$list_spls_models[[block]]$X$loadings[,1])
+            colnames(df) <- c("p1")
+
+            ggp <- plot_pls_1comp(matrix = df, mode = "loadings", n_top = top)
+
+            if("R2" %in% names(aux.model)){
+              txt.expression <- paste0("Loadings (",attr(aux.model, "model"),") - ")
+              r2_1 <- round(aux.model$R2[[comp[1]]], 4)
+              r2 <- round(sum(unlist(aux.model$R2)), 4)
+              ggp <- ggp + ggtitle(label = bquote(.(txt.expression) ~R^2 == .(r2))) +
+                ylab(label = paste0("comp_",as.character(1), " (", as.character(r2_1*100), " %)"))
+            }else{
+              txt.expression <- paste0("Loadings (",attr(aux.model, "model"),")")
+              ggp <- ggp + ggtitle(label = bquote(.(txt.expression))) +
+                ylab(label = paste0("comp_",as.character(1)))
+            }
+
+            return(list(plot = ggp, outliers = NULL))
           }else{
-            df <- as.data.frame(aux.model[[4]][[block]]$X$loadings)
+            df <- as.data.frame(aux.model$list_spls_models[[block]]$X$loadings)
           }
         }else{ #multiblock
           if(ncol(aux.model$X$loadings[[block]])==1){
@@ -2658,8 +2865,25 @@ plot_Coxmos.MB.PLS.model <- function(model, comp = c(1,2), mode = "scores", fact
 
             FLAG_1_COMP = TRUE
 
-            df <- cbind(aux.model$X$loadings[[block]][,1], aux.model$X$loadings[[block]][,1])
-            colnames(df) <- c("p1", "p2")
+            df <- cbind(aux.model$X$loadings[[block]][,1])
+            colnames(df) <- c("p1")
+
+            ggp <- plot_pls_1comp(matrix = df, mode = "loadings", n_top = top)
+
+            if("R2" %in% names(aux.model)){
+              txt.expression <- paste0("Loadings (",attr(aux.model, "model"),") - ")
+              r2_1 <- round(aux.model$R2[[comp[1]]], 4)
+              r2 <- round(sum(unlist(aux.model$R2)), 4)
+              ggp <- ggp + ggtitle(label = bquote(.(txt.expression) ~R^2 == .(r2))) +
+                ylab(label = paste0("comp_",as.character(1), " (", as.character(r2_1*100), " %)"))
+            }else{
+              txt.expression <- paste0("Loadings (",attr(aux.model, "model"),")")
+              ggp <- ggp + ggtitle(label = bquote(.(txt.expression))) +
+                ylab(label = paste0("comp_",as.character(1)))
+            }
+
+            return(list(plot = ggp, outliers = NULL))
+
           }else{
             df <- as.data.frame(aux.model$X$loadings[[block]])
           }
@@ -2731,30 +2955,54 @@ plot_Coxmos.MB.PLS.model <- function(model, comp = c(1,2), mode = "scores", fact
           }
         }
 
+      #### ### ### #
+      ### BIPLOTS #
+      #### ### ### #
       }else if(mode=="biplot"){
 
-        if(attr(aux.model, "model") %in% c(pkg.env$sb.splsicox, pkg.env$sb.splsdrcox, pkg.env$isb.splsicox, pkg.env$isb.splsdrcox)){
-          if(ncol(aux.model[[4]][[block]]$X$loadings)==1){
+        if(attr(aux.model, "model") %in% c(pkg.env$singleblock_methods)){
+          if(ncol(aux.model$list_spls_models[[block]]$X$loadings)==1){
             message("The model has only 1 component")
 
             FLAG_1_COMP = TRUE
 
-            df <- as.data.frame(cbind(aux.model[[4]][[block]]$X$scores, aux.model[[4]][[block]]$X$scores))
-            colnames(df) <- c("p1", "p2")
+            df <- cbind(aux.model$list_spls_models[[block]]$X$loadings[,1])
+            colnames(df) <- c("p1")
+            ggp_loadings <- plot_pls_1comp(matrix = df, mode = "loadings", n_top = top)
 
-            df_loading <- as.data.frame(cbind(aux.model[[4]][[block]]$X$loadings[,1], aux.model[[4]][[block]]$X$loadings[,1]))
-            max.loadings <- apply(abs(df_loading), 2, max)
-            max.scores <- apply(abs(df), 2, max)
+            df <- cbind(aux.model$list_spls_models[[block]]$X$scores[,1])
+            colnames(df) <- c("p1")
+            LIMIT_SCORES <- 200
+            if(nrow(df)>LIMIT_SCORES){
+              top <- LIMIT_SCORES
+            }else{
+              top <- NULL
+            }
+            ggp_scores <- plot_pls_1comp(matrix = df, mode = "scores", factor_col = factor, n_top = top)
 
-            # Escalar los loadings para ajustarlos a los scores
-            factor_escala <- max.scores / max.loadings
-            df_loading <- as.matrix(df_loading) %*% diag(factor_escala)
-            df_loading <- as.data.frame(df_loading)
-            colnames(df_loading) <- names(factor_escala)
+            if("R2" %in% names(aux.model)){
+              txt.expression <- paste0("Loadings (",attr(aux.model, "model"),") - ")
+              r2_1 <- round(aux.model$R2[[comp[1]]], 4)
+              r2 <- round(sum(unlist(aux.model$R2)), 4)
+              # ggp_loadings <- ggp_loadings + ggtitle(label = bquote(.(txt.expression) ~R^2 == .(r2))) +
+              #   ylab(label = paste0("comp_",as.character(1), " (", as.character(r2_1*100), " %)"))
+              ggp_scores <- ggp_scores + ggtitle(label = bquote(.(txt.expression) ~R^2 == .(r2))) +
+                ylab(label = paste0("comp_",as.character(1), " (", as.character(r2_1*100), " %)"))
+            }else{
+              txt.expression <- paste0("Loadings (",attr(aux.model, "model"),")")
+              # ggp_loadings <- ggp_loadings + ggtitle(label = bquote(.(txt.expression))) +
+              #   ylab(label = paste0("comp_",as.character(1)))
+              ggp_scores <- ggp_scores + ggtitle(label = bquote(.(txt.expression))) +
+                ylab(label = paste0("comp_",as.character(1)))
+            }
+
+            pp <- ggpubr::ggarrange(ggp_scores, ggp_loadings, ncol = 2, widths = c(0.5, 0.5), align = "h")
+
+            return(list(plot = pp, outliers = NULL))
           }else{
-            df <- as.data.frame(aux.model[[4]][[block]]$X$scores)
+            df <- as.data.frame(aux.model$list_spls_models[[block]]$X$scores)
 
-            df_loading <- as.data.frame(aux.model[[4]][[block]]$X$loadings)
+            df_loading <- as.data.frame(aux.model$list_spls_models[[block]]$X$loadings)
             max.loadings <- apply(abs(df_loading), 2, max)
             max.scores <- apply(abs(df), 2, max)
 
@@ -2770,21 +3018,40 @@ plot_Coxmos.MB.PLS.model <- function(model, comp = c(1,2), mode = "scores", fact
 
             FLAG_1_COMP = TRUE
 
-            df <- as.data.frame(cbind(aux.model$X$scores[[block]], aux.model$X$scores[[block]]))
-            colnames(df) <- c("p1", "p2")
+            df <- cbind(aux.model$X$loadings[[block]][,1])
+            colnames(df) <- c("p1")
+            ggp_loadings <- plot_pls_1comp(matrix = df, mode = "loadings", n_top = top)
 
-            df_loading <- as.data.frame(cbind(aux.model$X$loadings[[block]][,1], aux.model$X$loadings[[block]][,1]))
-            #sometimes all 0s
-            df_loading <- df_loading[which(rowSums(df_loading) != 0),]
+            df <- cbind(aux.model$X$scores[[block]][,1])
+            colnames(df) <- c("p1")
+            LIMIT_SCORES <- 200
+            if(nrow(df)>LIMIT_SCORES){
+              top <- LIMIT_SCORES
+            }else{
+              top <- NULL
+            }
+            ggp_scores <- plot_pls_1comp(matrix = df, mode = "scores", factor_col = factor, n_top = top)
 
-            max.loadings <- apply(abs(df_loading), 2, max)
-            max.scores <- apply(abs(df), 2, max)
+            if("R2" %in% names(aux.model)){
+              txt.expression <- paste0("Loadings (",attr(aux.model, "model"),") - ")
+              r2_1 <- round(aux.model$R2[[comp[1]]], 4)
+              r2 <- round(sum(unlist(aux.model$R2)), 4)
+              # ggp_loadings <- ggp_loadings + ggtitle(label = bquote(.(txt.expression) ~R^2 == .(r2))) +
+              #   ylab(label = paste0("comp_",as.character(1), " (", as.character(r2_1*100), " %)"))
+              ggp_scores <- ggp_scores + ggtitle(label = bquote(.(txt.expression) ~R^2 == .(r2))) +
+                ylab(label = paste0("comp_",as.character(1), " (", as.character(r2_1*100), " %)"))
+            }else{
+              txt.expression <- paste0("Loadings (",attr(aux.model, "model"),")")
+              # ggp_loadings <- ggp_loadings + ggtitle(label = bquote(.(txt.expression))) +
+              #   ylab(label = paste0("comp_",as.character(1)))
+              ggp_scores <- ggp_scores + ggtitle(label = bquote(.(txt.expression))) +
+                ylab(label = paste0("comp_",as.character(1)))
+            }
 
-            # Escalar los loadings para ajustarlos a los scores
-            factor_escala <- max.scores / max.loadings
-            df_loading <- as.matrix(df_loading) %*% diag(factor_escala)
-            df_loading <- as.data.frame(df_loading)
-            colnames(df_loading) <- names(factor_escala)
+            pp <- ggpubr::ggarrange(ggp_scores, ggp_loadings, ncol = 2, widths = c(0.5, 0.5), align = "h")
+
+            return(list(plot = pp, outliers = NULL))
+
           }else{
             df <- as.data.frame(aux.model$X$scores[[block]])
 
@@ -2938,7 +3205,8 @@ plot_Coxmos.MB.PLS.model <- function(model, comp = c(1,2), mode = "scores", fact
 #' X <- X_proteomic[,1:50]
 #' Y <- Y_proteomic
 #' splsicox.model <- splsicox(X, Y, n.comp = 2, penalty = 0.5, x.center = TRUE, x.scale = TRUE)
-#' splsdrcox.model <- splsdrcox(X, Y, n.comp = 2, penalty = 0.5, x.center = TRUE, x.scale = TRUE)
+#' splsdrcox.model <- splsdrcox_penalty(X, Y, n.comp = 2, penalty = 0.5,
+#' x.center = TRUE, x.scale = TRUE)
 #' lst_models = list("sPLSICOX" = splsicox.model, "sPLSDRCOX" = splsdrcox.model)
 #' plot_proportionalHazard.list(lst_models)
 
@@ -3102,7 +3370,8 @@ my_primeFactors <- function(num) {
 #' X <- X_proteomic[,1:50]
 #' Y <- Y_proteomic
 #' splsicox.model <- splsicox(X, Y, n.comp = 2, penalty = 0.5, x.center = TRUE, x.scale = TRUE)
-#' splsdrcox.model <- splsdrcox(X, Y, n.comp = 2, penalty = 0.5, x.center = TRUE, x.scale = TRUE)
+#' splsdrcox.model <- splsdrcox_penalty(X, Y, n.comp = 2, penalty = 0.5,
+#' x.center = TRUE, x.scale = TRUE)
 #' lst_models = list("sPLSICOX" = splsicox.model, "sPLSDRCOX" = splsdrcox.model)
 #' plot_forest.list(lst_models)
 
@@ -3227,7 +3496,8 @@ plot_forest <- function(model,
 #' X <- X_proteomic[,1:50]
 #' Y <- Y_proteomic
 #' splsicox.model <- splsicox(X, Y, n.comp = 2, penalty = 0.5, x.center = TRUE, x.scale = TRUE)
-#' splsdrcox.model <- splsdrcox(X, Y, n.comp = 2, penalty = 0.5, x.center = TRUE, x.scale = TRUE)
+#' splsdrcox.model <- splsdrcox_penalty(X, Y, n.comp = 2, penalty = 0.5,
+#' x.center = TRUE, x.scale = TRUE)
 #' lst_models = list("sPLSICOX" = splsicox.model, "sPLSDRCOX" = splsdrcox.model)
 #' plot_cox.event.list(lst_models)
 
@@ -3564,7 +3834,8 @@ plot_observation.eventHistogram <- function(observation, model, time = NULL, typ
 #' X <- X_proteomic[,1:50]
 #' Y <- Y_proteomic
 #' splsicox.model <- splsicox(X, Y, n.comp = 2, penalty = 0.5, x.center = TRUE, x.scale = TRUE)
-#' splsdrcox.model <- splsdrcox(X, Y, n.comp = 2, penalty = 0.5, x.center = TRUE, x.scale = TRUE)
+#' splsdrcox.model <- splsdrcox_penalty(X, Y, n.comp = 2, penalty = 0.5,
+#' x.center = TRUE, x.scale = TRUE)
 #' lst_models = list("sPLSICOX" = splsicox.model, "sPLSDRCOX" = splsdrcox.model)
 #' plot_pseudobeta.list(lst_models = lst_models)
 
@@ -3663,7 +3934,7 @@ plot_pseudobeta <- function(model, error.bar = TRUE, onlySig = FALSE, alpha = 0.
                             show_percentage = TRUE, size_percentage = 3,
                             title_size_text = 15, legend_size_text  = 12,
                             x_axis_size_text  = 10, y_axis_size_text = 10,
-                            label_x_axis_size  = 10, label_y_axis_size  = 10){
+                            label_x_axis_size  = 10, label_y_axis_size = 10){
 
   if(!isa(model,pkg.env$model_class)){
     warning("Model must be an object of class Coxmos.")
@@ -3732,7 +4003,7 @@ plot_pseudobeta <- function(model, error.bar = TRUE, onlySig = FALSE, alpha = 0.
       coefficients <- as.matrix(model$survival_model$fit$coefficients)[rn,,drop = FALSE]
       sd <- df.aux[rn,"se(coef)",drop = FALSE]
       W.star <- list()
-      if(attr(model, "model") %in% c(pkg.env$sb.splsicox, pkg.env$isb.splsicox, pkg.env$sb.splsdrcox, pkg.env$isb.splsdrcox)){
+      if(attr(model, "model") %in% c(pkg.env$singleblock_methods)){
         for(b in names(model$list_spls_models)){
           W.star[[b]] <- model$list_spls_models[[b]]$X$W.star
         }
@@ -3744,7 +4015,7 @@ plot_pseudobeta <- function(model, error.bar = TRUE, onlySig = FALSE, alpha = 0.
       coefficients <- as.matrix(model$survival_model$fit$coefficients)
       sd <- df.aux[,"se(coef)",drop = FALSE]
       W.star <- list()
-      if(attr(model, "model") %in% c(pkg.env$sb.splsicox, pkg.env$isb.splsicox, pkg.env$sb.splsdrcox, pkg.env$isb.splsdrcox)){
+      if(attr(model, "model") %in% c(pkg.env$singleblock_methods)){
         for(b in names(model$list_spls_models)){
           W.star[[b]] <- model$list_spls_models[[b]]$X$W.star
         }
@@ -3881,7 +4152,7 @@ plot_pseudobeta <- function(model, error.bar = TRUE, onlySig = FALSE, alpha = 0.
 #' Y_test <- Y_proteomic[-index_train,]
 #' splsicox.model <- splsicox(X_train, Y_train, n.comp = 2, penalty = 0.5, x.center = TRUE,
 #' x.scale = TRUE)
-#' splsdrcox.model <- splsdrcox(X_train, Y_train, n.comp = 2, penalty = 0.5, x.center = TRUE,
+#' splsdrcox.model <- splsdrcox_penalty(X_train, Y_train, n.comp = 2, penalty = 0.5, x.center = TRUE,
 #' x.scale = TRUE)
 #' lst_models = list("sPLSICOX" = splsicox.model, "sPLSDRCOX" = splsdrcox.model)
 #' plot_pseudobeta_newObservation.list(lst_models, new_observation = X_test[1,,drop=FALSE])
@@ -4007,6 +4278,9 @@ plot_pseudobeta_newObservation <- function(model, new_observation, error.bar = T
 plot_pseudobeta.newObservation <- function(model, new_observation, error.bar = TRUE, onlySig = TRUE,
                                        alpha = 0.05, zero.rm = TRUE,
                                        top = NULL, auto.limits = TRUE, show.betas = FALSE){
+
+  #check colnames and transform
+  new_observation <- checkColnamesIllegalChars(new_observation)
 
   if(!isa(model,pkg.env$model_class)){
     warning("Model must be an object of class Coxmos.")
@@ -4198,6 +4472,9 @@ plot_pseudobeta.newObservation <- function(model, new_observation, error.bar = T
 plot_MB.pseudobeta.newObservation <- function(model, new_observation, error.bar = TRUE, onlySig = TRUE,
                                           alpha = 0.05, zero.rm = TRUE,
                                           top = NULL, auto.limits = TRUE, show.betas = FALSE){
+
+  #check colnames and transform
+  new_observation <- checkColnamesIllegalChars.mb(new_observation)
 
   if(!isa(model,pkg.env$model_class)){
     warning("Model must be an object of class Coxmos.")
@@ -4439,7 +4716,7 @@ plot_MB.pseudobeta.newObservation <- function(model, new_observation, error.bar 
 #' Y_test <- Y_proteomic[-index_train,]
 #' splsicox.model <- splsicox(X_train, Y_train, n.comp = 1, penalty = 0.5, x.center = TRUE,
 #' x.scale = TRUE)
-#' splsdrcox.model <- splsdrcox(X_train, Y_train, n.comp = 1, penalty = 0.5, x.center = TRUE,
+#' splsdrcox.model <- splsdrcox_penalty(X_train, Y_train, n.comp = 1, penalty = 0.5, x.center = TRUE,
 #' x.scale = TRUE)
 #' lst_models = list("sPLSICOX" = splsicox.model, "sPLSDRCOX" = splsdrcox.model)
 #' getAutoKM.list(type = "LP", lst_models)
@@ -4545,6 +4822,7 @@ getAutoKM.list <- function(type = "LP", lst_models, comp = 1:2, top = NULL, ori_
 
 getAutoKM <- function(type = "LP", model, comp = 1:2, top = 10, ori_data = TRUE, BREAKTIME = NULL,
                       n.breaks = 20, only_sig = FALSE, alpha = 0.05, title = NULL, verbose = FALSE){
+
   if(!type %in% c("LP", "COMP", "VAR")){
     stop("Type parameters must be one of the following: LP, COMP or VAR")
   }
@@ -4560,7 +4838,7 @@ getAutoKM <- function(type = "LP", model, comp = 1:2, top = 10, ori_data = TRUE,
   }
 
   if(type == "LP"){
-    return(getLPKM(model, comp = comp, top = top, ori_data = ori_data, BREAKTIME = BREAKTIME, n.breaks = n.breaks, only_sig = only_sig, alpha = alpha, title = title, verbose = verbose))
+    return(getLPKM(model = model, comp = comp, top = top, ori_data = ori_data, BREAKTIME = BREAKTIME, n.breaks = n.breaks, only_sig = only_sig, alpha = alpha, title = title, verbose = verbose))
   }else if(type == "COMP"){
     return(getCompKM(model, comp = comp, top = top, ori_data = ori_data, BREAKTIME = BREAKTIME, n.breaks = n.breaks, only_sig = only_sig, alpha = alpha, title = title, verbose = verbose))
   }else if(type == "VAR"){
@@ -4652,7 +4930,7 @@ getCompKM <- function(model, comp = 1:2, top = 10, ori_data = TRUE, BREAKTIME = 
 
     if(!all(is.null(model$survival_model))){
       for(b in names(model$X$data)){
-        if(attr(model, "model") %in% c(pkg.env$sb.splsicox, pkg.env$sb.splsdrcox, pkg.env$isb.splsicox, pkg.env$isb.splsdrcox)){
+        if(attr(model, "model") %in% c(pkg.env$singleblock_methods)){
           lst_vars[[b]] <- colnames(model[[4]][[b]]$X$W.star)
           keep <- which(paste0(lst_vars[[b]],"_",b) %in% names(model$survival_model$fit$coefficients))
           lst_vars[[b]] <- lst_vars[[b]][keep]
@@ -4679,7 +4957,11 @@ getCompKM <- function(model, comp = 1:2, top = 10, ori_data = TRUE, BREAKTIME = 
 
   #select original or scale data - top X of each component, takes all of them
   if(!attr(model, "model") %in% pkg.env$multiblock_methods){
+
+    #together
     unique_vars <- deleteIllegalChars(unique(unlist(vars)))
+    unique_vars <- transformIllegalChars(unique_vars)
+
     # vars %*% coeff to get component LP
     cn_aux <- colnames(as.data.frame(model$X$scores[rownames(model$X$scores),unique_vars,drop = FALSE]))
     sc_aux <- as.data.frame(model$X$scores[rownames(model$X$scores),unique_vars,drop = FALSE])
@@ -4698,9 +4980,14 @@ getCompKM <- function(model, comp = 1:2, top = 10, ori_data = TRUE, BREAKTIME = 
     vars_data <- list()
     for(b in names(model$X$data)){
       # vars %*% coeff to get component LP
+
+      if(length(lst_vars[[b]])==0){next}#no components selected
+
+      #together
       unique_vars <- deleteIllegalChars(unique(unlist(lst_vars[[b]])))
-      if(length(unique_vars)==0){next}#no components selected
-      if(attr(model, "model") %in% c(pkg.env$sb.splsicox, pkg.env$sb.splsdrcox, pkg.env$isb.splsicox, pkg.env$isb.splsdrcox)){
+      unique_vars <- transformIllegalChars(unique_vars)
+
+      if(attr(model, "model") %in% c(pkg.env$singleblock_methods)){
         cn_aux <- colnames(as.data.frame(model[[4]][[b]]$X$scores[rownames(model[[4]][[b]]$X$scores),unique_vars,drop = FALSE]))
         sc_aux <- as.data.frame(model[[4]][[b]]$X$scores[rownames(model[[4]][[b]]$X$scores),unique_vars,drop = FALSE])
         coeff_aux <- model$survival_model$fit$coefficients[paste0(cn_aux, "_", b)]
@@ -4805,8 +5092,11 @@ getCompKM <- function(model, comp = 1:2, top = 10, ori_data = TRUE, BREAKTIME = 
     LST_SPLOT <- list()
     for(b in names(model$X$data)){
 
+      if(length(lst_vars[[b]])==0){next}#no components selected
+
+      #together
       unique_vars <- deleteIllegalChars(unique(unlist(lst_vars[[b]])))
-      if(length(unique_vars)==0){next}#no components selected
+      unique_vars <- transformIllegalChars(unique_vars)
 
       if(only_sig){
 
@@ -4887,25 +5177,29 @@ getLPVarKM <- function(model, comp = 1:2, top = 10, ori_data = TRUE, BREAKTIME =
 
     lst_vars <- list()
     for(b in names(model$X$data)){
-      vars <- list()
 
-      if(attr(model, "model") %in% c(pkg.env$sb.splsicox, pkg.env$isb.splsicox, pkg.env$sb.splsdrcox, pkg.env$isb.splsdrcox)){
-        aux <- model$list_spls_models[[b]]
-      }else if(attr(model, "model") %in% c(pkg.env$mb.splsdrcox, pkg.env$mb.splsdacox)){
-        message("Fix for MB")
-        stop()
-      }
+      #selecting pseudo betas
+      pseudo_betas <- plot_pseudobeta(model = model,
+                                      error.bar = TRUE, onlySig = only_sig, alpha = alpha,
+                                      zero.rm = TRUE, auto.limits = FALSE, top = top,
+                                      show_percentage = FALSE, size_percentage = 3)
+      names_top <- pseudo_betas$plot[[b]]$data$variables
+      pseudo_betas$beta <- pseudo_betas$beta[[b]][names_top,]
 
-      # names(vars) <- as.character(1:length(vars))
-      # lst_vars[[b]] <- vars
-
+      pseudo_betas$plot <- NULL
+      vars <- rownames(pseudo_betas$beta)
+      lst_vars[[b]] <- vars
     }
 
   }
 
   #select original or scale data - top X of each component, takes all of them
   if(!attr(model, "model") %in% pkg.env$multiblock_methods){
+
+    #together
     unique_vars <- deleteIllegalChars(unique(unlist(vars)))
+    unique_vars <- transformIllegalChars(unique_vars)
+
     if(ori_data){
       vars_data <- as.data.frame(model$X_input[rownames(model$X$data),unique_vars,drop = FALSE])
     }else{
@@ -4932,7 +5226,13 @@ getLPVarKM <- function(model, comp = 1:2, top = 10, ori_data = TRUE, BREAKTIME =
   }else{
     vars_data <- list()
     for(b in names(model$X$data)){
+
+      if(length(lst_vars[[b]])==0){next}#no components selected
+
+      #together
       unique_vars <- deleteIllegalChars(unique(unlist(lst_vars[[b]])))
+      unique_vars <- transformIllegalChars(unique_vars)
+
       if(ori_data){
         vars_data[[b]] <- as.data.frame(model$X_input[[b]][rownames(model$X$data[[b]]),unique_vars,drop = FALSE])
       }else{
@@ -4968,6 +5268,9 @@ getLPVarKM <- function(model, comp = 1:2, top = 10, ori_data = TRUE, BREAKTIME =
     vars_qual <- list()
     vars_num <- list()
     for(b in names(model$X$data)){
+
+      if(length(lst_vars[[b]])==0){next}#no components selected
+
       names_qual <- apply(vars_data[[b]], 2, function(x){all(x %in% c(0,1))})
       vars_qual[[b]] <- vars_data[[b]][,names_qual,drop = FALSE]
       vars_num[[b]] <- vars_data[[b]][,!names_qual,drop = FALSE]
@@ -5050,6 +5353,9 @@ getLPVarKM <- function(model, comp = 1:2, top = 10, ori_data = TRUE, BREAKTIME =
   }else{
     LST_SPLOT <- list()
     for(b in names(model$X$data)){
+
+      if(length(lst_vars[[b]])==0){next}#no components selected
+
       if(only_sig){
 
         if(length(v_names[[b]][v_names[[b]]$`P-Val (Log Rank)` <= alpha,]$Variable)==0){
@@ -5133,7 +5439,7 @@ getVarKM <- function(model, comp = 1:2, top = 10, ori_data = TRUE, BREAKTIME = N
       vars <- list()
       vars_data <- list()
 
-      if(attr(model, "model") %in% c(pkg.env$sb.splsicox, pkg.env$sb.splsdrcox, pkg.env$isb.splsicox, pkg.env$isb.splsdrcox)){
+      if(attr(model, "model") %in% c(pkg.env$singleblock_methods)){
         aux <- model$list_spls_models[[b]]
 
         if(!is.null(aux$survival_model)){
@@ -5170,7 +5476,10 @@ getVarKM <- function(model, comp = 1:2, top = 10, ori_data = TRUE, BREAKTIME = N
 
   #select original or scale data - top X of each component, takes all of them
   if(!attr(model, "model") %in% pkg.env$multiblock_methods){
+    #together
     unique_vars <- deleteIllegalChars(unique(unlist(vars)))
+    unique_vars <- transformIllegalChars(unique_vars)
+
     if(ori_data){
       vars_data <- as.data.frame(model$X_input[rownames(model$X$data),unique_vars,drop = FALSE])
     }else{
@@ -5179,7 +5488,10 @@ getVarKM <- function(model, comp = 1:2, top = 10, ori_data = TRUE, BREAKTIME = N
   }else{
     vars_data <- list()
     for(b in names(model$X$data)){
+      #together
       unique_vars <- deleteIllegalChars(unique(unlist(lst_vars[[b]])))
+      unique_vars <- transformIllegalChars(unique_vars)
+
       if(ori_data){
         vars_data[[b]] <- as.data.frame(model$X_input[[b]][rownames(model$X$data[[b]]),unique_vars,drop = FALSE])
       }else{
@@ -5705,7 +6017,7 @@ plot_survivalplot.qual <- function(data, sdata, cn_variables, name_data = NULL, 
 #' Y_test <- Y_proteomic[-index_train,]
 #' splsicox.model <- splsicox(X_train, Y_train, n.comp = 2, penalty = 0.5, x.center = TRUE,
 #' x.scale = TRUE)
-#' splsdrcox.model <- splsdrcox(X_train, Y_train, n.comp = 2, penalty = 0.5, x.center = TRUE,
+#' splsdrcox.model <- splsdrcox_penalty(X_train, Y_train, n.comp = 2, penalty = 0.5, x.center = TRUE,
 #' x.scale = TRUE)
 #' lst_models = list("sPLSICOX" = splsicox.model, "sPLSDRCOX" = splsdrcox.model)
 #' lst_results = getAutoKM.list(type = "LP", lst_models)
@@ -5828,7 +6140,7 @@ getCutoffAutoKM <- function(result){
 #' Y_test <- Y_proteomic[-index_train,]
 #' splsicox.model <- splsicox(X_train, Y_train, n.comp = 1, penalty = 0.5, x.center = TRUE,
 #' x.scale = TRUE)
-#' splsdrcox.model <- splsdrcox(X_train, Y_train, n.comp = 1, penalty = 0.5, x.center = TRUE,
+#' splsdrcox.model <- splsdrcox_penalty(X_train, Y_train, n.comp = 1, penalty = 0.5, x.center = TRUE,
 #' x.scale = TRUE)
 #' lst_models = list("sPLSICOX" = splsicox.model, "sPLSDRCOX" = splsdrcox.model)
 #' lst_results = getAutoKM.list(type = "LP", lst_models)
@@ -5963,10 +6275,11 @@ getTestKM <- function(model, X_test, Y_test, cutoff, type = "LP", ori_data = TRU
   #### Check test times are less or equal than max train time:
   checkTestTimesVSTrainTimes(model, Y_test)
 
-  #### illegal characters in cox and coxSW
-  if(attr(model, "model") %in% c(pkg.env$cox, pkg.env$coxSW)){
-    old_colnames <- colnames(X_test)
-    colnames(X_test) <- transformIllegalChars(old_colnames)
+  # fix illegal characters for all methods
+  if(class(X_test)[[1]]=="list"){
+    X_test <- checkColnamesIllegalChars.mb(X_test)
+  }else if(all(class(X_test) %in% c("matrix","array", "data.frame"))){
+    X_test <- checkColnamesIllegalChars(X_test)
   }
 
   if(!isa(model, pkg.env$model_class)){
@@ -6067,41 +6380,28 @@ getTestKM <- function(model, X_test, Y_test, cutoff, type = "LP", ori_data = TRU
 
     #As deleteIllegalChars() is performed in KM_VAR, run it always for VAR in TEST
     if(!attr(model, "model") %in% pkg.env$multiblock_methods){
-      new_cn <- deleteIllegalChars(colnames(X_test))
-      colnames(X_test) <- new_cn
+      X_test <- checkColnamesIllegalChars(X_test)
     }else if(isa(X_test, "list")){
-      for(b in names(X_test)){
-        new_cn <- deleteIllegalChars(colnames(X_test[[b]]))
-        colnames(X_test[[b]]) <- new_cn
-      }
+      X_test <- checkColnamesIllegalChars.mb(X_test)
     }
 
-    if(attr(model, "model") %in% c(pkg.env$sb.splsicox, pkg.env$sb.splsdrcox, pkg.env$isb.splsicox, pkg.env$isb.splsdrcox)){
+    if(attr(model, "model") %in% c(pkg.env$singleblock_methods)){
       lst_ggp <- NULL
-      ## SB.PLSICOX
-      if(attr(model, "model") %in% c(pkg.env$sb.splsicox, pkg.env$isb.splsicox)){
-        for(b in names(model$list_spls_models)){
-          new_cutoff <- cutoff[endsWith(names(cutoff), paste0("_",b))]
-          names(new_cutoff) <- unlist(lapply(names(new_cutoff), function(x){substr(x, start = 1, stop = nchar(x)-nchar(paste0("_",b)))}))
-          lst_ggp[[b]] <- getTestKM(model = model$list_spls_models[[b]], X_test = X_test[[b]], Y_test, new_cutoff, type, ori_data, BREAKTIME, n.breaks, title)
-        }
-        return(lst_ggp)
-      }else{
-        ## SB.sPLSDRCOX
-        for(b in names(model$list_spls_models)){
-          new_cutoff <- cutoff[endsWith(names(cutoff), paste0("_",b))]
-          names(new_cutoff) <- unlist(lapply(names(new_cutoff), function(x){substr(x, start = 1, stop = nchar(x)-nchar(paste0("_",b)))}))
-          lst_ggp[[b]] <- getTestKM(model$list_spls_models[[b]], X_test[[b]], Y_test, new_cutoff, type, ori_data, BREAKTIME, n.breaks, title)
-        }
-        return(lst_ggp)
+
+      for(b in names(model$list_spls_models)){
+        new_cutoff <- cutoff[endsWith(names(cutoff), paste0("_",b))]
+        names(new_cutoff) <- unlist(lapply(names(new_cutoff), function(x){substr(x, start = 1, stop = nchar(x)-nchar(paste0("_",b)))}))
+        lst_ggp[[b]] <- getTestKM(model = model$list_spls_models[[b]], X_test = X_test[[b]], Y_test, new_cutoff, type, ori_data, BREAKTIME, n.breaks, title)
       }
-    }else if(attr(model, "model") %in% c(pkg.env$mb.splsdrcox, pkg.env$mb.splsdacox) && isa(X_test, "list")){
+      return(lst_ggp)
+
+    }else if(attr(model, "model") %in% c(pkg.env$multiblock_mixomics_methods) && isa(X_test, "list")){
       ## MBs.
       lst_ggp <- NULL
       for(b in names(model$mb.model$X)){
         new_cutoff <- cutoff[endsWith(names(cutoff), paste0("_",b))]
         names(new_cutoff) <- unlist(lapply(names(new_cutoff), function(x){substr(x, start = 1, stop = nchar(x)-nchar(paste0("_",b)))}))
-        lst_ggp[[b]] <- getTestKM(model, X_test[[b]], Y_test, new_cutoff, type, ori_data, BREAKTIME, n.breaks, title)
+        lst_ggp[[b]] <- getTestKM(model = model, X_test = X_test[[b]], Y_test, new_cutoff, type, ori_data, BREAKTIME, n.breaks, title)
       }
       return(lst_ggp)
     }
@@ -6194,7 +6494,7 @@ getTestKM <- function(model, X_test, Y_test, cutoff, type = "LP", ori_data = TRU
 #' Y_test <- Y_proteomic[-index_train,]
 #' splsicox.model <- splsicox(X_train, Y_train, n.comp = 2, penalty = 0.5, x.center = TRUE,
 #' x.scale = TRUE)
-#' splsdrcox.model <- splsdrcox(X_train, Y_train, n.comp = 2, penalty = 0.5, x.center = TRUE,
+#' splsdrcox.model <- splsdrcox_penalty(X_train, Y_train, n.comp = 2, penalty = 0.5, x.center = TRUE,
 #' x.scale = TRUE)
 #' lst_models = list("sPLSICOX" = splsicox.model, "sPLSDRCOX" = splsdrcox.model)
 #' plot_LP.multipleObservations.list(lst_models = lst_models, X_test[1:5,])
@@ -6298,6 +6598,9 @@ plot_classicalcox.comparePatients <- function(model, new_data, error.bar = FALSE
                                               alpha = 0.05, zero.rm = TRUE,
                                               auto.limits = TRUE, top = NULL){
 
+  # norm and fix test data
+  new_data <- checkColnamesIllegalChars(new_data)
+
   #DFCALLS
   value <- patients <- NULL
 
@@ -6328,7 +6631,11 @@ plot_classicalcox.comparePatients <- function(model, new_data, error.bar = FALSE
   }
 
   #lp.new_pat_manual <- norm_patient[,rownames(coefficients)] %*% coefficients #predict lp
-  lp.new_pat_variable <- apply(norm_patient[,deleteIllegalChars(rownames(coefficients)),drop = FALSE], 1, function(x){
+
+  rn_coeff <- deleteIllegalChars(rownames(coefficients))
+  rn_coeff <- transformIllegalChars(rn_coeff)
+
+  lp.new_pat_variable <- apply(norm_patient[,rn_coeff,drop = FALSE], 1, function(x){
     x * coefficients$value #predict terms
   })
 
@@ -6336,7 +6643,10 @@ plot_classicalcox.comparePatients <- function(model, new_data, error.bar = FALSE
   #can be change for cox.prediction(model = model, new_data = patient, time = time, type = type, method = "cox")
   #for each patient on the data frame
 
-  lp.pats <- norm_patient[,deleteIllegalChars(names(model$survival_model$fit$coefficients))] %*% model$survival_model$fit$coefficients
+  rn_coeff <- deleteIllegalChars(names(model$survival_model$fit$coefficients))
+  rn_coeff <- transformIllegalChars(rn_coeff)
+
+  lp.pats <- norm_patient[,rn_coeff] %*% model$survival_model$fit$coefficients
   colnames(lp.pats) <- "linear predictor"
 
   rownames(lp.new_pat_variable) <- rownames(coefficients)
@@ -6415,6 +6725,9 @@ plot_cox.comparePatients <- function(model, new_data, error.bar = FALSE, onlySig
                                      zero.rm = TRUE,
                                      auto.limits = TRUE, top = NULL){
 
+  # norm and fix test data
+  new_data <- checkColnamesIllegalChars(new_data)
+
   #DFCALLS
   value <- patients <- NULL
 
@@ -6453,7 +6766,10 @@ plot_cox.comparePatients <- function(model, new_data, error.bar = FALSE, onlySig
   }
 
   #lp.new_pat_manual <- norm_patient[,rownames(coefficients)] %*% coefficients #predict lp
-  lp.new_pat_variable <- apply(norm_patient[,deleteIllegalChars(rownames(coefficients)),drop = FALSE], 1, function(x){
+  rn_coeff <- deleteIllegalChars(rownames(coefficients))
+  rn_coeff <- transformIllegalChars(rn_coeff)
+
+  lp.new_pat_variable <- apply(norm_patient[,rn_coeff,drop = FALSE], 1, function(x){
     x * coefficients$value #predict terms
   })
 
@@ -6496,6 +6812,9 @@ plot_cox.comparePatients <- function(model, new_data, error.bar = FALSE, onlySig
     auto.limits <- round2any(max(c(abs(sd.max), abs(sd.min), abs(lp.new_pat_variable$value))), accuracy = accuracy, f = ceiling)
   }
 
+  # delete values of 0
+  lp.new_pat_variable <- lp.new_pat_variable[!lp.new_pat_variable$value==0,]
+
   ggp <- ggplot(lp.new_pat_variable[lp.new_pat_variable$lp.flag==FALSE,], aes(x = var, y = value, fill = patients)) +
     geom_bar(stat = "identity", position = "dodge") + xlab(label = "Variables")
   ggp2 <- ggplot(lp.new_pat_variable[lp.new_pat_variable$lp.flag==TRUE,], aes(x = var, y = value, fill = patients)) +
@@ -6536,6 +6855,9 @@ plot_cox.comparePatients <- function(model, new_data, error.bar = FALSE, onlySig
 plot_MB.cox.comparePatients <- function(model, new_data, error.bar = FALSE, onlySig = TRUE, alpha = 0.05,
                                         zero.rm = TRUE,
                                         auto.limits = TRUE, top = NULL){
+
+  # norm and fix test data
+  new_data <- checkColnamesIllegalChars.mb(new_data)
 
   #DFCALLS
   value <- patients <- NULL
@@ -6584,7 +6906,10 @@ plot_MB.cox.comparePatients <- function(model, new_data, error.bar = FALSE, only
     }
 
     #lp.new_pat_manual <- norm_patient[,rownames(coefficients)] %*% coefficients #predict lp
-    lp.new_pat_variable <- apply(norm_patient[,deleteIllegalChars(rownames(coefficients)),drop = FALSE], 1, function(x){
+    rn_coeff <- deleteIllegalChars(rownames(coefficients))
+    rn_coeff <- transformIllegalChars(rn_coeff)
+
+    lp.new_pat_variable <- apply(norm_patient[,rn_coeff,drop = FALSE], 1, function(x){
       x * coefficients$value #predict terms
     })
 

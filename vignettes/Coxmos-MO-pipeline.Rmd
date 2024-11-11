@@ -134,12 +134,12 @@ After loading the data, it may be of interest for the user to perform a survival
 
 *Coxmos* provides the following methodologies for multi-omic approaches:
 
-* SB.sPLS approaches: SB.sPLS-ICOX, iSB.sPLS-ICOX, SB.sPLS-DRCOX and iSB.sPLS-DRCOX.
+* SB.sPLS approaches: SB.sPLS-ICOX, iSB.sPLS-ICOX, SB.sPLS-DRCOX-Penalty, iSB.sPLS-DRCOX-Penalty, SB.sPLS-DRCOX-Dynamic, iSB.sPLS-DRCOX-Dynamic, SB.sPLS-DACOX-Dynamic and iSB.sPLS-DACOX-Dynamic.
 * MB.sPLS approaches: MB.sPLS-DRCOX-Dynamic and MB.sPLS-DACOX-Dynamic.
 
 More information for each approach could be found in the help section for each function. The function name for each methodology are:
 
-* SB.sPLS approaches: `sb.splsicox()`, `cv.isb.splsicox()`, `sb.splsdrcox()` and `cv.isb.splsdrcox()`.
+* SB.sPLS approaches: `sb.splsicox()`, `isb.splsicox()`, `sb.splsdrcox()`, `isb.splsdrcox()`, `sb.splsdrcox()`, `isb.splsdrcox()`, `sb.splsdacox()` and `isb.splsdacox()`.
 * MB.sPLS approaches: `mb.splsdrcox()` and `mb.splsdacox()`.
 
 To perform a survival analysis with our example, we will use methodologies that can work with high-dimensional data. These are the set of methodologies that use sPLS techniques.
@@ -259,32 +259,45 @@ sb.splsicox_model
 
 In this case, we optimized each omic/block to use the same number of components. But there is another methodology that allow to select a different number of components per block call "isb.splsicox".
 
-In this case, the cross validation returns the model automatically.
+```{r,warning=T, eval=F}
+cv.isb.splsicox_res <- cv.isb.splsicox(X = X_train, Y = Y_train,
+                                     max.ncomp = 2, penalty.list = c(0.5,0.9),
+                                     n_run = 2, k_folds = 5, 
+                                     x.center = x.center, x.scale = x.scale, 
+                                     remove_near_zero_variance = T, remove_zero_variance = F, toKeep.zv = NULL,
+                                     remove_variance_at_fold_level = F,
+                                     remove_non_significant_models = F, alpha = 0.05, 
+                                     w_AIC = 0, w_c.index = 0, w_AUC = 1, w_BRIER = 0, times = NULL, max_time_points = 15,
+                                     MIN_AUC_INCREASE = 0.01, MIN_AUC = 0.8, MIN_COMP_TO_CHECK = 3,
+                                     pred.attr = "mean", pred.method = "cenROC", fast_mode = F,
+                                     MIN_EPV = 5, return_models = F, remove_non_significant = F, returnData = F,
+                                     PARALLEL = F, verbose = F, seed = 123)
+
+cv.isb.splsicox_res
+```
+
+```{r, fig.small=T, eval=F}
+cv.isb.splsicox_res$list_cv_spls_models$mirna$plot_AUC
+cv.isb.splsicox_res$list_cv_spls_models$proteomic$plot_AUC
+```
 
 ```{r, warning=F, eval=F}
-isb.splsicox_model <- cv.isb.splsicox(X = X_train, Y = Y_train,
-                                      max.ncomp = 2, penalty.list = c(0.5, 0.9),
-                                      n_run = 2, k_folds = 5, 
+isb.splsicox_model <- isb.splsicox(X = X_train, Y = Y_train, cv.isb = cv.isb.splsicox_res,
                                       x.center = x.center, x.scale = x.scale, 
-                                      remove_near_zero_variance = T, remove_zero_variance = F, toKeep.zv = NULL,
-                                      remove_variance_at_fold_level = F,
-                                      remove_non_significant_models = F, alpha = 0.05, 
-                                      w_AIC = 0, w_c.index = 0, w_AUC = 1, w_BRIER = 0, times = NULL, max_time_points = 15,
-                                      MIN_AUC_INCREASE = 0.01, MIN_AUC = 0.8, MIN_COMP_TO_CHECK = 3,
-                                      pred.attr = "mean", pred.method = "cenROC", fast_mode = F,
-                                      MIN_EPV = 5, return_models = F, remove_non_significant = T,
-                                      PARALLEL = F, verbose = F, seed = 123)
+                                      remove_near_zero_variance = TRUE, remove_zero_variance = TRUE, toKeep.zv = NULL,
+                                   remove_non_significant = FALSE, alpha = 0.05,
+                                   MIN_EPV = 5, returnData = TRUE, verbose = FALSE)
 
 isb.splsicox_model
 ```
 
-## SB.sPLS-DRCOX
+## SB.sPLS-DRCOX-Dynamic
 
 We have developed also SB.sPLS-DRCOX, a comprehensive algorithm that employs the individual sPLS-DRCOX approach, executing the algorithm on each omic dataset independently to achieve dimensionality reduction. By integrating the resulting components, a unified survival model is constructed, capturing the collective information from all omics. Similar to SB.sPLS-ICOX, cross-validation is employed to identify the optimal number of components and penalty for variable selection, ensuring robust model optimization.
 
 ```{r, warning=F, eval=F}
 cv.sb.splsdrcox_res <- cv.sb.splsdrcox(X = X_train, Y = Y_train,
-                                       max.ncomp = 2, penalty.list = c(0.5,0.9),
+                                       max.ncomp = 2, vector = NULL,
                                        n_run = 2, k_folds = 10, 
                                        x.center = x.center, x.scale = x.scale,
                                        #y.center = FALSE, y.scale = FALSE,
@@ -306,7 +319,7 @@ We will generate a SB.sPLS-DRCOX model with optimal number of principal componen
 sb.splsdrcox_model <- sb.splsdrcox(X = X_train, 
                                    Y = Y_train, 
                                    n.comp = 2, #cv.sb.splsdrcox_res$opt.comp, 
-                                   penalty = 0.5, #cv.sb.splsdrcox_res$opt.penalty,
+                                   vector = list("mirna" = 484, "proteomic" = 369), #cv.sb.splsdrcox_res$opt.nvar,
                                    x.center = x.center, x.scale = x.scale,
                                    remove_near_zero_variance = T, remove_zero_variance = F, toKeep.zv = NULL, 
                                    remove_non_significant = T, alpha = 0.05, MIN_EPV = 5,
@@ -317,21 +330,34 @@ sb.splsdrcox_model
 
 As before, we optimized each omic/block to use the same number of components. But there is another methodology that allow to select a different number of components and penalty per block call "cv.isb.splsdrcox".
 
-The cross validation returns the model automatically.
+```{r,warning=T, eval=F}
+cv.isb.splsdrcox_res <- cv.isb.splsdrcox(X = X_train, Y = Y_train,
+                                     max.ncomp = 2, vector = NULL,
+                                     n_run = 2, k_folds = 5, 
+                                     x.center = x.center, x.scale = x.scale, 
+                                     remove_near_zero_variance = T, remove_zero_variance = F, toKeep.zv = NULL,
+                                     remove_variance_at_fold_level = F,
+                                     remove_non_significant_models = F, alpha = 0.05, 
+                                     w_AIC = 0, w_c.index = 0, w_AUC = 1, w_BRIER = 0, times = NULL, max_time_points = 15,
+                                     MIN_AUC_INCREASE = 0.01, MIN_AUC = 0.8, MIN_COMP_TO_CHECK = 3,
+                                     pred.attr = "mean", pred.method = "cenROC", fast_mode = F,
+                                     MIN_EPV = 5, return_models = F, remove_non_significant = F, returnData = F,
+                                     PARALLEL = F, verbose = F, seed = 123)
+
+cv.isb.splsdrcox_res
+```
+
+```{r, fig.small=T, eval=F}
+cv.isb.splsdrcox_res$list_cv_spls_models$mirna$plot_AUC
+cv.isb.splsdrcox_res$list_cv_spls_models$proteomic$plot_AUC
+```
 
 ```{r, warning=F, eval=F}
-isb.splsdrcox_model <- cv.isb.splsdrcox(X = X_train, Y = Y_train,
-                                        max.ncomp = 2, penalty.list = c(0.5,0.9),
-                                        n_run = 2, k_folds = 10, 
-                                        x.center = x.center, x.scale = x.scale,
-                                        remove_near_zero_variance = T, remove_zero_variance = F, toKeep.zv = NULL,
-                                        remove_variance_at_fold_level = F,
-                                        remove_non_significant_models = F, alpha = 0.05, 
-                                        w_AIC = 0, w_c.index = 0, w_AUC = 1, w_BRIER = 0, times = NULL, max_time_points = 15,
-                                        MIN_AUC_INCREASE = 0.01, MIN_AUC = 0.8, MIN_COMP_TO_CHECK = 3,
-                                        pred.attr = "mean", pred.method = "cenROC", fast_mode = F,
-                                        MIN_EPV = 5, return_models = F, remove_non_significant = T,
-                                        PARALLEL = F, verbose = F, seed = 123)
+isb.splsdrcox_model <- isb.splsdrcox(X = X_train, Y = Y_train, cv.isb = cv.isb.splsdrcox_res,
+                                   x.center = x.center, x.scale = x.scale, 
+                                   remove_near_zero_variance = TRUE, remove_zero_variance = TRUE, toKeep.zv = NULL,
+                                   remove_non_significant = FALSE, alpha = 0.05,
+                                   MIN_EPV = 5, returnData = TRUE, verbose = FALSE)
 
 isb.splsdrcox_model
 ```
@@ -349,7 +375,7 @@ This integration of sPLS-DRCOX and multiblock sPLS provides researchers with a p
 ```{r, warning=F, eval=F}
 cv.mb.splsdrcox_res <- cv.mb.splsdrcox(X = X_train, Y = Y_train, 
                                        max.ncomp = 2, vector = NULL, #NULL - autodetection
-                                       MIN_NVAR = 10, MAX_NVAR = 1000, n.cut_points = 10, EVAL_METHOD = "AUC",
+                                       MIN_NVAR = 10, MAX_NVAR = NULL, n.cut_points = 10, EVAL_METHOD = "AUC",
                                        n_run = 2, k_folds = 4, 
                                        x.center = x.center, x.scale = x.scale, 
                                        remove_near_zero_variance = T, remove_zero_variance = F, toKeep.zv = NULL,
@@ -435,8 +461,12 @@ When evaluating survival model results, we must indicate at which temporal point
 ```{r}
 lst_models <- list("SB.sPLS-ICOX" = sb.splsicox_model,
                    #"iSB.sPLS-ICOX" = isb.splsicox_model,
-                   "SB.sPLS-DRCOX" = sb.splsdrcox_model,
-                   #"iSB.sPLS-DRCOX" = isb.splsdrcox_model,
+                   "SB.sPLS-DRCOX-Dynamic" = sb.splsdrcox_model,
+                   #"iSB.sPLS-DRCOX-Dynamic" = isb.splsdrcox_model,
+                   #"SB.sPLS-DRCOX-Penalty" = sb.splsdrcox_penalty_model,
+                   #"iSB.sPLS-DRCOX-Penalty" = isb.splsdrcox_penalty_model,
+                   #"SB.sPLS-DACOX-Dynamic" = sb.splsdacox_model,
+                   #"iSB.sPLS-DACOX-Dynamic" = isb.splsdacox_model,
                    "MB.sPLS-DRCOX" = mb.splsdrcox_model,
                    "MB.sPLS-DACOX" = mb.splsdacox_model)
 
@@ -799,9 +829,9 @@ LST_KM_RES_VAR <- getAutoKM(type = "VAR",
 ```
 
 ```{r, fig.small=T}
-LST_KM_RES_VAR$LST_PLOTS$mirna$`hsa-miR-21-5p`
-LST_KM_RES_VAR$LST_PLOTS$proteomic$`840`
-LST_KM_RES_VAR$LST_PLOTS$proteomic$`7535`
+LST_KM_RES_VAR$LST_PLOTS$mirna$hsa.minus.miR.minus.21.minus.5p
+LST_KM_RES_VAR$LST_PLOTS$proteomic$var_840
+LST_KM_RES_VAR$LST_PLOTS$proteomic$var_7535
 ```
 
 ```{r}
@@ -821,9 +851,9 @@ LST_KM_TEST_VAR <- getTestKM(model = lst_models$`SB.sPLS-DRCOX`,
 ```
 
 ```{r, fig.small=T}
-LST_KM_TEST_VAR$mirna$`hsa-miR-21-5p`
-LST_KM_TEST_VAR$proteomic$`840`
-LST_KM_TEST_VAR$proteomic$`7535`
+LST_KM_TEST_VAR$mirna$hsa.minus.miR.minus.21.minus.5p
+LST_KM_TEST_VAR$proteomic$var_840
+LST_KM_TEST_VAR$proteomic$var_7535
 ```
 
 # New patients
