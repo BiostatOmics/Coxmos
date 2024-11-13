@@ -164,7 +164,7 @@ splitData_Iterations_Folds <- function(X, Y, n_run, k_folds, seed = 123){
   return(list(lst_X_train = lst_X_train, lst_Y_train = lst_Y_train, lst_X_test = lst_X_test, lst_Y_test = lst_Y_test, lst_train_index = lst_obs_index_train, lst_test_index = lst_obs_index_test, k_folds = k_folds))
 }
 
-# return a run/fold list where each fold are the indexes to select for train/test wehre train = k-1 folds
+# return a run/fold list where each fold are the indexes to select for train/test where train = k-1 folds
 # and 1 fold of test
 # difference between folds will be 1 fold of patients
 splitData_Iterations_Folds_indexes <- function(Y, n_run, k_folds, seed = 123){

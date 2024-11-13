@@ -254,7 +254,7 @@ mb.splsdacox <- function (X, Y,
   YNA <- is.na(Y) #TRUE is NA
 
   #### ### ### ### ### ### ### ### ### ### ### ##
-  ### ##         MB.sPLSDA-COX             ### ##
+  ### ##         MB.sPLS-DACOX             ### ##
   #### ### ### ### ### ### ### ### ### ### ### ##
 
   # AUTO DESIGN - https://mixomicsteam.github.io/mixOmics-Vignette/id_06.html#id_06:diablo-design
@@ -340,7 +340,7 @@ mb.splsdacox <- function (X, Y,
   #### ### ### ### ### ### ### ### ### ### ### #
 
   #### ### ### ### ### ### ### ### ### ### ### ###
-  ### ###         MB:sPLSDA-COX            ### ###
+  ### ###         MB:sPLS-DACOX            ### ###
   #### ### ### ### ### ### ### ### ### ### ### ###
   n.comp_used <- ncol(mb.splsda$variates$Y) #can be lesser than expected because we have lesser variables to select because penalization
 

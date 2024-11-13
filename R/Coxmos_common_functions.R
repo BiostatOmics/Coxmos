@@ -1358,28 +1358,36 @@ getCOMPLETE_BRIER <- function(comp_index, eta_index = NULL, run, fold, X_test, Y
 # If more than 2 events, get the maximum and the minimum time for event patients and compute X time
 # points between them (equally distributed)
 # else, do it by the censored patients
+
+# Updated: Minimum two events as the minimum time-point. And maximum time as one time before the last two event observations.
 getTimesVector <- function(Y, max_time_points = 15, ACCURACY = 0.001){
 
   if(length(Y[Y[,"event"]==1,"time"])>1){
-    if(is.integer(Y[,"time"])){
-      inter <- max(Y[Y[,"event"]==1,"time"]) - min(Y[Y[,"event"]==1,"time"])
-      times <- seq(min(Y[Y[,"event"]==1,"time"]), max(Y[Y[,"event"]==1,"time"]), inter / (max_time_points-1))
-      times <- round2any(times, accuracy = 1, f = ceiling)
-    }else{
-      inter <- max(Y[Y[,"event"]==1,"time"]) - min(Y[Y[,"event"]==1,"time"])
-      times <- seq(min(Y[Y[,"event"]==1,"time"]), max(Y[Y[,"event"]==1,"time"]), inter / (max_time_points-1))
-      times <- round2any(times, accuracy = ACCURACY, f = ceiling)
-    }
+    aux_Y <- Y[Y[,"event"] %in% TRUE,,drop=F]
   }else{
-    if(is.integer(Y[,"time"])){
-      inter <- max(Y[Y[,"event"]==0,"time"]) - min(Y[Y[,"event"]==0,"time"])
-      times <- seq(min(Y[Y[,"event"]==0,"time"]), max(Y[Y[,"event"]==0,"time"]), inter / (max_time_points-1))
-      times <- round2any(times, accuracy = 1, f = ceiling)
-    }else{
-      inter <- max(Y[Y[,"event"]==0,"time"]) - min(Y[Y[,"event"]==0,"time"])
-      times <- seq(min(Y[Y[,"event"]==1,"time"]), max(Y[Y[,"event"]==1,"time"]), inter / (max_time_points-1))
-      times <- round2any(times, accuracy = ACCURACY, f = ceiling)
-    }
+    message("Matrix Y does not contain any EVENT observations. Predictions may contain some inaccuracies.")
+    aux_Y <- Y
+  }
+  aux_Y <- aux_Y[order(aux_Y[,"time"]),,drop=F]
+  min_time <- aux_Y[2,"time"]
+  idx_min_time <- which(min_time == unique(aux_Y[,"time"]))
+  if(length(unique(aux_Y[,"time"]))>idx_min_time){
+    min_time <- unique(aux_Y[,"time"])[[idx_min_time+1]] #next time after two events
+  }
+
+  max_time <- aux_Y[nrow(aux_Y)-1,"time"]
+  idx_max_time <- which(max_time == unique(aux_Y[,"time"]))
+  if(1<idx_max_time){
+    max_time <- unique(aux_Y[,"time"])[[idx_max_time-1]] #next time after two events
+  }
+
+  inter <- max_time - min_time
+  times <- seq(min_time, max_time, inter / (max_time_points-1))
+
+  if(is.integer(Y[,"time"])){
+    times <- round2any(times, accuracy = 1, f = ceiling)
+  }else{
+    times <- round2any(times, accuracy = ACCURACY, f = ceiling)
   }
 
   return(times)

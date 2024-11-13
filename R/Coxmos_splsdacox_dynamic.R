@@ -2,10 +2,10 @@
 # METHODS #
 #### ### ##
 
-#' sPLSDA-COX Dynamic
+#' sPLS-DACOX Dynamic
 #' @description
 #' The splsdacox_dynamic function conducts a sparse partial least squares discriminant analysis Cox
-#' (sPLSDA-COX) using dynamic variable selection methodology. This method is particularly useful for
+#' (sPLS-DACOX) using dynamic variable selection methodology. This method is particularly useful for
 #' high-dimensional survival data where the goal is to identify a subset of variables that are most
 #' predictive of survival outcomes. The function integrates the power of sPLSDA with the Cox
 #' proportional hazards model to provide a robust tool for survival analysis in the context of large
@@ -23,8 +23,8 @@
 #' variables and selecting the one that maximizes the model's performance, as determined by the
 #' specified evaluation metric (EVAL_METHOD).
 #'
-#' Once the optimal number of variables is determined, the function proceeds to compute the sPLSDA-COX
-#' model. It employs the mixOmics::splsda function to compute the sPLSDA model, which is then
+#' Once the optimal number of variables is determined, the function proceeds to compute the sPLS-DACOX
+#' model. It employs the mixOmics::splsda function to compute the sPLS-DA model, which is then
 #' integrated with the Cox proportional hazards model. The resulting model provides insights into the
 #' relationship between the predictor variables and survival outcomes.
 #'
