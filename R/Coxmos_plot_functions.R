@@ -2210,6 +2210,7 @@ plot_pls_1comp <- function(matrix, mode = "loadings", factor_col = NULL, n_top =
       theme_minimal() +
       theme(legend.position = "none")
   }
+  return(p)
 }
 
 #' plot_Coxmos.PLS.model
@@ -4686,6 +4687,8 @@ plot_MB.pseudobeta.newObservation <- function(model, new_observation, error.bar 
 #' If BREAKTIME = NULL, "n.breaks" is used (default: NULL).
 #' @param n.breaks Numeric. If BREAKTIME is NULL, "n.breaks" is the number of time-break points to
 #' compute (default: 20).
+#' @param minProp Numeric. Minimum proportion rate (0-1) for the group of lesser observation when computing
+#' an optimal cutoff for numerical variables (default: 0.2).
 #' @param only_sig Logical. If "only_sig" = TRUE, then only significant log-rank test variables are
 #' returned (default: FALSE).
 #' @param alpha Numeric. Numerical values are regarded as significant if they fall below the
@@ -4708,11 +4711,13 @@ plot_MB.pseudobeta.newObservation <- function(model, new_observation, error.bar 
 #' @examples
 #' data("X_proteomic")
 #' data("Y_proteomic")
+#' X_proteomic <- X_proteomic[1:30,1:20]
+#' Y_proteomic <- Y_proteomic[1:30,]
 #' set.seed(123)
 #' index_train <- caret::createDataPartition(Y_proteomic$event, p = .5, list = FALSE, times = 1)
-#' X_train <- X_proteomic[index_train,1:20]
+#' X_train <- X_proteomic[index_train,]
 #' Y_train <- Y_proteomic[index_train,]
-#' X_test <- X_proteomic[-index_train,1:20]
+#' X_test <- X_proteomic[-index_train,]
 #' Y_test <- Y_proteomic[-index_train,]
 #' splsicox.model <- splsicox(X_train, Y_train, n.comp = 1, penalty = 0.5, x.center = TRUE,
 #' x.scale = TRUE)
@@ -4722,7 +4727,7 @@ plot_MB.pseudobeta.newObservation <- function(model, new_observation, error.bar 
 #' getAutoKM.list(type = "LP", lst_models)
 
 getAutoKM.list <- function(type = "LP", lst_models, comp = 1:2, top = NULL, ori_data = TRUE,
-                           BREAKTIME = NULL, n.breaks = 20, only_sig = FALSE, alpha = 0.05, title = NULL,
+                           BREAKTIME = NULL, n.breaks = 20, minProp = 0.2, only_sig = FALSE, alpha = 0.05, title = NULL,
                            verbose = FALSE){
 
   #check names in lst_models
@@ -4733,7 +4738,7 @@ getAutoKM.list <- function(type = "LP", lst_models, comp = 1:2, top = NULL, ori_
   }
 
   if(type %in% c("LP")){
-    lst <- purrr::map(lst_models, ~getLPKM(model = ., comp = comp, top = top, ori_data = ori_data, BREAKTIME = BREAKTIME, n.breaks = n.breaks, only_sig = only_sig, alpha = alpha, title = title, verbose = verbose))
+    lst <- purrr::map(lst_models, ~getLPKM(model = ., comp = comp, top = top, ori_data = ori_data, BREAKTIME = BREAKTIME, n.breaks = n.breaks, minProp = minProp, only_sig = only_sig, alpha = alpha, title = title, verbose = verbose))
   }else if(type == "COMP"){
 
     if(all(unlist(purrr::map(lst_models, function(x){x$class})) %in% c(pkg.env$pls_methods, pkg.env$multiblock_methods))){
@@ -4745,11 +4750,11 @@ getAutoKM.list <- function(type = "LP", lst_models, comp = 1:2, top = NULL, ori_
       }
     }
 
-    lst <- purrr::map(sub_lst_models, ~getCompKM(model = ., comp = comp, top = top, ori_data = ori_data, BREAKTIME = BREAKTIME, n.breaks = n.breaks, only_sig = only_sig, alpha = alpha, title = title, verbose = verbose))
+    lst <- purrr::map(sub_lst_models, ~getCompKM(model = ., comp = comp, top = top, ori_data = ori_data, BREAKTIME = BREAKTIME, n.breaks = n.breaks, minProp = minProp, only_sig = only_sig, alpha = alpha, title = title, verbose = verbose))
   }else if(type == "VAR"){
-    lst <- purrr::map(lst_models, ~getVarKM(model = ., comp = comp, top = top, ori_data = ori_data, BREAKTIME = BREAKTIME, n.breaks = n.breaks, only_sig = only_sig, alpha = alpha, title = title, verbose = verbose))
+    lst <- purrr::map(lst_models, ~getVarKM(model = ., comp = comp, top = top, ori_data = ori_data, BREAKTIME = BREAKTIME, n.breaks = n.breaks, minProp = minProp, only_sig = only_sig, alpha = alpha, title = title, verbose = verbose))
   }else if(type == "LPVAR"){
-    lst <- purrr::map(lst_models, ~getLPVarKM(model = ., comp = comp, top = top, ori_data = ori_data, BREAKTIME = BREAKTIME, n.breaks = n.breaks, only_sig = only_sig, alpha = alpha, title = title, verbose = verbose))
+    lst <- purrr::map(lst_models, ~getLPVarKM(model = ., comp = comp, top = top, ori_data = ori_data, BREAKTIME = BREAKTIME, n.breaks = n.breaks, minProp = minProp, only_sig = only_sig, alpha = alpha, title = title, verbose = verbose))
   }
   return(lst)
 }
@@ -4788,6 +4793,8 @@ getAutoKM.list <- function(type = "LP", lst_models, comp = 1:2, top = NULL, ori_
 #' If BREAKTIME = NULL, "n.breaks" is used (default: NULL).
 #' @param n.breaks Numeric. If BREAKTIME is NULL, "n.breaks" is the number of time-break points to
 #' compute (default: 20).
+#' @param minProp Numeric. Minimum proportion rate (0-1) for the group of lesser observation when computing
+#' an optimal cutoff for numerical variables (default: 0.2).
 #' @param only_sig Logical. If "only_sig" = TRUE, then only significant log-rank test variables are
 #' returned (default: FALSE).
 #' @param alpha Numeric. Numerical values are regarded as significant if they fall below the
@@ -4821,7 +4828,7 @@ getAutoKM.list <- function(type = "LP", lst_models, comp = 1:2, top = NULL, ori_
 #' getAutoKM(type = "LP", model = splsicox.model)
 
 getAutoKM <- function(type = "LP", model, comp = 1:2, top = 10, ori_data = TRUE, BREAKTIME = NULL,
-                      n.breaks = 20, only_sig = FALSE, alpha = 0.05, title = NULL, verbose = FALSE){
+                      n.breaks = 20,  minProp = 0.2, only_sig = FALSE, alpha = 0.05, title = NULL, verbose = FALSE){
 
   if(!type %in% c("LP", "COMP", "VAR")){
     stop("Type parameters must be one of the following: LP, COMP or VAR")
@@ -4838,17 +4845,17 @@ getAutoKM <- function(type = "LP", model, comp = 1:2, top = 10, ori_data = TRUE,
   }
 
   if(type == "LP"){
-    return(getLPKM(model = model, comp = comp, top = top, ori_data = ori_data, BREAKTIME = BREAKTIME, n.breaks = n.breaks, only_sig = only_sig, alpha = alpha, title = title, verbose = verbose))
+    return(getLPKM(model = model, comp = comp, top = top, ori_data = ori_data, BREAKTIME = BREAKTIME, n.breaks = n.breaks, minProp = minProp, only_sig = only_sig, alpha = alpha, title = title, verbose = verbose))
   }else if(type == "COMP"){
-    return(getCompKM(model, comp = comp, top = top, ori_data = ori_data, BREAKTIME = BREAKTIME, n.breaks = n.breaks, only_sig = only_sig, alpha = alpha, title = title, verbose = verbose))
+    return(getCompKM(model, comp = comp, top = top, ori_data = ori_data, BREAKTIME = BREAKTIME, n.breaks = n.breaks, minProp = minProp, only_sig = only_sig, alpha = alpha, title = title, verbose = verbose))
   }else if(type == "VAR"){
-    return(getVarKM(model, comp = comp, top = top, ori_data = ori_data, BREAKTIME = BREAKTIME, n.breaks = n.breaks, only_sig = only_sig, alpha = alpha, title = title, verbose = verbose))
+    return(getVarKM(model, comp = comp, top = top, ori_data = ori_data, BREAKTIME = BREAKTIME, n.breaks = n.breaks, minProp = minProp, only_sig = only_sig, alpha = alpha, title = title, verbose = verbose))
   }else if(type == "LPVAR"){
-    return(getLPVarKM(model, comp = comp, top = top, ori_data = ori_data, BREAKTIME = BREAKTIME, n.breaks = n.breaks, only_sig = only_sig, alpha = alpha, title = title, verbose = verbose))
+    return(getLPVarKM(model, comp = comp, top = top, ori_data = ori_data, BREAKTIME = BREAKTIME, n.breaks = n.breaks, minProp = minProp, only_sig = only_sig, alpha = alpha, title = title, verbose = verbose))
   }
 }
 
-getLPKM <- function(model, comp = 1:2, top = 10, ori_data = TRUE, BREAKTIME = NULL, n.breaks = 20,
+getLPKM <- function(model, comp = 1:2, top = 10, ori_data = TRUE, BREAKTIME = NULL, n.breaks = 20, minProp = 0.2,
                     only_sig = FALSE, alpha = 0.05, title = NULL, verbose = FALSE){
 
   if(length(comp)==1){
@@ -4878,7 +4885,7 @@ getLPKM <- function(model, comp = 1:2, top = 10, ori_data = TRUE, BREAKTIME = NU
 
   vars_num <- vars_data
   if(all(dim(vars_num)>0)){
-    info_logrank_num <- getLogRank_NumVariables(data = vars_num, sdata = data.frame(model$Y$data), VAR_EVENT = "event", name_data = NULL, minProp = 0.1, ROUND_CP = 4)
+    info_logrank_num <- getLogRank_NumVariables(data = vars_num, sdata = data.frame(model$Y$data), VAR_EVENT = "event", name_data = NULL, minProp = minProp, ROUND_CP = 4)
   }else{
     info_logrank_num <- NULL
   }
@@ -4905,7 +4912,7 @@ getLPKM <- function(model, comp = 1:2, top = 10, ori_data = TRUE, BREAKTIME = NU
 
 }
 
-getCompKM <- function(model, comp = 1:2, top = 10, ori_data = TRUE, BREAKTIME = NULL, n.breaks = 20,
+getCompKM <- function(model, comp = 1:2, top = 10, ori_data = TRUE, BREAKTIME = NULL, n.breaks = 20, minProp = 0.2,
                       only_sig = FALSE, alpha = 0.05, title = NULL, verbose = FALSE){
 
   if(length(comp)==1){
@@ -5033,7 +5040,7 @@ getCompKM <- function(model, comp = 1:2, top = 10, ori_data = TRUE, BREAKTIME = 
     vars_num <- vars_data
 
     if(all(dim(vars_num)>0)){
-      info_logrank_num <- getLogRank_NumVariables(data = vars_num, sdata = data.frame(model$Y$data), VAR_EVENT = "event", name_data = NULL, minProp = 0.1, ROUND_CP = 4)
+      info_logrank_num <- getLogRank_NumVariables(data = vars_num, sdata = data.frame(model$Y$data), VAR_EVENT = "event", name_data = NULL, minProp = minProp, ROUND_CP = 4)
     }else{
       info_logrank_num <- NULL
     }
@@ -5045,7 +5052,7 @@ getCompKM <- function(model, comp = 1:2, top = 10, ori_data = TRUE, BREAKTIME = 
       vars_num[[b]] <- vars_data[[b]]
 
       if(all(dim(vars_num[[b]]))>0){
-        info_logrank_num[[b]] <- getLogRank_NumVariables(data = vars_num[[b]], sdata = data.frame(model$Y$data), VAR_EVENT = "event", name_data = NULL, minProp = 0.1, ROUND_CP = 4)
+        info_logrank_num[[b]] <- getLogRank_NumVariables(data = vars_num[[b]], sdata = data.frame(model$Y$data), VAR_EVENT = "event", name_data = NULL, minProp = minProp, ROUND_CP = 4)
       }else{
         info_logrank_num[[b]] <- NULL
       }
@@ -5124,7 +5131,7 @@ getCompKM <- function(model, comp = 1:2, top = 10, ori_data = TRUE, BREAKTIME = 
 
 }
 
-getLPVarKM <- function(model, comp = 1:2, top = 10, ori_data = TRUE, BREAKTIME = NULL, n.breaks = 20,
+getLPVarKM <- function(model, comp = 1:2, top = 10, ori_data = TRUE, BREAKTIME = NULL, n.breaks = 20, minProp = 0.2,
                        only_sig = FALSE, alpha = 0.05, title = NULL, verbose = FALSE){
 
   if(length(comp)==1){
@@ -5258,7 +5265,7 @@ getLPVarKM <- function(model, comp = 1:2, top = 10, ori_data = TRUE, BREAKTIME =
     }
 
     if(all(dim(vars_num)>0)){
-      info_logrank_num <- getLogRank_NumVariables(data = vars_num, sdata = data.frame(model$Y$data), VAR_EVENT = "event", name_data = NULL, minProp = 0.1, ROUND_CP = 4)
+      info_logrank_num <- getLogRank_NumVariables(data = vars_num, sdata = data.frame(model$Y$data), VAR_EVENT = "event", name_data = NULL, minProp = minProp, ROUND_CP = 4)
     }else{
       info_logrank_num <- NULL
     }
@@ -5283,7 +5290,7 @@ getLPVarKM <- function(model, comp = 1:2, top = 10, ori_data = TRUE, BREAKTIME =
       }
 
       if(all(dim(vars_num[[b]]))>0){
-        info_logrank_num[[b]] <- getLogRank_NumVariables(data = vars_num[[b]], sdata = data.frame(model$Y$data), VAR_EVENT = "event", name_data = NULL, minProp = 0.1, ROUND_CP = 4)
+        info_logrank_num[[b]] <- getLogRank_NumVariables(data = vars_num[[b]], sdata = data.frame(model$Y$data), VAR_EVENT = "event", name_data = NULL, minProp = minProp, ROUND_CP = 4)
       }else{
         info_logrank_num[[b]] <- NULL
       }
@@ -5384,7 +5391,7 @@ getLPVarKM <- function(model, comp = 1:2, top = 10, ori_data = TRUE, BREAKTIME =
 
 }
 
-getVarKM <- function(model, comp = 1:2, top = 10, ori_data = TRUE, BREAKTIME = NULL, n.breaks = 20,
+getVarKM <- function(model, comp = 1:2, top = 10, ori_data = TRUE, BREAKTIME = NULL, n.breaks = 20, minProp = 0.2,
                      only_sig = FALSE, alpha = 0.05, title = NULL, verbose = FALSE){
 
   if(length(comp)==1){
@@ -5455,8 +5462,9 @@ getVarKM <- function(model, comp = 1:2, top = 10, ori_data = TRUE, BREAKTIME = N
           next
         }
 
-      }else if(attr(model, "model") %in% c(pkg.env$mb.splsdrcox, pkg.env$mb.splsdacox)){
+      }else if(attr(model, "model") %in% c(pkg.env$multiblock_mixomics_methods)){
 
+        # look for W* or loadings: W* include all rownames with at least one appearing, meanwhile loadings is exact per component
         for(c in comp){
           if(ncol(model$X$W.star[[b]])>=c){
             rn <- rownames(model$X$W.star[[b]][model$X$W.star[[b]][,c]!=0,c,drop = FALSE])
@@ -5481,7 +5489,11 @@ getVarKM <- function(model, comp = 1:2, top = 10, ori_data = TRUE, BREAKTIME = N
     unique_vars <- transformIllegalChars(unique_vars)
 
     if(ori_data){
-      vars_data <- as.data.frame(model$X_input[rownames(model$X$data),unique_vars,drop = FALSE])
+      if(attr(model, "model") %in% pkg.env$pls_methods){
+        vars_data <- as.data.frame(model$X$data[rownames(model$X$data),unique_vars,drop = FALSE])
+      }else{
+        vars_data <- as.data.frame(model$X_input[rownames(model$X$data),unique_vars,drop = FALSE])
+      }
     }else{
       vars_data <- as.data.frame(model$X$data[,unique_vars,drop = FALSE])
     }
@@ -5514,7 +5526,7 @@ getVarKM <- function(model, comp = 1:2, top = 10, ori_data = TRUE, BREAKTIME = N
 
     if(all(dim(vars_num)>0)){
       info_logrank_num <- getLogRank_NumVariables(data = vars_num, sdata = data.frame(model$Y$data),
-                                                  VAR_EVENT = "event", name_data = NULL, minProp = 0.1, ROUND_CP = 4)
+                                                  VAR_EVENT = "event", name_data = NULL, minProp = minProp, ROUND_CP = 4)
     }else{
       info_logrank_num <- NULL
     }
@@ -5536,7 +5548,7 @@ getVarKM <- function(model, comp = 1:2, top = 10, ori_data = TRUE, BREAKTIME = N
       }
 
       if(all(dim(vars_num[[b]]))>0){
-        info_logrank_num[[b]] <- getLogRank_NumVariables(data = vars_num[[b]], sdata = data.frame(model$Y$data), VAR_EVENT = "event", name_data = NULL, minProp = 0.1, ROUND_CP = 4)
+        info_logrank_num[[b]] <- getLogRank_NumVariables(data = vars_num[[b]], sdata = data.frame(model$Y$data), VAR_EVENT = "event", name_data = NULL, minProp = minProp, ROUND_CP = 4)
       }else{
         info_logrank_num[[b]] <- NULL
       }
@@ -5698,7 +5710,7 @@ getLogRank_QualVariables <- function(data, sdata, VAR_EVENT, name_data = NULL){
   return(LST_QVAR_SIG)
 }
 
-getLogRank_NumVariables <- function(data, sdata, VAR_EVENT, name_data = NULL, minProp = 0.1,
+getLogRank_NumVariables <- function(data, sdata, VAR_EVENT, name_data = NULL, minProp = 0.2,
                                     ROUND_CP = 4){
 
   if(is.null(name_data)){
@@ -6130,13 +6142,13 @@ getCutoffAutoKM <- function(result){
 #' @examples
 #' data("X_proteomic")
 #' data("Y_proteomic")
-#' X_proteomic <- X_proteomic[1:50,]
-#' Y_proteomic <- Y_proteomic[1:50,]
+#' X_proteomic <- X_proteomic[1:30,1:15]
+#' Y_proteomic <- Y_proteomic[1:30,]
 #' set.seed(123)
 #' index_train <- caret::createDataPartition(Y_proteomic$event, p = .5, list = FALSE, times = 1)
-#' X_train <- X_proteomic[index_train,1:20]
+#' X_train <- X_proteomic[index_train,]
 #' Y_train <- Y_proteomic[index_train,]
-#' X_test <- X_proteomic[-index_train,1:20]
+#' X_test <- X_proteomic[-index_train,]
 #' Y_test <- Y_proteomic[-index_train,]
 #' splsicox.model <- splsicox(X_train, Y_train, n.comp = 1, penalty = 0.5, x.center = TRUE,
 #' x.scale = TRUE)

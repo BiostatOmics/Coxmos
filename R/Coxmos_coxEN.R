@@ -616,9 +616,11 @@ coxEN <- function(X, Y,
 #' @examples
 #' data("X_proteomic")
 #' data("Y_proteomic")
+#' X_proteomic <- X_proteomic[1:30,1:40]
+#' Y_proteomic <- Y_proteomic[1:30,]
 #' set.seed(123)
 #' index_train <- caret::createDataPartition(Y_proteomic$event, p = .5, list = FALSE, times = 1)
-#' X_train <- X_proteomic[index_train,1:50]
+#' X_train <- X_proteomic[index_train,]
 #' Y_train <- Y_proteomic[index_train,]
 #' cv.coxEN_model <- cv.coxEN(X_train, Y_train, EN.alpha.list = c(0.1,0.5),
 #' x.center = TRUE, x.scale = TRUE)

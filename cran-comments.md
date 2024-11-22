@@ -1,4 +1,4 @@
-# CRAN Submission Comments (2024-11-11)
+# CRAN Submission Comments (2024-11-22)
 This resubmission incorporates the following adjustments:
 
 - Functions 'save_ggplot' and 'save_ggplot_lst' updated to support multiple formats.
@@ -41,6 +41,7 @@ This resubmission incorporates the following adjustments:
 - Function 'predict.Coxmos' fixed and verified for all methods.
 - Minor changes made to 'sb.splsicox'.
 - All algorithms now transform illegal characters in column names to manageable alternatives.
+- Function 'getAUC_RUN_AND_COMP' fixed.
 - Functions 'getAUC_RUN_AND_COMP' and 'getAUC_RUN_AND_COMP_sPLS' updated to work with specific method groups.
 - Function 'print.Coxmos' updated to support iSB models.
 - Miscellaneous changes made to plotting functions related to 'deleteIllegalChars'.
@@ -59,6 +60,8 @@ This resubmission incorporates the following adjustments:
 - Function 'get_Coxmos_models2.0' updated to support all new methods.
 - Functions 'get_COX_evaluation_AIC_CINDEX' and 'get_COX_evaluation_BRIER_sPLS' updated to manage all new methods.
 - Function 'getTimesVector' updated to select an optimal time interval for evaluation.
+- Function 'getLPVarKM' fixed.
+- New parameter added to Kaplan-Meier functions. Now, minimum proportion of observations can be included for optimal cutoff in numerical variables.
 
 # CRAN Submission Comments (2024-03-20 & 2024-03-22)
 This resubmission incorporates the following adjustments:

@@ -12,6 +12,7 @@ getAutoKM(
   ori_data = TRUE,
   BREAKTIME = NULL,
   n.breaks = 20,
+  minProp = 0.2,
   only_sig = FALSE,
   alpha = 0.05,
   title = NULL,
@@ -37,6 +38,9 @@ If BREAKTIME = NULL, "n.breaks" is used (default: NULL).}
 
 \item{n.breaks}{Numeric. If BREAKTIME is NULL, "n.breaks" is the number of time-break points to
 compute (default: 20).}
+
+\item{minProp}{Numeric. Minimum proportion rate (0-1) for the group of lesser observation when computing
+an optimal cutoff for numerical variables (default: 0.2).}
 
 \item{only_sig}{Logical. If "only_sig" = TRUE, then only significant log-rank test variables are
 returned (default: FALSE).}

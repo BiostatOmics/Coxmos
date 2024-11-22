@@ -16,16 +16,16 @@ knitr::opts_chunk$set(
 
 rm(dpi)
 
-## ---- eval=FALSE--------------------------------------------------------------
+## ---- eval = FALSE------------------------------------------------------------
 #  install.packages("Coxmos")
 
-## ---- eval=FALSE--------------------------------------------------------------
+## ---- eval = FALSE------------------------------------------------------------
 #  install.packages("devtools")
-#  devtools::install_github("BiostatOmics/Coxmos")
+#  devtools::install_github("BiostatOmics/Coxmos", build_vignettes = TRUE)
 
-## ----setup, eval=FALSE, results = "hide"--------------------------------------
-#  # load Coxmos
-#  library(Coxmos)
+## ----setup, results = "hide"--------------------------------------------------
+# load Coxmos
+library(Coxmos)
 
 ## ---- eval=FALSE--------------------------------------------------------------
 #  # install.packages("RColorConesa")

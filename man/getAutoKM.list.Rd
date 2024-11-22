@@ -12,6 +12,7 @@ getAutoKM.list(
   ori_data = TRUE,
   BREAKTIME = NULL,
   n.breaks = 20,
+  minProp = 0.2,
   only_sig = FALSE,
   alpha = 0.05,
   title = NULL,
@@ -38,6 +39,9 @@ If BREAKTIME = NULL, "n.breaks" is used (default: NULL).}
 \item{n.breaks}{Numeric. If BREAKTIME is NULL, "n.breaks" is the number of time-break points to
 compute (default: 20).}
 
+\item{minProp}{Numeric. Minimum proportion rate (0-1) for the group of lesser observation when computing
+an optimal cutoff for numerical variables (default: 0.2).}
+
 \item{only_sig}{Logical. If "only_sig" = TRUE, then only significant log-rank test variables are
 returned (default: FALSE).}
 
@@ -60,11 +64,13 @@ Run the function "getAutoKM" for a list of models. More information in "?getAuto
 \examples{
 data("X_proteomic")
 data("Y_proteomic")
+X_proteomic <- X_proteomic[1:30,1:20]
+Y_proteomic <- Y_proteomic[1:30,]
 set.seed(123)
 index_train <- caret::createDataPartition(Y_proteomic$event, p = .5, list = FALSE, times = 1)
-X_train <- X_proteomic[index_train,1:20]
+X_train <- X_proteomic[index_train,]
 Y_train <- Y_proteomic[index_train,]
-X_test <- X_proteomic[-index_train,1:20]
+X_test <- X_proteomic[-index_train,]
 Y_test <- Y_proteomic[-index_train,]
 splsicox.model <- splsicox(X_train, Y_train, n.comp = 1, penalty = 0.5, x.center = TRUE,
 x.scale = TRUE)

@@ -2,7 +2,7 @@
 title: "Step-by-step guide to the MO-Coxmos pipeline"
 author: 
     name: "Pedro Salguero García"
-    affiliation: "Polytechnic University of Valencia and Institute for Integrative Systems Biology (I2SysBio), Valencia, Spain"
+    affiliation: "Universitat Politècnica de València and Institute for Integrative Systems Biology (I2SysBio), Valencia, Spain"
     email: pedrosalguerog[at]gmail.com
 package: Coxmos
 date: "Last updated: `r format(Sys.time(), '%d %B, %Y')`"
@@ -50,19 +50,25 @@ rm(dpi)
 
 # Introduction
 
-The **Coxmos** R package includes the following basic analysis blocks:
+The **Coxmos** R package includes the following functionalities for multi-block datasets:
 
-1. **Cross-validation and Modeling for High-Dimensional Data**: The user can use the *Coxmos* package to select the optimal parameters for survival models in high-dimensional datasets. The package provides tools for estimating the best values for the parameters.
+1. **Cross-validation and Modeling for Multi-Block Data**: The user can either select the parameters for survival models in multi-block datasets or use the package tools for estimating the best values for these parameters.
 
-2. **Comparing Classical and High-Dimensional Survival Models**: After obtaining multiple survival models, the user can compare them to determine which one gives the best results. The package includes several functions for comparing the models.
+2. **Comparing Survival Models**: After obtaining multiple survival models, the user can compare them to determine which one gives the best results. The package includes several functions for comparing the models.
 
-3. **Interpreting Results**: After selecting the best model or models, the user can interpret the results. The package includes several functions for understanding the impact of the original variables on survival prediction, even when working with (s)PLS methods.
+3. **Interpreting Results**: After selecting the best model or models, the user can interpret the results. The package includes several functions for understanding the impact of the original variables on survival prediction.
 
-4. **Predicting New Patients**: Finally, if a new dataset of patients is available, the user can use the model to make predictions for the new patients and compare the variables against the model coefficients to estimate the patients' risk of an event.
+4. **Predicting Survival for New Patients**: Finally, if a new dataset of patients is available, the user can use the estimated model to make predictions for the new patients. In addition, **Coxmos** allows for the comparison of variables to identify which ones contribute to the prediction.
 
 # Installation
 
-Coxmos can be installed from GitHub using `devtools`:
+Coxmos can be installed from CRAN repository:
+
+```{r, eval = FALSE}
+install.packages("Coxmos")
+```
+
+Or using its GitHub by `devtools`:
 
 ```{r, eval = FALSE}
 install.packages("devtools")
@@ -71,18 +77,14 @@ devtools::install_github("BiostatOmics/Coxmos", build_vignettes = TRUE)
 
 # Getting ready
 
-To run the analyses in this vignette, you'll first need to load `Coxmos`:
+To run the analyses in this vignette, first load `Coxmos`:
 
 ```{r setup, results = "hide"}
 # load Coxmos
 library(Coxmos)
 ```
 
-In addition, we'll require some additional packages for data formatting. Most of them are signaled as `Coxmos` dependencies, 
-so they will already be installed in your system.
-
-To generate plots, we make use of the `RColorConesa` R package.
-After install:
+To generate plots, we will make use of the `RColorConesa` R package. After installing it:
 
 ```{r, eval=FALSE}
 # install.packages("RColorConesa")
@@ -91,9 +93,9 @@ library(RColorConesa)
 
 # Input data
 
-The Coxmos pipeline requires two matrices as input. First one must be the features under study, and the second one a matrix with two columns called **time** and **event** for survival information.
+The Coxmos pipeline requires two objects as input. One should be a list with as many elements as block of predictors (X), and the other a matrix with two columns called **time** and **event** for survival information (Y).
 
-After quality control, the data contains expression data for miRNAs and Protein information. The data could be load as follows:
+The data example contains miRNA expression data and protein levels as the two block of predictors. The data can be loaded as follows:
 
 ```{r}
 # load dataset
@@ -114,7 +116,14 @@ knitr::kable(X$mirna[1:5,1:5]);knitr::kable(X$proteomic[1:5,1:5])
 knitr::kable(Y[1:5,])
 ```
 
-As can be observed, clinical variables were transform to binary/dummy variables for factors.
+As a preliminary exploration, we can plot the number of events per time interval.
+
+**Coxmos** has a series of tools for preliminary data exploration. One of them is to plot the number of events per time interval. The function requires the Y matrix, and as optional arguments, the user can specify: 
+
+- *categories* the name for each category (character vector of length two)
+- *y.text* the name for the y axis.
+- *roundTo* the minimum numeric value for round break-times values. E.g. 0.25, a value of 1.32 will be rounded to 1.25 (numbers shall be rounded off to multipliers of 0.25).
+- *max.breaks* Number of breaks for the histogram.
 
 ```{r}
 ggp_density.event <- plot_events(Y = Y, 
@@ -128,7 +137,7 @@ ggp_density.event <- plot_events(Y = Y,
 ggp_density.event$plot
 ```
 
-# Survival models for multiomic data sets
+# Survival models for Multi-Block data sets
 
 After loading the data, it may be of interest for the user to perform a survival analysis in order to examine the relationship between explanatory variables and the outcome. However, traditional methods are only applicable for low-dimensional datasets. To address this issue, we have developed a set of functions that make use of (s)PLS techniques in combination with Cox analysis for the analysis of high-dimensional datasets.
 

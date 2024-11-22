@@ -70,11 +70,14 @@
 #' @examples
 #' data("X_multiomic")
 #' data("Y_multiomic")
+#' X_multiomic$mirna <- X_multiomic$mirna[1:40,1:10]
+#' X_multiomic$proteomic <- X_multiomic$proteomic[1:40,1:10]
+#' Y_multiomic <- Y_multiomic[1:40,]
 #' set.seed(123)
 #' index_train <- caret::createDataPartition(Y_multiomic$event, p = .25, list = FALSE, times = 1)
 #' X_train <- X_multiomic
-#' X_train$mirna <- X_train$mirna[index_train,1:30]
-#' X_train$proteomic <- X_train$proteomic[index_train,1:30]
+#' X_train$mirna <- X_train$mirna[index_train,]
+#' X_train$proteomic <- X_train$proteomic[index_train,]
 #' Y_train <- Y_multiomic[index_train,]
 #' cv <- cv.isb.splsicox(X_train, Y_train, max.ncomp = 1, n_run = 1, k_folds = 3,
 #' penalty.list = c(0, 0.5))

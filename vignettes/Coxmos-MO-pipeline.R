@@ -17,6 +17,9 @@ knitr::opts_chunk$set(
 rm(dpi)
 
 ## ---- eval = FALSE------------------------------------------------------------
+#  install.packages("Coxmos")
+
+## ---- eval = FALSE------------------------------------------------------------
 #  install.packages("devtools")
 #  devtools::install_github("BiostatOmics/Coxmos", build_vignettes = TRUE)
 
@@ -539,4 +542,63 @@ for(b in names(X_test)){
   new_pat[[b]] <- X_test[[b]][1,,drop=F]
 }
 
+
+## -----------------------------------------------------------------------------
+knitr::kable(Y_test[rownames(new_pat$mirna),])
+
+## -----------------------------------------------------------------------------
+# ggp.simulated_beta_newPat <- plot_pseudobeta_newObservation.list(lst_models = lst_models, 
+#                                                              new_observation = new_pat,
+#                                                              error.bar = T, onlySig = T, alpha = 0.05,
+#                                                              zero.rm = T, auto.limits = T, show.betas = T, top = 20)
+
+ggp.simulated_beta_newPat <- plot_pseudobeta_newObservation(model = lst_models$`SB.sPLS-DRCOX`,
+                                                        new_observation = new_pat,
+                                                        error.bar = T, onlySig = T, alpha = 0.05,
+                                                        zero.rm = T, auto.limits = T, show.betas = T, top = 20)
+
+## ---- fig.small=T-------------------------------------------------------------
+ggp.simulated_beta_newPat$plot$mirna
+ggp.simulated_beta_newPat$plot$proteomic
+
+## -----------------------------------------------------------------------------
+pat_density <- plot_observation.eventDensity(observation = new_pat, 
+                                             model = lst_models$`SB.sPLS-DRCOX`, 
+                                             time = NULL, 
+                                             type = "lp")
+
+## ---- fig.small=T-------------------------------------------------------------
+pat_density
+
+## -----------------------------------------------------------------------------
+pat_histogram <- plot_observation.eventHistogram(observation = new_pat, 
+                                                 model = lst_models$`SB.sPLS-DRCOX`, 
+                                                 time = NULL, 
+                                                 type = "lp")
+
+## ---- fig.small=T-------------------------------------------------------------
+pat_histogram
+
+## -----------------------------------------------------------------------------
+sub_X_test <- list()
+for(b in names(X_test)){
+  sub_X_test[[b]] <- X_test[[b]][1:5,]
+}
+
+## -----------------------------------------------------------------------------
+knitr::kable(Y_test[rownames(sub_X_test$proteomic),])
+
+## -----------------------------------------------------------------------------
+# lst_cox.comparison <- plot_LP.multipleObservations.list(lst_models = lst_models,
+#                                                     new_observations = sub_X_test,
+#                                                     error.bar = T, zero.rm = T, onlySig = T,
+#                                                     alpha = 0.05, top = 5)
+
+lst_cox.comparison <- plot_LP.multipleObservations(model = lst_models$`SB.sPLS-DRCOX`,
+                                                   new_observations = sub_X_test,
+                                                   error.bar = T, zero.rm = T, onlySig = T,
+                                                   alpha = 0.05, top = 5)
+
+## ---- fig.small=T-------------------------------------------------------------
+lst_cox.comparison$plot
 

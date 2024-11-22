@@ -1981,7 +1981,7 @@ getAUC_RUN_AND_COMP <- function(mode = "AUC", fast_mode, max.ncomp, n_run,
 
         #same max value, takes best c-index (no AUC bc if method complete no-exits)
         if(length(names_max)>1){
-          sub_aux <- aux.run[,colnames(aux.run) %in% c("n.var", "c_index")]
+          sub_aux <- aux.l[,colnames(aux.l) %in% c("n.var", "c_index")]
           sub_aux <- sub_aux[sub_aux$n.var %in% names_max,]
           sub_aux$n.var <- factor(sub_aux$n.var)
 
