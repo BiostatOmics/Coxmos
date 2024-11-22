@@ -62,6 +62,7 @@ This resubmission incorporates the following adjustments:
 - Function 'getTimesVector' updated to select an optimal time interval for evaluation.
 - Function 'getLPVarKM' fixed.
 - New parameter added to Kaplan-Meier functions. Now, minimum proportion of observations can be included for optimal cutoff in numerical variables.
+- Function get_COX_evaluation_AUC fixed.
 
 # CRAN Submission Comments (2024-03-20 & 2024-03-22)
 This resubmission incorporates the following adjustments:
