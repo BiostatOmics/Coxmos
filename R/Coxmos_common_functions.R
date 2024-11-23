@@ -5259,6 +5259,75 @@ evaluation_Coxmos_class = function(object, ...) {
   return(model)
 }
 
+#' eval_Coxmos_model_per_variable.list
+#' @description
+#' The `eval_Coxmos_model_per_variable.list` Run the function "eval_Coxmos_model_per_variable" for a list of models. More information
+#' in "?eval_Coxmos_model_per_variable".
+#'
+#' @param lst_models List of Coxmos models.
+#' @param X_test Numeric matrix or data.frame. Explanatory variables for test data (raw format).
+#' Qualitative variables must be transform into binary variables.
+#' @param Y_test Numeric matrix or data.frame. Response variables for test data. Object must have two
+#' columns named as "time" and "event". For event column, accepted values are: 0/1 or FALSE/TRUE for
+#' censored and event observations.
+#' @param pred.method Character. AUC evaluation algorithm method for evaluate the model performance.
+#' Must be one of the following: "risksetROC", "survivalROC", "cenROC", "nsROC", "smoothROCtime_C",
+#' "smoothROCtime_I" (default: "cenROC").
+#' @param pred.attr Character. Way to evaluate the metric selected. Must be one of the following:
+#' "mean" or "median" (default: "mean").
+#' @param times Numeric vector. Time points where the AUC will be evaluated. If NULL, a maximum of
+#' 'max_time_points' points will be selected equally distributed (default: NULL).
+#' @param PARALLEL Logical. Run the cross validation with multicore option. As many cores as your
+#' total cores - 1 will be used. It could lead to higher RAM consumption (default: FALSE).
+#' @param max_time_points Numeric. Maximum number of time points to use for evaluating the model
+#' (default: 15).
+#' @param verbose Logical. If verbose = TRUE, extra messages could be displayed (default: FALSE).
+#'
+#' @return A list of two objects:
+#' \code{df}: A data.frame which the predictions for the specific model split into the full model (LP)
+#' and each component individually. This data.frame is used to plot the information by the
+#' function `plot_evaluation()`.
+#' \code{lst_AUC}: A list of the full model prediction and its components where the user can check
+#' the linear predictors used, the global AUC, the AUC per time point and the predicted time points
+#' selected.
+#'
+#' @author Pedro Salguero Garcia. Maintainer: pedsalga@upv.edu.es
+#'
+#' @export
+#'
+#' @examples
+#' data("X_proteomic")
+#' data("Y_proteomic")
+#' set.seed(123)
+#' index_train <- caret::createDataPartition(Y_proteomic$event, p = .5, list = FALSE, times = 1)
+#' X_train <- X_proteomic[index_train,1:50]
+#' Y_train <- Y_proteomic[index_train,]
+#' X_test <- X_proteomic[-index_train,1:50]
+#' Y_test <- Y_proteomic[-index_train,]
+#' splsicox.model <- splsicox(X_train, Y_train, n.comp = 2, penalty = 0.5, x.center = TRUE,
+#' x.scale = TRUE)
+#' splsdrcox.model <- splsdrcox_penalty(X_train, Y_train, n.comp = 2, penalty = 0.5, x.center = TRUE,
+#' x.scale = TRUE)
+#' lst_models = list("sPLSICOX" = splsicox.model, "sPLSDRCOX" = splsdrcox.model)
+#' eval_Coxmos_model_per_variable.list(lst_models, X_test, Y_test, pred.method = "cenROC")
+
+eval_Coxmos_model_per_variable.list <- function(lst_models, X_test, Y_test,
+                                                pred.method = "cenROC", pred.attr = "mean",
+                                                times = NULL, max_time_points = 15,
+                                                PARALLEL = FALSE, verbose = FALSE){
+
+  #check names in lst_models
+  lst_models <- checkModelNames(lst_models)
+
+  lst_plots <- purrr::map(lst_models, ~eval_Coxmos_model_per_variable(model = ., X_test = X_test,
+                                                                      Y_test = Y_test, pred.method = pred.method,
+                                                                      pred.attr = pred.attr, times = times,
+                                                                      max_time_points = max_time_points, PARALLEL = PARALLEL,
+                                                                      verbose = verbose))
+
+  return(lst_plots)
+}
+
 #' eval_Coxmos_model_per_variable
 #' @description
 #' The `eval_Coxmos_model_per_variable` function offers a granular evaluation of a specific Coxmos

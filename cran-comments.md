@@ -64,6 +64,7 @@ This resubmission incorporates the following adjustments:
 - New parameter added to Kaplan-Meier functions. Now, minimum proportion of observations can be included for optimal cutoff in numerical variables.
 - Function 'get_COX_evaluation_AUC' fixed.
 - Function 'getVarKM' fixed.
+- New 'eval_Coxmos_model_per_variable.list' function.
 
 # CRAN Submission Comments (2024-03-20 & 2024-03-22)
 This resubmission incorporates the following adjustments:
