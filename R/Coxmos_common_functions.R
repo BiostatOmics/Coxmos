@@ -5749,8 +5749,8 @@ getBestVector <- function(Xh, DR_coxph = NULL, Yh, n.comp, max.iter, vector, MIN
   }
 
   if(verbose){
-    message(paste0("Original vector: "))
-    message(paste0("Values: ", paste0(vector, collapse = ", "), "\n"))
+    message(paste0("\nOriginal vector: "))
+    message(paste0("# Vars.: ", paste0(vector, collapse = ", "), "\n"))
   }
 
   count = 1
@@ -5824,7 +5824,8 @@ getBestVector <- function(Xh, DR_coxph = NULL, Yh, n.comp, max.iter, vector, MIN
   best_keepX <- keepX
 
   if(verbose){
-    message(paste0("First selection: \n"), paste0(paste0("Value ", names(best_keepX), ": ", unlist(purrr::map(best_keepX, ~unique(.)))), "\n"), "Pred. Value: ", round(best_c_index, 4), "\n")
+    message(paste0("Metric for predictions: ", EVAL_METHOD, "\n"))
+    message(paste0("First selection: \n"), paste0(paste0("# Vars.", names(best_keepX), ": ", unlist(purrr::map(best_keepX, ~unique(.)))), "\n"), "Prediction: ", round(best_c_index, 4), "\n")
   }
 
   ori_vector <- vector
@@ -5872,7 +5873,7 @@ getBestVector <- function(Xh, DR_coxph = NULL, Yh, n.comp, max.iter, vector, MIN
     # break the while loop
     if(length(new_vector)==0){
       message(paste0("All combinations tested. \n"))
-      message(paste0(paste0("Value ", names(best_keepX), ": ", unlist(purrr::map(best_keepX, ~unique(.)))), "\n"), paste0("Pred. Value: ", round(best_c_index, 4), "\n"))
+      message(paste0(paste0("# Vars. selected", names(best_keepX), ": ", unlist(purrr::map(best_keepX, ~unique(.)))), "\n"), paste0("Prediction: ", round(best_c_index, 4), "\n"))
       break
     }
 
@@ -5880,7 +5881,7 @@ getBestVector <- function(Xh, DR_coxph = NULL, Yh, n.comp, max.iter, vector, MIN
     new_vector <- new_vector[order(new_vector)]
 
     if(verbose){
-      message(paste0("Testing: \n"), paste0("Value ", names(best_keepX), ": ", new_vector, "\n"))
+      message(paste0("Testing: \n"), paste0("· ", new_vector, " variables", "\n"))
     }
 
     new_vector <- unlist(new_vector)
@@ -5953,13 +5954,13 @@ getBestVector <- function(Xh, DR_coxph = NULL, Yh, n.comp, max.iter, vector, MIN
     if(best_c_index >= best_c_index_aux || abs(best_c_index_aux-best_c_index) <= MIN_AUC_INCREASE){
       FLAG = FALSE
       if(verbose){
-        message(paste0("End: \n"), paste0(paste0("Value ", names(best_keepX), ": ", unlist(purrr::map(best_keepX, ~unique(.)))), "\n"), paste0("Pred. Value: ", round(best_c_index, 4), "\n"))
+        message(paste0("End: \n"), paste0(paste0("# Vars. selected", names(best_keepX), ": ", unlist(purrr::map(best_keepX, ~unique(.)))), "\n"), paste0("Prediction: ", round(best_c_index, 4), "\n"), paste0("Last # Vars. tested (",rownames(df_cox_value_aux)[index],") with a predicion of ", round(best_c_index_aux, 4), ".\n"))
       }
     }else{
       best_c_index <- best_c_index_aux
       best_keepX <- vector_aux[[index]]
       if(verbose){
-        message(paste0("New Vector found: \n"), paste0(paste0("Value ", names(best_keepX), ": ", unlist(purrr::map(best_keepX, ~unique(.)))), "\n"), paste0("Pred. Value: ", round(best_c_index_aux, 4), "\n"))
+        message(paste0("New best model found: \n"), paste0(paste0("# Vars. selected", names(best_keepX), ": ", unlist(purrr::map(best_keepX, ~unique(.)))), "\n"), paste0("Prediction: ", round(best_c_index_aux, 4), "\n"))
       }
     }
   }

@@ -5489,11 +5489,7 @@ getVarKM <- function(model, comp = 1:2, top = 10, ori_data = TRUE, BREAKTIME = N
     unique_vars <- transformIllegalChars(unique_vars)
 
     if(ori_data){
-      if(attr(model, "model") %in% pkg.env$pls_methods){
-        vars_data <- as.data.frame(model$X$data[rownames(model$X$data),unique_vars,drop = FALSE])
-      }else{
-        vars_data <- as.data.frame(model$X_input[rownames(model$X$data),unique_vars,drop = FALSE])
-      }
+      vars_data <- as.data.frame(model$X_input[rownames(model$X$data),unique_vars,drop = FALSE])
     }else{
       vars_data <- as.data.frame(model$X$data[,unique_vars,drop = FALSE])
     }
@@ -5733,18 +5729,29 @@ getLogRank_NumVariables <- function(data, sdata, VAR_EVENT, name_data = NULL, mi
     colnames(auxData)[3] <- cn
 
     # Determine the optimal cutpoint for continuous variables, using the maximally selected rank statistics from the 'maxstat' R package.
-    minProp = minProp #we have to establish a minimum number of patients per group in 0-1
+    minProp_ori = minProp #we have to establish a minimum number of patients per group in 0-1
 
-    res.cut <- tryCatch(
-      expr = {
-        survminer::surv_cutpoint(auxData, time="time", event="event", variables = cn, minprop = minProp)
-      },
-      # Specifying error message
-      error = function(e){
-        message(paste0("Problems with variable '",cn,"'", ": ", e))
-        NA
+    res.cut <- NA
+    while(all(is.na(res.cut)) & minProp > 0){
+      res.cut <- tryCatch(
+        expr = {
+          survminer::surv_cutpoint(auxData, time="time", event="event", variables = cn, minprop = minProp)
+        },
+        # Specifying error message
+        error = function(e){
+          message(paste0("Problems with variable '",cn,"'", ": ", e))
+          NA
+        }
+      )
+
+      # Reducir minProp si hubo error
+      if(all(is.na(res.cut))){
+        minProp <- minProp - 0.01
+        message(paste0("minProp updated to: ", minProp, "\n"))
       }
-    )
+    }
+
+    minProp = minProp_ori #update again
 
     if(all(is.na(res.cut))){
       next
