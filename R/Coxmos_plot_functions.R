@@ -5208,7 +5208,8 @@ getLPVarKM <- function(model, comp = 1:2, top = 10, ori_data = TRUE, BREAKTIME =
     unique_vars <- transformIllegalChars(unique_vars)
 
     if(ori_data){
-      vars_data <- as.data.frame(model$X_input[rownames(model$X$data),unique_vars,drop = FALSE])
+      ori_df <- checkColnamesIllegalChars(model$X_input)
+      vars_data <- as.data.frame(ori_df[rownames(model$X$data),unique_vars,drop = FALSE])
     }else{
       vars_data <- as.data.frame(model$X$data[,unique_vars,drop = FALSE])
     }
@@ -5241,7 +5242,8 @@ getLPVarKM <- function(model, comp = 1:2, top = 10, ori_data = TRUE, BREAKTIME =
       unique_vars <- transformIllegalChars(unique_vars)
 
       if(ori_data){
-        vars_data[[b]] <- as.data.frame(model$X_input[[b]][rownames(model$X$data[[b]]),unique_vars,drop = FALSE])
+        ori_df <- checkColnamesIllegalChars(model$X_input[[b]])
+        vars_data[[b]] <- as.data.frame(ori_df[rownames(model$X$data[[b]]),unique_vars,drop = FALSE])
       }else{
         vars_data[[b]] <- as.data.frame(model$X$data[[b]][,unique_vars,drop = FALSE])
       }
@@ -5489,7 +5491,8 @@ getVarKM <- function(model, comp = 1:2, top = 10, ori_data = TRUE, BREAKTIME = N
     unique_vars <- transformIllegalChars(unique_vars)
 
     if(ori_data){
-      vars_data <- as.data.frame(model$X_input[rownames(model$X$data),unique_vars,drop = FALSE])
+      ori_df <- checkColnamesIllegalChars(model$X_input)
+      vars_data <- as.data.frame(ori_df[rownames(model$X$data),unique_vars,drop = FALSE])
     }else{
       vars_data <- as.data.frame(model$X$data[,unique_vars,drop = FALSE])
     }
@@ -5501,7 +5504,8 @@ getVarKM <- function(model, comp = 1:2, top = 10, ori_data = TRUE, BREAKTIME = N
       unique_vars <- transformIllegalChars(unique_vars)
 
       if(ori_data){
-        vars_data[[b]] <- as.data.frame(model$X_input[[b]][rownames(model$X$data[[b]]),unique_vars,drop = FALSE])
+        ori_df <- checkColnamesIllegalChars(model$X_input[[b]])
+        vars_data[[b]] <- as.data.frame(ori_df[rownames(model$X$data[[b]]),unique_vars,drop = FALSE])
       }else{
         vars_data[[b]] <- as.data.frame(model$X$data[[b]][,unique_vars,drop = FALSE])
       }
