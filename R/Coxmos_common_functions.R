@@ -732,6 +732,11 @@ removeNAorINFcoxmodel <- function(model, data, time.value = NULL, event.value = 
 # Other functions #
 #### ### ### ### ##
 
+is.binaryMatrix <- function(X){
+  values <- apply(X, 2, function(x){all(length(unique(x)==2))})
+  all(values)
+}
+
 removeInfoSurvivalModel <- function(survival_model){
   if("AIC" %in% names(survival_model)){
     survival_model$AIC <- NULL

@@ -65,6 +65,9 @@ This resubmission incorporates the following adjustments:
 - Function 'get_COX_evaluation_AUC' fixed.
 - Function 'getVarKM' fixed.
 - New 'eval_Coxmos_model_per_variable.list' function.
+- New 'is.binaryMatrix' function.
+- Functions 'getCutoffAutoKM' and 'getCutoffAutoKM.list' now deal qualitative KM.
+- Functions 'getTestKM' and 'getTestKM.list' now deal qualitative KM.
 
 # CRAN Submission Comments (2024-03-20 & 2024-03-22)
 This resubmission incorporates the following adjustments:

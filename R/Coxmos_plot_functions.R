@@ -6085,30 +6085,57 @@ getCutoffAutoKM.list <- function(lst_results){
 
 getCutoffAutoKM <- function(result){
 
+  # !!! only work if ALL binary or ALL numeric !!!
+
   if(all(is.null(result)) || all(is.na(result))){
     warning("All NA or NULL in result object.")
     return(NULL)
   }
 
-  # High dimensional
-  if("df_nvar_lrtest" %in% names(result$info_logrank_num)){
-    value <- result$info_logrank_num$df_nvar_lrtest$Cutoff
-    names(value) <- result$info_logrank_num$df_nvar_lrtest$Variable
-  }else{
-    # MO
-    value <- list()
-    cont = 1
-    for(b in names(result$info_logrank_num)){
-      if(is.null(result$info_logrank_num[[b]]$df_nvar_lrtest)){
-        return(NULL)
-      }
+  # Binary Matrix - SO
+  value <- list()
+  if(!is.null(result$info_logrank_qual) & "Variable" %in% names(result$info_logrank_qual)){
 
-      value[[cont]] <- result$info_logrank_num[[b]]$df_nvar_lrtest$Cutoff
-      names(value[[cont]]) <- paste0(result$info_logrank_num[[b]]$df_nvar_lrtest$Variable, "_", b)
-      cont = cont + 1
+    if("Variable" %in% names(result$info_logrank_qual)){
+      value[["qualitative"]] <- result$info_logrank_qual$Variable
+    }else{
+      # MO
+      value <- list()
+      for(b in names(result$info_logrank_qual)){
+        res <- list()
+        res[["qualitative"]] <- result$info_logrank_qual[[b]]$Variable
+        result$info_logrank_qual[[b]]$Variablevalue[[b]] <- res
+      }
     }
 
-    value <- unlist(value)
+  # Numeric Matrix - SO
+  }else if(!is.null(result$info_logrank_num) & "df_nvar_lrtest" %in% names(result$info_logrank_num)){
+    value[["quantitative"]] <- result$info_logrank_num$df_nvar_lrtest$Cutoff
+    names(value[["quantitative"]]) <- result$info_logrank_num$df_nvar_lrtest$Variable
+  }else{
+
+    # MO
+    if(!all(is.null(result$info_logrank_num))){
+      for(b in names(result$info_logrank_num)){
+        if(is.null(result$info_logrank_num[[b]]$df_nvar_lrtest)){
+          return(NULL)
+        }
+
+        value[["quantitative"]] <- c(value[["quantitative"]], result$info_logrank_num[[b]]$df_nvar_lrtest$Cutoff)
+        names(value[["quantitative"]]) <- c(names(value[["quantitative"]])[names(value[["qualitative"]]) != ""], paste0(result$info_logrank_num[[b]]$df_nvar_lrtest$Variable, "_", b))
+      }
+    }
+
+    if(!all(is.null(result$info_logrank_qual))){
+      for(b in names(result$info_logrank_qual)){
+        if(is.null(result$info_logrank_qual[[b]])){
+          return(NULL)
+        }
+
+        value[["qualitative"]] <- c(value[["qualitative"]], result$info_logrank_qual[[b]]$Variable)
+        names(value[["qualitative"]]) <- c(names(value[["qualitative"]])[names(value[["qualitative"]]) != ""], paste0(result$info_logrank_qual[[b]]$Variable, "_", b))
+      }
+    }
 
   }
 
@@ -6315,11 +6342,6 @@ getTestKM <- function(model, X_test, Y_test, cutoff, type = "LP", ori_data = TRU
     stop("Type parameters must be one of the following: LP, COMP or VAR")
   }
 
-  if(!is.numeric(cutoff)){
-    message("cutoff parameter must be numeric. Returning NA")
-    return(NA)
-  }
-
   if(is.null(BREAKTIME)){
     BREAKTIME <- (max(Y_test[,"time"]) - min(Y_test[,"time"])) / n.breaks
   }
@@ -6332,6 +6354,9 @@ getTestKM <- function(model, X_test, Y_test, cutoff, type = "LP", ori_data = TRU
 
   #create new variable
   if(type=="LP"){
+
+    cutoff <- cutoff$quantitative
+
     #predict scores X_test
     test_score <- predict.Coxmos(object = model, newdata = X_test)
     #predict LP using scores
@@ -6360,6 +6385,9 @@ getTestKM <- function(model, X_test, Y_test, cutoff, type = "LP", ori_data = TRU
     return(ggp)
 
   }else if(type=="COMP"){
+
+    cutoff <- cutoff$quantitative
+
     lst_test_lp <- NULL
     lst_ggp <- NULL
 
@@ -6412,24 +6440,95 @@ getTestKM <- function(model, X_test, Y_test, cutoff, type = "LP", ori_data = TRU
       lst_ggp <- NULL
 
       for(b in names(model$list_spls_models)){
-        new_cutoff <- cutoff[endsWith(names(cutoff), paste0("_",b))]
-        names(new_cutoff) <- unlist(lapply(names(new_cutoff), function(x){substr(x, start = 1, stop = nchar(x)-nchar(paste0("_",b)))}))
-        lst_ggp[[b]] <- getTestKM(model = model$list_spls_models[[b]], X_test = X_test[[b]], Y_test, new_cutoff, type, ori_data, BREAKTIME, n.breaks, title)
+
+        # QUALITATIVE
+        if(all(!is.null(cutoff$qualitative))){
+          new_cutoff <- cutoff$qualitative[endsWith(names(cutoff$qualitative), paste0("_",b))]
+          names(new_cutoff) <- unlist(lapply(names(new_cutoff), function(x){substr(x, start = 1, stop = nchar(x)-nchar(paste0("_",b)))}))
+          if(!length(new_cutoff)==0){
+            lst_qual <- list()
+            for(cn in new_cutoff){
+              aux_X_test <- factor(X_test[[b]][,cn], levels = sort(unique(X_test[[b]][,cn])))
+              aux_X_test <- data.frame(aux_X_test)
+              rownames(aux_X_test) <- rownames(X_test)
+              colnames(aux_X_test) <- cn
+              lst_qual[[cn]] <- plot_survivalplot.qual(data = aux_X_test,
+                                                       sdata = data.frame(Y_test),
+                                                       BREAKTIME = BREAKTIME,
+                                                       cn_variables = cn,
+                                                       name_data = NULL, title = title)[[cn]]
+            }
+
+            lst_ggp[[b]] <- lst_qual
+          }
+        }
+
+        # QUANTITATIVE
+        if(all(!is.null(cutoff$quantitative))){
+          new_cutoff <- cutoff$quantitative[endsWith(names(cutoff$quantitative), paste0("_",b))]
+          if(!length(new_cutoff)==0){
+            names(new_cutoff) <- unlist(lapply(names(new_cutoff), function(x){substr(x, start = 1, stop = nchar(x)-nchar(paste0("_",b)))}))
+            aux <- getTestKM(model = model$list_spls_models[[b]], X_test = X_test[[b]], Y_test, new_cutoff, type, ori_data, BREAKTIME, n.breaks, title)
+            for(cni in names(aux)){
+              lst_ggp[[b]][[cni]] <- aux[[cni]]
+            }
+          }
+        }
       }
+
       return(lst_ggp)
 
     }else if(attr(model, "model") %in% c(pkg.env$multiblock_mixomics_methods) && isa(X_test, "list")){
       ## MBs.
       lst_ggp <- NULL
       for(b in names(model$mb.model$X)){
-        new_cutoff <- cutoff[endsWith(names(cutoff), paste0("_",b))]
-        names(new_cutoff) <- unlist(lapply(names(new_cutoff), function(x){substr(x, start = 1, stop = nchar(x)-nchar(paste0("_",b)))}))
-        lst_ggp[[b]] <- getTestKM(model = model, X_test = X_test[[b]], Y_test, new_cutoff, type, ori_data, BREAKTIME, n.breaks, title)
+
+        # QUALITATIVE
+        if(all(!is.null(cutoff$qualitative))){
+          new_cutoff <- cutoff$qualitative[endsWith(names(cutoff$qualitative), paste0("_",b))]
+          names(new_cutoff) <- unlist(lapply(names(new_cutoff), function(x){substr(x, start = 1, stop = nchar(x)-nchar(paste0("_",b)))}))
+          if(!length(new_cutoff)==0){
+            lst_qual <- list()
+            for(cn in new_cutoff){
+              aux_X_test <- factor(X_test[[b]][,cn], levels = sort(unique(X_test[[b]][,cn])))
+              aux_X_test <- data.frame(aux_X_test)
+              rownames(aux_X_test) <- rownames(X_test)
+              colnames(aux_X_test) <- cn
+              lst_qual[[cn]] <- plot_survivalplot.qual(data = aux_X_test,
+                                                       sdata = data.frame(Y_test),
+                                                       BREAKTIME = BREAKTIME,
+                                                       cn_variables = cn,
+                                                       name_data = NULL, title = title)[[cn]]
+            }
+
+            lst_ggp[[b]] <- lst_qual
+          }
+        }
+        # QUANTITATIVE
+        if(all(!is.null(cutoff$quantitative))){
+          new_cutoff <- cutoff$quantitative[endsWith(names(cutoff$quantitative), paste0("_",b))]
+          if(!length(new_cutoff)==0){
+            names(new_cutoff) <- unlist(lapply(names(new_cutoff), function(x){substr(x, start = 1, stop = nchar(x)-nchar(paste0("_",b)))}))
+            aux <- getTestKM(model = model, X_test = X_test[[b]], Y_test, new_cutoff, type, ori_data, BREAKTIME, n.breaks, title)
+            for(cni in names(aux)){
+              lst_ggp[[b]][[cni]] <- aux[[cni]]
+            }
+          }
+        }
       }
       return(lst_ggp)
     }
 
-    X_test <- X_test[,names(cutoff),drop = FALSE]
+    vars <- NULL
+    if(length(cutoff$qualitative)>0){
+      vars <- cutoff$qualitative
+    }
+    if(length(cutoff$quantitative)>0){
+      vars <- names(cutoff$quantitative)
+    }
+
+    X_test <- X_test[,vars,drop = FALSE]
+
     lst_ggp <- NULL
 
     if(!ori_data){
@@ -6448,11 +6547,24 @@ getTestKM <- function(model, X_test, Y_test, cutoff, type = "LP", ori_data = TRU
 
     for(cn in colnames(X_test)){
 
+      if(!is.null(cutoff$qualitative) & cn %in% cutoff$qualitative){
+        aux_X_test <- factor(X_test[,cn], levels = sort(unique(X_test[,cn])))
+        aux_X_test <- data.frame(aux_X_test)
+        rownames(aux_X_test) <- rownames(X_test)
+        colnames(aux_X_test) <- cn
+        lst_ggp[[cn]] <- plot_survivalplot.qual(data = aux_X_test,
+                                                sdata = data.frame(Y_test),
+                                                BREAKTIME = BREAKTIME,
+                                                cn_variables = cn,
+                                                name_data = NULL, title = title)[[cn]]
+        next
+      }
+
+      if(!is.null(cutoff$quantitative) & cn %in% cutoff$quantitative){
         if(is.na(cutoff[[cn]])){
           message(paste0("Cutoff not found for variable: ", cn))
           next
         }
-
         txt_greater <- paste0("greater than ", cutoff[[cn]])
         txt_lower <- paste0("lesser/equal than ", cutoff[[cn]])
 
@@ -6467,6 +6579,9 @@ getTestKM <- function(model, X_test, Y_test, cutoff, type = "LP", ori_data = TRU
                                                 BREAKTIME = BREAKTIME,
                                                 cn_variables = cn,
                                                 name_data = NULL, title = title)[[cn]]
+        next
+      }
+
     }
 
     return(lst_ggp)
