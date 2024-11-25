@@ -42,6 +42,9 @@
 
 cenROC <- function(Y, M, censor, t, U = NULL, h = NULL, bw = "NR",  method = "tra", ktype = "normal", ktype1 = "normal", B = 0, alpha = 0.05, plot = FALSE)
 {
+
+  censor <- as.numeric(censor)
+
   if (is.null(U)) {U <- seq(0, 1, length.out = 151)}
   if (!is.vector(Y, mode = "numeric") |
       !is.vector(M, mode = "numeric") |
@@ -93,8 +96,18 @@ cenROC <- function(Y, M, censor, t, U = NULL, h = NULL, bw = "NR",  method = "tr
 
 Csurv <- function(Y, M, censor, t, h = NULL, kernel="normal") {
   if (is.null(h)) {
-    h <- bw.SJ(M, method = "dpi")
+    h <- tryCatch(
+      expr = {
+        bw.SJ(M, method = "dpi")
+      },
+      error = function(e){
+        h1 <- bw.bcv(M)
+        h2 <- bw.nrd0(M)
+        mean(c(h1,h2))
+      }
+    )
   }
+
   if(kernel=="normal"){
     kernel <- "gaussian"
   }

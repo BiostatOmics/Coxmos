@@ -762,11 +762,19 @@ cenROC_tryCatch <- function(Y, censor, M, t, method, ktype, alpha, plot, verbose
     },
     # warning
     warning = function(w){
-      # message(paste0("Problem in time: ", t))
-      # message(paste0("Message: ", w$message))
-      NA
+      message(paste0("Message: ", w$message))
+      if(grep("bw.bcv(M)", w$message, fixed = TRUE)>0 || w$message == "minimum occurred at one end of the range"){
+        cenROC(Y = Y, censor = censor, M = M,
+               t = t, method = method, ktype = ktype, alpha = alpha, plot = plot)
+      }else{
+        message(paste0("Problem in time: ", t))
+        message(paste0("Message: ", w$message))
+        NA
+      }
+
     }
   )))
+
   return(out)
 }
 

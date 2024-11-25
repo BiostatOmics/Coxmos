@@ -68,6 +68,7 @@ This resubmission incorporates the following adjustments:
 - New 'is.binaryMatrix' function.
 - Functions 'getCutoffAutoKM' and 'getCutoffAutoKM.list' now deal qualitative KM.
 - Functions 'getTestKM' and 'getTestKM.list' now deal qualitative KM.
+- Function 'Csurv' in 'cenROC' updated when 'bw.SJ(M, method = "dpi")' cannot work.
 
 # CRAN Submission Comments (2024-03-20 & 2024-03-22)
 This resubmission incorporates the following adjustments:

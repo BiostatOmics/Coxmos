@@ -1334,7 +1334,7 @@ getCOMPLETE_BRIER <- function(comp_index, eta_index = NULL, run, fold, X_test, Y
     # survcomp::sbrier.score2proba
     ### ##
 
-    # Usado por: Deep Learning–Based Multi-Omics Integration Robustly Predicts Survival in Liver Cancer
+    # Used by: Deep Learning–Based Multi-Omics Integration Robustly Predicts Survival in Liver Cancer
 
     # Needed - time/event/score for train and test dataframes
     # score is risk score (I do not know if survival probabilities or lp) - with lp is similar to pec
@@ -5955,7 +5955,7 @@ getBestVector <- function(Xh, DR_coxph = NULL, Yh, n.comp, max.iter, vector, MIN
     new_vector <- new_vector[order(new_vector)]
 
     if(verbose){
-      message(paste0("Testing: \n"), paste0("· ", new_vector, " variables", "\n"))
+      message(paste0("Testing: \n"), paste0("- ", new_vector, " variables", "\n"))
     }
 
     new_vector <- unlist(new_vector)
