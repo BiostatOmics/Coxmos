@@ -1,4 +1,4 @@
-# CRAN Submission Comments (2024-11-22)
+# CRAN Submission Comments (2024-11-26)
 This resubmission incorporates the following adjustments:
 
 - Functions 'save_ggplot' and 'save_ggplot_lst' updated to support multiple formats.
@@ -60,15 +60,16 @@ This resubmission incorporates the following adjustments:
 - Function 'get_Coxmos_models2.0' updated to support all new methods.
 - Functions 'get_COX_evaluation_AIC_CINDEX' and 'get_COX_evaluation_BRIER_sPLS' updated to manage all new methods.
 - Function 'getTimesVector' updated to select an optimal time interval for evaluation.
-- Function 'getLPVarKM' fixed.
 - New parameter added to Kaplan-Meier functions. Now, minimum proportion of observations can be included for optimal cutoff in numerical variables.
 - Function 'get_COX_evaluation_AUC' fixed.
-- Function 'getVarKM' fixed.
 - New 'eval_Coxmos_model_per_variable.list' function.
 - New 'is.binaryMatrix' function.
 - Functions 'getCutoffAutoKM' and 'getCutoffAutoKM.list' now deal qualitative KM.
+- Functions 'getCutoffAutoKM' and 'getCutoffAutoKM.list' now uses a CV with 5 folds to obtain the cutoff.
 - Functions 'getTestKM' and 'getTestKM.list' now deal qualitative KM.
+- Function 'getLPKM' and 'getCompKM' fixed when obtaining LP for specific variabes.
 - Function 'Csurv' in 'cenROC' updated when 'bw.SJ(M, method = "dpi")' cannot work.
+- Function 'eval_Coxmos_model_per_variable' and 'eval_Coxmos_model_per_variable.list' updated to work by default with TRAIN times when 'times' vector is NULL.
 
 # CRAN Submission Comments (2024-03-20 & 2024-03-22)
 This resubmission incorporates the following adjustments:

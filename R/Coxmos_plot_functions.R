@@ -4885,7 +4885,7 @@ getLPKM <- function(model, comp = 1:2, top = 10, ori_data = TRUE, BREAKTIME = NU
 
   vars_num <- vars_data
   if(all(dim(vars_num)>0)){
-    info_logrank_num <- getLogRank_NumVariables(data = vars_num, sdata = data.frame(model$Y$data), VAR_EVENT = "event", name_data = NULL, minProp = minProp, ROUND_CP = 4)
+    info_logrank_num <- getLogRank_NumVariables(data = vars_num, sdata = data.frame(model$Y$data), VAR_EVENT = "event", name_data = NULL, minProp = minProp, ROUND_CP = 5)
   }else{
     info_logrank_num <- NULL
   }
@@ -4969,18 +4969,17 @@ getCompKM <- function(model, comp = 1:2, top = 10, ori_data = TRUE, BREAKTIME = 
     unique_vars <- deleteIllegalChars(unique(unlist(vars)))
     unique_vars <- transformIllegalChars(unique_vars)
 
-    # vars %*% coeff to get component LP
-    cn_aux <- colnames(as.data.frame(model$X$scores[rownames(model$X$scores),unique_vars,drop = FALSE]))
-    sc_aux <- as.data.frame(model$X$scores[rownames(model$X$scores),unique_vars,drop = FALSE])
+    # scores as predict.Coxmos
+    scores_train <- predict.Coxmos(object = model)
     coeff_aux <- model$survival_model$fit$coefficients[cn_aux]
     if(length(names(coeff_aux))>1){
       vars_data <- NULL
       for(cn in colnames(sc_aux)){
-        vars_data <- cbind(vars_data, as.matrix(sc_aux[,cn,drop = FALSE]) %*% coeff_aux[cn])
+        vars_data <- cbind(vars_data, scores_train[,cn,drop=F] %*% coeff_aux[cn])
       }
       colnames(vars_data) <- names(unique_vars)
     }else{
-      vars_data <- as.matrix(sc_aux) %*% coeff_aux
+      vars_data <- scores_train %*% coeff_aux
       colnames(vars_data) <- names(unique_vars)
     }
   }else{
@@ -4995,8 +4994,7 @@ getCompKM <- function(model, comp = 1:2, top = 10, ori_data = TRUE, BREAKTIME = 
       unique_vars <- transformIllegalChars(unique_vars)
 
       if(attr(model, "model") %in% c(pkg.env$singleblock_methods)){
-        cn_aux <- colnames(as.data.frame(model[[4]][[b]]$X$scores[rownames(model[[4]][[b]]$X$scores),unique_vars,drop = FALSE]))
-        sc_aux <- as.data.frame(model[[4]][[b]]$X$scores[rownames(model[[4]][[b]]$X$scores),unique_vars,drop = FALSE])
+        scores_train <- predict.Coxmos(object = model[[4]][[b]])
         coeff_aux <- model$survival_model$fit$coefficients[paste0(cn_aux, "_", b)]
         if(length(names(coeff_aux))>1){
           vars_data[[b]] <- NULL
@@ -5004,18 +5002,17 @@ getCompKM <- function(model, comp = 1:2, top = 10, ori_data = TRUE, BREAKTIME = 
           # new colnames vector to match
           new_coeff_names <- names(coeff_aux)
           new_coeff_names <- unlist(lapply(new_coeff_names, function(x){paste0(strsplit(x, "_")[[1]][1], "_", strsplit(x, "_")[[1]][2])}))
-          for(cn in colnames(sc_aux)){
+          for(cn in colnames(scores_train)){
             idx <- which(new_coeff_names %in% cn)
-            vars_data[[b]] <- cbind(vars_data[[b]], as.matrix(sc_aux[,cn,drop = FALSE]) %*% coeff_aux[idx])
+            vars_data[[b]] <- cbind(vars_data[[b]], as.matrix(scores_train[,cn,drop = FALSE]) %*% coeff_aux[idx])
           }
           colnames(vars_data[[b]]) <- names(unique_vars)
         }else{
-          vars_data[[b]] <- as.matrix(sc_aux) %*% coeff_aux
+          vars_data[[b]] <- as.matrix(scores_train) %*% coeff_aux
           colnames(vars_data[[b]]) <- names(unique_vars)
         }
       }else{
-        cn_aux <- colnames(as.data.frame(model$X$scores[[b]][rownames(model$X$scores[[b]]),unique_vars,drop = FALSE]))
-        sc_aux <- as.data.frame(model$X$scores[[b]][rownames(model$X$scores[[b]]),unique_vars,drop = FALSE])
+        scores_train <- predict.Coxmos(object = model)
         coeff_aux <- model$survival_model$fit$coefficients[paste0(cn_aux, "_", b)]
         if(length(names(coeff_aux))>1){
           vars_data[[b]] <- NULL
@@ -5023,13 +5020,13 @@ getCompKM <- function(model, comp = 1:2, top = 10, ori_data = TRUE, BREAKTIME = 
           # new colnames vector to match
           new_coeff_names <- names(coeff_aux)
           new_coeff_names <- unlist(lapply(new_coeff_names, function(x){paste0(strsplit(x, "_")[[1]][1], "_", strsplit(x, "_")[[1]][2])}))
-          for(cn in colnames(sc_aux)){
+          for(cn in colnames(scores_train)){
             idx <- which(new_coeff_names %in% cn)
-            vars_data[[b]] <- cbind(vars_data[[b]], as.matrix(sc_aux[,cn,drop = FALSE]) %*% coeff_aux[idx])
+            vars_data[[b]] <- cbind(vars_data[[b]], as.matrix(scores_train[,cn,drop = FALSE]) %*% coeff_aux[idx])
           }
           colnames(vars_data[[b]]) <- names(unique_vars)
         }else{
-          vars_data[[b]] <- as.matrix(sc_aux) %*% coeff_aux
+          vars_data[[b]] <- as.matrix(scores_train) %*% coeff_aux
           colnames(vars_data[[b]]) <- names(unique_vars)
         }
       }
@@ -5040,7 +5037,7 @@ getCompKM <- function(model, comp = 1:2, top = 10, ori_data = TRUE, BREAKTIME = 
     vars_num <- vars_data
 
     if(all(dim(vars_num)>0)){
-      info_logrank_num <- getLogRank_NumVariables(data = vars_num, sdata = data.frame(model$Y$data), VAR_EVENT = "event", name_data = NULL, minProp = minProp, ROUND_CP = 4)
+      info_logrank_num <- getLogRank_NumVariables(data = vars_num, sdata = data.frame(model$Y$data), VAR_EVENT = "event", name_data = NULL, minProp = minProp, ROUND_CP = 5)
     }else{
       info_logrank_num <- NULL
     }
@@ -5052,7 +5049,7 @@ getCompKM <- function(model, comp = 1:2, top = 10, ori_data = TRUE, BREAKTIME = 
       vars_num[[b]] <- vars_data[[b]]
 
       if(all(dim(vars_num[[b]]))>0){
-        info_logrank_num[[b]] <- getLogRank_NumVariables(data = vars_num[[b]], sdata = data.frame(model$Y$data), VAR_EVENT = "event", name_data = NULL, minProp = minProp, ROUND_CP = 4)
+        info_logrank_num[[b]] <- getLogRank_NumVariables(data = vars_num[[b]], sdata = data.frame(model$Y$data), VAR_EVENT = "event", name_data = NULL, minProp = minProp, ROUND_CP = 5)
       }else{
         info_logrank_num[[b]] <- NULL
       }
@@ -5267,7 +5264,7 @@ getLPVarKM <- function(model, comp = 1:2, top = 10, ori_data = TRUE, BREAKTIME =
     }
 
     if(all(dim(vars_num)>0)){
-      info_logrank_num <- getLogRank_NumVariables(data = vars_num, sdata = data.frame(model$Y$data), VAR_EVENT = "event", name_data = NULL, minProp = minProp, ROUND_CP = 4)
+      info_logrank_num <- getLogRank_NumVariables(data = vars_num, sdata = data.frame(model$Y$data), VAR_EVENT = "event", name_data = NULL, minProp = minProp, ROUND_CP = 5)
     }else{
       info_logrank_num <- NULL
     }
@@ -5292,7 +5289,7 @@ getLPVarKM <- function(model, comp = 1:2, top = 10, ori_data = TRUE, BREAKTIME =
       }
 
       if(all(dim(vars_num[[b]]))>0){
-        info_logrank_num[[b]] <- getLogRank_NumVariables(data = vars_num[[b]], sdata = data.frame(model$Y$data), VAR_EVENT = "event", name_data = NULL, minProp = minProp, ROUND_CP = 4)
+        info_logrank_num[[b]] <- getLogRank_NumVariables(data = vars_num[[b]], sdata = data.frame(model$Y$data), VAR_EVENT = "event", name_data = NULL, minProp = minProp, ROUND_CP = 5)
       }else{
         info_logrank_num[[b]] <- NULL
       }
@@ -5526,7 +5523,7 @@ getVarKM <- function(model, comp = 1:2, top = 10, ori_data = TRUE, BREAKTIME = N
 
     if(all(dim(vars_num)>0)){
       info_logrank_num <- getLogRank_NumVariables(data = vars_num, sdata = data.frame(model$Y$data),
-                                                  VAR_EVENT = "event", name_data = NULL, minProp = minProp, ROUND_CP = 4)
+                                                  VAR_EVENT = "event", name_data = NULL, minProp = minProp, ROUND_CP = 5)
     }else{
       info_logrank_num <- NULL
     }
@@ -5548,7 +5545,7 @@ getVarKM <- function(model, comp = 1:2, top = 10, ori_data = TRUE, BREAKTIME = N
       }
 
       if(all(dim(vars_num[[b]]))>0){
-        info_logrank_num[[b]] <- getLogRank_NumVariables(data = vars_num[[b]], sdata = data.frame(model$Y$data), VAR_EVENT = "event", name_data = NULL, minProp = minProp, ROUND_CP = 4)
+        info_logrank_num[[b]] <- getLogRank_NumVariables(data = vars_num[[b]], sdata = data.frame(model$Y$data), VAR_EVENT = "event", name_data = NULL, minProp = minProp, ROUND_CP = 5)
       }else{
         info_logrank_num[[b]] <- NULL
       }
@@ -5711,7 +5708,7 @@ getLogRank_QualVariables <- function(data, sdata, VAR_EVENT, name_data = NULL){
 }
 
 getLogRank_NumVariables <- function(data, sdata, VAR_EVENT, name_data = NULL, minProp = 0.2,
-                                    ROUND_CP = 4){
+                                    ROUND_CP = 5){
 
   if(is.null(name_data)){
     data <- data
@@ -5735,36 +5732,51 @@ getLogRank_NumVariables <- function(data, sdata, VAR_EVENT, name_data = NULL, mi
     # Determine the optimal cutpoint for continuous variables, using the maximally selected rank statistics from the 'maxstat' R package.
     minProp_ori = minProp #we have to establish a minimum number of patients per group in 0-1
 
-    res.cut <- NA
-    while(all(is.na(res.cut)) & minProp > 0){
-      res.cut <- tryCatch(
-        expr = {
-          survminer::surv_cutpoint(auxData, time="time", event="event", variables = cn, minprop = minProp)
-        },
-        # Specifying error message
-        error = function(e){
-          message(paste0("Problems with variable '",cn,"'", ": ", e))
-          NA
+    ###
+    # FOLDS per surv_cutpoint
+    ###
+
+    trainIndex <- caret::createFolds(y = sdata$event,
+                                    k = 5,returnTrain = T,
+                                    list = TRUE)
+    lst_res.cut <- NULL
+    for(f in 1:length(trainIndex)){
+      res.cut <- NA
+      while(all(is.na(res.cut)) & minProp > 0){
+        res.cut <- tryCatch(
+          expr = {
+            survminer::surv_cutpoint(data = auxData[trainIndex[[f]],,drop=F], time="time", event="event", variables = cn, minprop = minProp)
+          },
+          # Specifying error message
+          error = function(e){
+            message(paste0("Problems with variable '",cn,"'", ": ", e))
+            NA
+          }
+        )
+
+        # Reducir minProp si hubo error
+        if(all(is.na(res.cut))){
+          minProp <- minProp - 0.01
+          message(paste0("minProp updated to: ", minProp, "\n"))
         }
-      )
-
-      # Reducir minProp si hubo error
-      if(all(is.na(res.cut))){
-        minProp <- minProp - 0.01
-        message(paste0("minProp updated to: ", minProp, "\n"))
       }
-    }
 
+      lst_res.cut <- c(lst_res.cut, res.cut$cutpoint[1,1])
+
+    } #for
     minProp = minProp_ori #update again
+
+    res.cut <- lst_res.cut
+    res.cut <- mean(res.cut)
 
     if(all(is.na(res.cut))){
       next
     }
 
-    if(res.cut$cutpoint[1,1]<=0){
-      cutpoint_value <- round2any(res.cut$cutpoint[1,1], accuracy = 1/(10^ROUND_CP), f = ceiling)
+    if(res.cut<=0){
+      cutpoint_value <- round2any(res.cut, accuracy = 1/(10^ROUND_CP), f = ceiling)
     }else{
-      cutpoint_value <- round(res.cut$cutpoint[1,1], ROUND_CP)
+      cutpoint_value <- round(res.cut, ROUND_CP)
     }
 
     variable <- ifelse(variable>cutpoint_value, paste0("greater than ", cutpoint_value), paste0("lesser/equal than ", cutpoint_value))
@@ -6342,9 +6354,14 @@ getTestKM <- function(model, X_test, Y_test, cutoff, type = "LP", ori_data = TRU
     stop("Type parameters must be one of the following: LP, COMP or VAR")
   }
 
+  # BREAKTIMES as TRAIN
   if(is.null(BREAKTIME)){
-    BREAKTIME <- (max(Y_test[,"time"]) - min(Y_test[,"time"])) / n.breaks
+    BREAKTIME <- (max(model$Y$data[,"time"]) - min(model$Y$data[,"time"])) / n.breaks
   }
+
+  # if(is.null(BREAKTIME)){
+  #   BREAKTIME <- (max(Y_test[,"time"]) - min(Y_test[,"time"])) / n.breaks
+  # }
 
   if(is.null(title)){
     title = attr(model, "model")

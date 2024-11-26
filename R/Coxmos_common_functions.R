@@ -5411,13 +5411,13 @@ eval_Coxmos_model_per_variable <- function(model,
   #### Check test times are less or equal than max train time:
   checkTestTimesVSTrainTimes(model, Y_test)
 
-  # BRIER not implemeted !!!
+  # BRIER not implemeted yet !!!
 
   scores_aux <- predict.Coxmos(object = model, newdata = X_test)
   lp <- getLinealPredictors(cox = model$survival_model$fit, data = scores_aux, lp_per_variable = TRUE)
 
   if(is.null(times)){
-    times <- getTimesVector(Y_test, max_time_points)
+    times <- getTimesVector(model$Y$data, max_time_points)
   }
 
   lp_vars <- purrr::map(.x = lp, ~getAUC_from_LP_2.0(linear.predictors = ., Y = Y_test, times = times, bestModel = NULL, eval = pred.attr, method = pred.method, PARALLEL = PARALLEL, verbose = verbose))
