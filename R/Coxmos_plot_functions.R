@@ -4971,10 +4971,10 @@ getCompKM <- function(model, comp = 1:2, top = 10, ori_data = TRUE, BREAKTIME = 
 
     # scores as predict.Coxmos
     scores_train <- predict.Coxmos(object = model)
-    coeff_aux <- model$survival_model$fit$coefficients[cn_aux]
+    coeff_aux <- model$survival_model$fit$coefficients
     if(length(names(coeff_aux))>1){
       vars_data <- NULL
-      for(cn in colnames(sc_aux)){
+      for(cn in colnames(scores_train)){
         vars_data <- cbind(vars_data, scores_train[,cn,drop=F] %*% coeff_aux[cn])
       }
       colnames(vars_data) <- names(unique_vars)
@@ -4992,42 +4992,35 @@ getCompKM <- function(model, comp = 1:2, top = 10, ori_data = TRUE, BREAKTIME = 
       #together
       unique_vars <- deleteIllegalChars(unique(unlist(lst_vars[[b]])))
       unique_vars <- transformIllegalChars(unique_vars)
+      unique_vars_b <- paste0(unique_vars, "_", b)
 
       if(attr(model, "model") %in% c(pkg.env$singleblock_methods)){
-        scores_train <- predict.Coxmos(object = model[[4]][[b]])
-        coeff_aux <- model$survival_model$fit$coefficients[paste0(cn_aux, "_", b)]
+        scores_train <- predict.Coxmos(object = model)
+        scores_train <- scores_train[,unique_vars_b,drop=F]
+        coeff_aux <- model$survival_model$fit$coefficients[unique_vars_b]
         if(length(names(coeff_aux))>1){
           vars_data[[b]] <- NULL
-          # if coeff_aux has comp_1_genes and comp_10_genes, both start by comp_1
-          # new colnames vector to match
-          new_coeff_names <- names(coeff_aux)
-          new_coeff_names <- unlist(lapply(new_coeff_names, function(x){paste0(strsplit(x, "_")[[1]][1], "_", strsplit(x, "_")[[1]][2])}))
           for(cn in colnames(scores_train)){
-            idx <- which(new_coeff_names %in% cn)
-            vars_data[[b]] <- cbind(vars_data[[b]], as.matrix(scores_train[,cn,drop = FALSE]) %*% coeff_aux[idx])
+            vars_data[[b]] <- cbind(vars_data[[b]], as.matrix(scores_train[,cn,drop = FALSE]) %*% coeff_aux[cn])
           }
-          colnames(vars_data[[b]]) <- names(unique_vars)
+          colnames(vars_data[[b]]) <- unique_vars
         }else{
           vars_data[[b]] <- as.matrix(scores_train) %*% coeff_aux
-          colnames(vars_data[[b]]) <- names(unique_vars)
+          colnames(vars_data[[b]]) <- unique_vars
         }
       }else{
         scores_train <- predict.Coxmos(object = model)
-        coeff_aux <- model$survival_model$fit$coefficients[paste0(cn_aux, "_", b)]
+        scores_train <- scores_train[,unique_vars_b,drop=F]
+        coeff_aux <- model$survival_model$fit$coefficients[unique_vars_b]
         if(length(names(coeff_aux))>1){
           vars_data[[b]] <- NULL
-          # if coeff_aux has comp_1_genes and comp_10_genes, both start by comp_1
-          # new colnames vector to match
-          new_coeff_names <- names(coeff_aux)
-          new_coeff_names <- unlist(lapply(new_coeff_names, function(x){paste0(strsplit(x, "_")[[1]][1], "_", strsplit(x, "_")[[1]][2])}))
           for(cn in colnames(scores_train)){
-            idx <- which(new_coeff_names %in% cn)
-            vars_data[[b]] <- cbind(vars_data[[b]], as.matrix(scores_train[,cn,drop = FALSE]) %*% coeff_aux[idx])
+            vars_data[[b]] <- cbind(vars_data[[b]], as.matrix(scores_train[,cn,drop = FALSE]) %*% coeff_aux[cn])
           }
-          colnames(vars_data[[b]]) <- names(unique_vars)
+          colnames(vars_data[[b]]) <- unique_vars
         }else{
           vars_data[[b]] <- as.matrix(scores_train) %*% coeff_aux
-          colnames(vars_data[[b]]) <- names(unique_vars)
+          colnames(vars_data[[b]]) <- unique_vars
         }
       }
     }
@@ -6121,9 +6114,6 @@ getCutoffAutoKM <- function(result){
     }
 
   # Numeric Matrix - SO
-  }else if(!is.null(result$info_logrank_num) & "df_nvar_lrtest" %in% names(result$info_logrank_num)){
-    value[["quantitative"]] <- result$info_logrank_num$df_nvar_lrtest$Cutoff
-    names(value[["quantitative"]]) <- result$info_logrank_num$df_nvar_lrtest$Variable
   }else{
 
     # MO
@@ -6134,7 +6124,7 @@ getCutoffAutoKM <- function(result){
         }
 
         value[["quantitative"]] <- c(value[["quantitative"]], result$info_logrank_num[[b]]$df_nvar_lrtest$Cutoff)
-        names(value[["quantitative"]]) <- c(names(value[["quantitative"]])[names(value[["qualitative"]]) != ""], paste0(result$info_logrank_num[[b]]$df_nvar_lrtest$Variable, "_", b))
+        names(value[["quantitative"]]) <- c(names(value[["quantitative"]])[names(value[["quantitative"]]) != ""], paste0(result$info_logrank_num[[b]]$df_nvar_lrtest$Variable, "_", b))
       }
     }
 
@@ -6359,10 +6349,6 @@ getTestKM <- function(model, X_test, Y_test, cutoff, type = "LP", ori_data = TRU
     BREAKTIME <- (max(model$Y$data[,"time"]) - min(model$Y$data[,"time"])) / n.breaks
   }
 
-  # if(is.null(BREAKTIME)){
-  #   BREAKTIME <- (max(Y_test[,"time"]) - min(Y_test[,"time"])) / n.breaks
-  # }
-
   if(is.null(title)){
     title = attr(model, "model")
   }else{
@@ -6482,9 +6468,10 @@ getTestKM <- function(model, X_test, Y_test, cutoff, type = "LP", ori_data = TRU
 
         # QUANTITATIVE
         if(all(!is.null(cutoff$quantitative))){
-          new_cutoff <- cutoff$quantitative[endsWith(names(cutoff$quantitative), paste0("_",b))]
-          if(!length(new_cutoff)==0){
-            names(new_cutoff) <- unlist(lapply(names(new_cutoff), function(x){substr(x, start = 1, stop = nchar(x)-nchar(paste0("_",b)))}))
+          new_cutoff <- NULL
+          new_cutoff$quantitative <- cutoff$quantitative[endsWith(names(cutoff$quantitative), paste0("_",b))]
+          if(!length(new_cutoff$quantitative)==0){
+            names(new_cutoff$quantitative) <- unlist(lapply(names(new_cutoff$quantitative), function(x){substr(x, start = 1, stop = nchar(x)-nchar(paste0("_",b)))}))
             aux <- getTestKM(model = model$list_spls_models[[b]], X_test = X_test[[b]], Y_test, new_cutoff, type, ori_data, BREAKTIME, n.breaks, title)
             for(cni in names(aux)){
               lst_ggp[[b]][[cni]] <- aux[[cni]]
@@ -6523,10 +6510,11 @@ getTestKM <- function(model, X_test, Y_test, cutoff, type = "LP", ori_data = TRU
         }
         # QUANTITATIVE
         if(all(!is.null(cutoff$quantitative))){
-          new_cutoff <- cutoff$quantitative[endsWith(names(cutoff$quantitative), paste0("_",b))]
-          if(!length(new_cutoff)==0){
-            names(new_cutoff) <- unlist(lapply(names(new_cutoff), function(x){substr(x, start = 1, stop = nchar(x)-nchar(paste0("_",b)))}))
-            aux <- getTestKM(model = model, X_test = X_test[[b]], Y_test, new_cutoff, type, ori_data, BREAKTIME, n.breaks, title)
+          new_cutoff <- NULL
+          new_cutoff$quantitative <- cutoff$quantitative[endsWith(names(cutoff$quantitative), paste0("_",b))]
+          if(!length(new_cutoff$quantitative)==0){
+            names(new_cutoff$quantitative) <- unlist(lapply(names(new_cutoff$quantitative), function(x){substr(x, start = 1, stop = nchar(x)-nchar(paste0("_",b)))}))
+            aux <- getTestKM(model = model, X_test = X_test[[b]], Y_test, cutoff = new_cutoff, type, ori_data, BREAKTIME, n.breaks, title)
             for(cni in names(aux)){
               lst_ggp[[b]][[cni]] <- aux[[cni]]
             }
@@ -6577,15 +6565,15 @@ getTestKM <- function(model, X_test, Y_test, cutoff, type = "LP", ori_data = TRU
         next
       }
 
-      if(!is.null(cutoff$quantitative) & cn %in% cutoff$quantitative){
-        if(is.na(cutoff[[cn]])){
+      if(!is.null(cutoff$quantitative) & cn %in% names(cutoff$quantitative)){
+        if(is.na(cutoff$quantitative[[cn]])){
           message(paste0("Cutoff not found for variable: ", cn))
           next
         }
-        txt_greater <- paste0("greater than ", cutoff[[cn]])
-        txt_lower <- paste0("lesser/equal than ", cutoff[[cn]])
+        txt_greater <- paste0("greater than ", cutoff$quantitative[[cn]])
+        txt_lower <- paste0("lesser/equal than ", cutoff$quantitative[[cn]])
 
-        LP <- ifelse(X_test[,cn]>cutoff[[cn]], txt_greater, txt_lower)
+        LP <- ifelse(X_test[,cn]>cutoff$quantitative[[cn]], txt_greater, txt_lower)
         LP <- factor(LP)
 
         d <- as.data.frame(LP)
