@@ -276,6 +276,18 @@ coxEN <- function(X, Y,
     }
   )
 
+  # sometimes error when just 1 variable
+  # increase until get some results
+  if(max.variables == 1 & all(EN_cox$beta[,1] %in% c(0,1))){
+    i = 1
+    while(all(EN_cox$beta[,i] %in% c(0,1))){
+      EN_cox <- glmnet::glmnet(x = Xh, y = survival::Surv(time = Yh[,"time"], event = Yh[,"event"]),
+                     family = "cox", alpha = EN.alpha, standardize = FALSE, nlambda = 300, pmax = max.variables+i)
+      i = i+1
+    }
+    message(paste0("WARNING: coxEN could not be computed for a single variable. In this case, a model with ", i, " variables is returned.\n"))
+  }
+
   #only if problems
   if(all(isa(EN_cox, "list"))){
     problem = EN_cox$problem

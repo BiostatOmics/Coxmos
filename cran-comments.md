@@ -37,7 +37,7 @@ This resubmission incorporates the following adjustments:
 - New function 'getDesign.MB' added to compute the design matrix automatically.
 - Function 'deleteNearZeroCoefficientOfVariation' updated to remove NA values, if present.
 - Function 'splsdrcox' updated to align with [doi:10.1093/bioinformatics/btu660], except for the penalty.
-- Function 'coxEN' updated to handle illegal characters in column names.
+- Function 'coxEN' updated to handle illegal characters in column names and to handle problems with one variable models.
 - Function 'predict.Coxmos' fixed and verified for all methods.
 - Minor changes made to 'sb.splsicox'.
 - All algorithms now transform illegal characters in column names to manageable alternatives.
