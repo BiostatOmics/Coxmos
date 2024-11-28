@@ -4884,6 +4884,7 @@ getLPKM <- function(model, comp = 1:2, top = 10, ori_data = TRUE, BREAKTIME = NU
   colnames(vars_data) <- "LP"
 
   vars_num <- vars_data
+  vars_num <- round(vars_num, 10)
   if(all(dim(vars_num)>0)){
     info_logrank_num <- getLogRank_NumVariables(data = vars_num, sdata = data.frame(model$Y$data), VAR_EVENT = "event", name_data = NULL, minProp = minProp, ROUND_CP = 5)
   }else{
@@ -5028,6 +5029,7 @@ getCompKM <- function(model, comp = 1:2, top = 10, ori_data = TRUE, BREAKTIME = 
 
   if(!attr(model, "model") %in% pkg.env$multiblock_methods){
     vars_num <- vars_data
+    vars_num <- round(vars_num, 10)
 
     if(all(dim(vars_num)>0)){
       info_logrank_num <- getLogRank_NumVariables(data = vars_num, sdata = data.frame(model$Y$data), VAR_EVENT = "event", name_data = NULL, minProp = minProp, ROUND_CP = 5)
@@ -5248,6 +5250,7 @@ getLPVarKM <- function(model, comp = 1:2, top = 10, ori_data = TRUE, BREAKTIME =
     names_qual <- apply(vars_data, 2, function(x){all(x %in% c(0,1))})
     vars_qual <- vars_data[,names_qual,drop = FALSE]
     vars_num <- vars_data[,!names_qual,drop = FALSE]
+    vars_num <- round(vars_num, 10)
 
     if(all(dim(vars_qual)>0)){
       for(cn in colnames(vars_qual)){vars_qual[,cn] <- factor(vars_qual[,cn], levels = c(0, 1))}
@@ -5506,6 +5509,7 @@ getVarKM <- function(model, comp = 1:2, top = 10, ori_data = TRUE, BREAKTIME = N
     names_qual <- apply(vars_data, 2, function(x){all(x %in% c(0,1))})
     vars_qual <- vars_data[,names_qual,drop = FALSE]
     vars_num <- vars_data[,!names_qual,drop = FALSE]
+    vars_num <- round(vars_num, 10)
 
     if(all(dim(vars_qual)>0)){
       for(cn in colnames(vars_qual)){vars_qual[,cn] <- factor(vars_qual[,cn], levels = c(0, 1))}
