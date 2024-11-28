@@ -6365,7 +6365,7 @@ getTestKM <- function(model, X_test, Y_test, cutoff, type = "LP", ori_data = TRU
     #predict LP using scores
     test_lp <- predict(model$survival_model$fit, newdata = as.data.frame(test_score))
 
-    if(is.na(cutoff)){
+    if(all(is.na(cutoff))){
       message("Cutoff not found for LP")
       return(NA)
     }
