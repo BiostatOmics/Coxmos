@@ -71,6 +71,7 @@ This resubmission incorporates the following adjustments:
 - Function 'getLPKM' and 'getCompKM' fixed when obtaining LP for specific variabes.
 - Function 'Csurv' in 'cenROC' updated when 'bw.SJ(M, method = "dpi")' cannot work.
 - Function 'eval_Coxmos_model_per_variable' and 'eval_Coxmos_model_per_variable.list' updated to work by default with TRAIN times when 'times' vector is NULL.
+- Function 'timesAsumption_AUC_Eval' fixed to not manage eval. times greater than the maximum of Y.
 
 # CRAN Submission Comments (2024-03-20 & 2024-03-22)
 This resubmission incorporates the following adjustments:

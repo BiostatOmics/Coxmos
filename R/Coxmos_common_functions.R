@@ -5460,6 +5460,8 @@ eval_Coxmos_model_per_variable <- function(model,
   }
 
   lp_vars <- purrr::map(.x = lp, ~getAUC_from_LP_2.0(linear.predictors = ., Y = Y_test, times = times, bestModel = NULL, eval = pred.attr, method = pred.method, PARALLEL = PARALLEL, verbose = verbose))
+  # lp_vars <- getAUC_from_LP_2.0(linear.predictors = lp$tissue_source_site_19, Y = Y_test, times = times, bestModel = NULL, eval = pred.attr, method = pred.method, PARALLEL = PARALLEL, verbose = verbose)
+
   df <- NULL
   for(vars in names(lp_vars)){
     m <- rep(vars, length(lp_vars[[vars]]$AUC.vector))

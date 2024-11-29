@@ -583,7 +583,7 @@ timesAsumption_AUC_Eval <- function(Y, times, method = NULL){
   }
 
   for(t in times){
-    if(!sum(Y[(Y[,"event"]==1 | Y[,"event"]==TRUE),"time"]<=t)<2 & t != 0){
+    if(!sum(Y[(Y[,"event"]==1 | Y[,"event"]==TRUE),"time"]<=t)<2 & t != 0 & max(Y[,"time"])>=t){
       res <- c(res, TRUE)
     }else{
       res <- c(res, FALSE)
