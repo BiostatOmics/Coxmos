@@ -59,6 +59,7 @@ This resubmission incorporates the following adjustments:
   - New annotations added in common functions.
 - Function 'get_Coxmos_models2.0' updated to support all new methods.
 - Functions 'get_COX_evaluation_AIC_CINDEX' and 'get_COX_evaluation_BRIER_sPLS' updated to manage all new methods.
+- Functions 'get_COX_evaluation_BRIER' and 'get_COX_evaluation_BRIER_sPLS' fixed to work correctly with BRIER metric.
 - Function 'getTimesVector' updated to select an optimal time interval for evaluation.
 - New parameter added to Kaplan-Meier functions. Now, minimum proportion of observations can be included for optimal cutoff in numerical variables.
 - Function 'get_COX_evaluation_AUC' fixed.

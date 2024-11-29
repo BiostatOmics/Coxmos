@@ -2877,6 +2877,9 @@ get_COX_evaluation_BRIER <- function(comp_model_lst,
           lp_test <- predict(object = model, newdata = as.data.frame(test_data), type = "lp")
           lst_test_LP <- c(lst_test_LP, lp_test)
 
+          index_2_add <- which(!rownames(Y_test) %in% rownames(lst_test_Y))
+          lst_test_Y <- rbind(lst_test_Y, Y_test[index_2_add,,drop=F])
+
         } #fold
 
         # in some cases, one patient could be a test and not to be in any train
@@ -2884,21 +2887,42 @@ get_COX_evaluation_BRIER <- function(comp_model_lst,
         # vignette data and coxEN
 
         inters <- intersect(unique(names(lst_train_LP)), unique(names(lst_test_LP)))
-        lst_train_LP <- lst_train_LP[names(lst_train_LP) %in% inters]
-        lst_test_LP <- lst_test_LP[names(lst_test_LP) %in% inters]
+        if(length(inters)!=0){
+          # get LP for TRAIN -- and then evaluate TEST LP
+          lst_train_LP <- lst_train_LP[names(lst_train_LP) %in% inters]
+          lst_test_LP <- lst_test_LP[names(lst_test_LP) %in% inters]
 
-        mean_lp_train <- NULL
-        for(i in unique(names(lst_test_LP))){
-          mean_lp_train <- c(mean_lp_train, mean(lst_train_LP[names(lst_train_LP) %in% i], na.rm = TRUE))
+          mean_lp_train <- NULL
+          for(i in unique(names(lst_test_LP))){
+            mean_lp_train <- c(mean_lp_train, mean(lst_train_LP[names(lst_train_LP) %in% i], na.rm = TRUE))
+          }
+          names(mean_lp_train) <- unique(names(lst_test_LP))
+          lst_train_Y <- lst_train_Y[names(mean_lp_train),]
+
+          #sometime all test are not tested
+          lst_test_Y <- lst_test_Y[names(lst_test_LP),,drop=F]
+        }else{
+          # just one fold and train/test in different parts
+          mean_lp_train <- lst_train_LP
+          lst_train_Y <- lst_train_Y[names(lst_train_LP),,drop=F]
+
+          lst_test_Y <- lst_test_Y[names(lst_test_LP),,drop=F]
         }
-        names(mean_lp_train) <- unique(names(lst_test_LP))
-        lst_train_Y <- lst_train_Y[names(mean_lp_train),]
 
-        # compute BRIER for all folds
-        lst_BRIER_values <- SURVCOMP_BRIER_LP(lp_train = mean_lp_train, Y_train = lst_train_Y, lp_test = lst_test_LP, Y_test = lst_train_Y)
+        if(is.null(mean_lp_train) || is.null(lst_test_LP)){
+          #any model was compute for those characteristics
+          lst_BRIER_component_run[[r]] <- NA
+          df_results_evals_BRIER <- c(df_results_evals_BRIER, NA)
+          pb$tick()
+        }else{
+          # compute BRIER for all runs
+          lst_BRIER_values <- SURVCOMP_BRIER_LP(lp_train = mean_lp_train, Y_train = lst_train_Y, lp_test = lst_test_LP, Y_test = lst_test_Y)
 
-        lst_BRIER_component_run[[r]] <- lst_BRIER_values$ierror
-        df_results_evals_BRIER <- c(df_results_evals_BRIER, lst_BRIER_values$ierror)
+          lst_BRIER_component_run[[r]] <- lst_BRIER_values$ierror
+          df_results_evals_BRIER <- c(df_results_evals_BRIER, lst_BRIER_values$ierror)
+
+          pb$tick()
+        }
 
         pb$tick()
       } #run
@@ -3134,6 +3158,9 @@ get_COX_evaluation_BRIER_sPLS <- function(comp_model_lst,
             lp_test <- predict(object = model, newdata = as.data.frame(test_data), type = "lp")
             lst_test_LP <- c(lst_test_LP, lp_test)
 
+            index_2_add <- which(!rownames(Y_test) %in% rownames(lst_test_Y))
+            lst_test_Y <- rbind(lst_test_Y, Y_test[index_2_add,,drop=F])
+
           } #fold
 
           # in some cases, one patient could be a test and not to be in any train
@@ -3141,15 +3168,27 @@ get_COX_evaluation_BRIER_sPLS <- function(comp_model_lst,
           # vignette data and coxEN
 
           inters <- intersect(unique(names(lst_train_LP)), unique(names(lst_test_LP)))
-          lst_train_LP <- lst_train_LP[names(lst_train_LP) %in% inters]
-          lst_test_LP <- lst_test_LP[names(lst_test_LP) %in% inters]
+          if(length(inters)!=0){
+            # get LP for TRAIN -- and then evaluate TEST LP
+            lst_train_LP <- lst_train_LP[names(lst_train_LP) %in% inters]
+            lst_test_LP <- lst_test_LP[names(lst_test_LP) %in% inters]
 
-          mean_lp_train <- NULL
-          for(i in unique(names(lst_test_LP))){
-            mean_lp_train <- c(mean_lp_train, mean(lst_train_LP[names(lst_train_LP) %in% i], na.rm = TRUE))
+            mean_lp_train <- NULL
+            for(i in unique(names(lst_test_LP))){
+              mean_lp_train <- c(mean_lp_train, mean(lst_train_LP[names(lst_train_LP) %in% i], na.rm = TRUE))
+            }
+            names(mean_lp_train) <- unique(names(lst_test_LP))
+            lst_train_Y <- lst_train_Y[names(mean_lp_train),]
+
+            #sometime all test are not tested
+            lst_test_Y <- lst_test_Y[names(lst_test_LP),,drop=F]
+          }else{
+            # just one fold and train/test in different parts
+            mean_lp_train <- lst_train_LP
+            lst_train_Y <- lst_train_Y[names(lst_train_LP),,drop=F]
+
+            lst_test_Y <- lst_test_Y[names(lst_test_LP),,drop=F]
           }
-          names(mean_lp_train) <- unique(names(lst_test_LP))
-          lst_train_Y <- lst_train_Y[names(mean_lp_train),]
 
           if(is.null(mean_lp_train) || is.null(lst_test_LP)){
             #any model was compute for those characteristics
@@ -3158,7 +3197,7 @@ get_COX_evaluation_BRIER_sPLS <- function(comp_model_lst,
             pb$tick()
           }else{
             # compute BRIER for all runs
-            lst_BRIER_values <- SURVCOMP_BRIER_LP(lp_train = mean_lp_train, Y_train = lst_train_Y, lp_test = lst_test_LP, Y_test = lst_train_Y)
+            lst_BRIER_values <- SURVCOMP_BRIER_LP(lp_train = mean_lp_train, Y_train = lst_train_Y, lp_test = lst_test_LP, Y_test = lst_test_Y)
 
             lst_BRIER_component_run[[r]] <- lst_BRIER_values$ierror
             df_results_evals_BRIER <- c(df_results_evals_BRIER, lst_BRIER_values$ierror)
