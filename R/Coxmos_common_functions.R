@@ -2913,17 +2913,13 @@ get_COX_evaluation_BRIER <- function(comp_model_lst,
           #any model was compute for those characteristics
           lst_BRIER_component_run[[r]] <- NA
           df_results_evals_BRIER <- c(df_results_evals_BRIER, NA)
-          pb$tick()
         }else{
           # compute BRIER for all runs
           lst_BRIER_values <- SURVCOMP_BRIER_LP(lp_train = mean_lp_train, Y_train = lst_train_Y, lp_test = lst_test_LP, Y_test = lst_test_Y)
 
           lst_BRIER_component_run[[r]] <- lst_BRIER_values$ierror
           df_results_evals_BRIER <- c(df_results_evals_BRIER, lst_BRIER_values$ierror)
-
-          pb$tick()
         }
-
         pb$tick()
       } #run
 
@@ -3194,17 +3190,14 @@ get_COX_evaluation_BRIER_sPLS <- function(comp_model_lst,
             #any model was compute for those characteristics
             lst_BRIER_component_run[[r]] <- NA
             df_results_evals_BRIER <- c(df_results_evals_BRIER, NA)
-            pb$tick()
           }else{
             # compute BRIER for all runs
             lst_BRIER_values <- SURVCOMP_BRIER_LP(lp_train = mean_lp_train, Y_train = lst_train_Y, lp_test = lst_test_LP, Y_test = lst_test_Y)
 
             lst_BRIER_component_run[[r]] <- lst_BRIER_values$ierror
             df_results_evals_BRIER <- c(df_results_evals_BRIER, lst_BRIER_values$ierror)
-
-            pb$tick()
           }
-
+          pb$tick()
         } #run
 
         if(!is.null(lst_BRIER_component_run)){
