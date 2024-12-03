@@ -6094,45 +6094,34 @@ getCutoffAutoKM.list <- function(lst_results){
 
 getCutoffAutoKM <- function(result){
 
-  # !!! only work if ALL binary or ALL numeric !!!
-
   if(all(is.null(result)) || all(is.na(result))){
     warning("All NA or NULL in result object.")
     return(NULL)
   }
 
-  # Binary Matrix - SO
   value <- list()
-  if(!is.null(result$info_logrank_qual) & "Variable" %in% names(result$info_logrank_qual)){
-
+  if(!is.null(result$info_logrank_qual)){
+    # Binary Matrix - SO
     if("Variable" %in% names(result$info_logrank_qual)){
       value[["qualitative"]] <- result$info_logrank_qual$Variable
     }else{
       # MO
-      value <- list()
-      for(b in names(result$info_logrank_qual)){
-        res <- list()
-        res[["qualitative"]] <- result$info_logrank_qual[[b]]$Variable
-        result$info_logrank_qual[[b]]$Variablevalue[[b]] <- res
-      }
-    }
-
-  # Numeric Matrix - SO
-  }else{
-
-    # MO
-    if(!all(is.null(result$info_logrank_num))){
       for(b in names(result$info_logrank_num)){
         if(is.null(result$info_logrank_num[[b]]$df_nvar_lrtest)){
           return(NULL)
         }
-
         value[["quantitative"]] <- c(value[["quantitative"]], result$info_logrank_num[[b]]$df_nvar_lrtest$Cutoff)
         names(value[["quantitative"]]) <- c(names(value[["quantitative"]])[names(value[["quantitative"]]) != ""], paste0(result$info_logrank_num[[b]]$df_nvar_lrtest$Variable, "_", b))
       }
     }
+  }
 
-    if(!all(is.null(result$info_logrank_qual))){
+  if(!all(is.null(result$info_logrank_num))){
+    # SO
+    if("Cutoff" %in% names(result$info_logrank_num$df_nvar_lrtest)){
+      value[["quantitative"]] <- result$info_logrank_num$df_nvar_lrtest$Cutoff
+    }else{
+      # MO
       for(b in names(result$info_logrank_qual)){
         if(is.null(result$info_logrank_qual[[b]])){
           return(NULL)
@@ -6142,7 +6131,6 @@ getCutoffAutoKM <- function(result){
         names(value[["qualitative"]]) <- c(names(value[["qualitative"]])[names(value[["qualitative"]]) != ""], paste0(result$info_logrank_qual[[b]]$Variable, "_", b))
       }
     }
-
   }
 
   return(value)
