@@ -786,8 +786,8 @@ deleteIllegalChars <- function(chr.vector){
 
 #only for FORMULAS
 transformIllegalChars <- function(cn, except = NULL, recover = FALSE){
-  illegal_chars <- c(","," ", "-", "+", "*", ">", "<", ">=", "<=", "^", "/", "\\", ":", "|", "?")
-  replacement <- c(".comma.",".space.", ".minus.", ".plus.", ".star.", ".over.", ".under.", ".over_equal.", ".under_equal.", ".power.", ".divided.", ".backslash.", ".twocolons.", ".verticalLine.", ".questionmark.")
+  illegal_chars <- c(","," ", "-", "+", "*", ">", "<", ">=", "<=", "^", "/", "\\", ":", "|", "?", "(", ")")
+  replacement <- c(".comma.",".space.", ".minus.", ".plus.", ".star.", ".over.", ".under.", ".over_equal.", ".under_equal.", ".power.", ".divided.", ".backslash.", ".twocolons.", ".verticalLine.", ".questionmark.", ".LParenthesis.", ".RParenthesis.")
 
   cn <- deleteIllegalChars(cn)
 

@@ -7,6 +7,7 @@ This resubmission incorporates the following adjustments:
 - Function 'checkTestTimesVSTrainTimes' updated to handle NA cases.
 - Function 'eval_Coxmos_models' updated to exclude models with NA values.
 - Function 'evaluation_list_Coxmos' fixed to ensure compatibility with 'checkColnamesIllegalChars()'.
+- Function 'transformIllegalChars' updated.
 - Function 'plot_pseudobeta.list' updated to handle non-PLS models.
 - Functions 'getAUC_vector' and 'getAUC_from_LP_2.0' fixed for 'smoothROCtime_C' and 'smoothROCtime_I'.
 - Functions 'getTestKM.list' and 'getTestKM' fixed to handle X_test column names using 'checkColnamesIllegalChars()'.
