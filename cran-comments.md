@@ -73,6 +73,7 @@ This resubmission incorporates the following adjustments:
 - Function 'Csurv' in 'cenROC' updated when 'bw.SJ(M, method = "dpi")' cannot work.
 - Function 'eval_Coxmos_model_per_variable' and 'eval_Coxmos_model_per_variable.list' updated to work by default with TRAIN times when 'times' vector is NULL.
 - Function 'timesAsumption_AUC_Eval' fixed to not manage eval. times greater than the maximum of Y.
+- Function 'splitData_Iterations_Folds', 'splitData_Iterations_Folds_indexes', 'splitData_Iterations_Folds.mb' and 'getLogRank_NumVariables' fixed when all observations have the same event.
 
 # CRAN Submission Comments (2024-03-20 & 2024-03-22)
 This resubmission incorporates the following adjustments:

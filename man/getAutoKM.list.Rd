@@ -63,7 +63,7 @@ Run the function "getAutoKM" for a list of models. More information in "?getAuto
 }
 \examples{
 data("X_proteomic")
-data("Y_proteomic")
+
 X_proteomic <- X_proteomic[1:30,1:20]
 Y_proteomic <- Y_proteomic[1:30,]
 set.seed(123)

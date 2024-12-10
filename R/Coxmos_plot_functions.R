@@ -321,8 +321,8 @@ save_ggplot_lst <- function(lst_plots, folder, prefix = NULL, suffix = NULL, wid
 #' @examples
 #' data("X_proteomic")
 #' data("Y_proteomic")
-#' X <- X_proteomic[,1:50]
-#' Y <- Y_proteomic
+#' X <- X_proteomic[1:30,1:30]
+#' Y <- Y_proteomic[1:30,]
 #' coxSW.model <- coxSW(X, Y, x.center = TRUE, x.scale = TRUE)
 #' coxEN.model <- coxEN(X, Y, x.center = TRUE, x.scale = TRUE)
 #' lst_models = list("coxSW" = coxSW.model, "coxEN" = coxEN.model)
@@ -4710,7 +4710,7 @@ plot_MB.pseudobeta.newObservation <- function(model, new_observation, error.bar 
 #'
 #' @examples
 #' data("X_proteomic")
-#' data("Y_proteomic")
+#'
 #' X_proteomic <- X_proteomic[1:30,1:20]
 #' Y_proteomic <- Y_proteomic[1:30,]
 #' set.seed(123)
@@ -4828,7 +4828,7 @@ getAutoKM.list <- function(type = "LP", lst_models, comp = 1:2, top = NULL, ori_
 #' getAutoKM(type = "LP", model = splsicox.model)
 
 getAutoKM <- function(type = "LP", model, comp = 1:2, top = 10, ori_data = TRUE, BREAKTIME = NULL,
-                      n.breaks = 20,  minProp = 0.2, only_sig = FALSE, alpha = 0.05, title = NULL, verbose = FALSE){
+                      n.breaks = 20, minProp = 0.2, only_sig = FALSE, alpha = 0.05, title = NULL, verbose = FALSE){
 
   if(!type %in% c("LP", "COMP", "VAR")){
     stop("Type parameters must be one of the following: LP, COMP or VAR")
@@ -5731,11 +5731,18 @@ getLogRank_NumVariables <- function(data, sdata, VAR_EVENT, name_data = NULL, mi
 
     ###
     # FOLDS per surv_cutpoint
+    # if no variation, cannot work
     ###
+    if(length(unique(sdata[,"event"]))==1){
+      trainIndex <- caret::createFolds(y = sdata[,"time"],
+                                       k = 5, returnTrain = T,
+                                       list = TRUE)
+    }else{
+      trainIndex <- caret::createFolds(y = sdata[,"event"],
+                                       k = 5, returnTrain = T,
+                                       list = TRUE)
+    }
 
-    trainIndex <- caret::createFolds(y = sdata$event,
-                                    k = 5,returnTrain = T,
-                                    list = TRUE)
     lst_res.cut <- NULL
     for(f in 1:length(trainIndex)){
       res.cut <- NA
@@ -6622,14 +6629,14 @@ getTestKM <- function(model, X_test, Y_test, cutoff, type = "LP", ori_data = TRU
 #' data("X_proteomic")
 #' data("Y_proteomic")
 #' set.seed(123)
-#' index_train <- caret::createDataPartition(Y_proteomic$event, p = .5, list = FALSE, times = 1)
-#' X_train <- X_proteomic[index_train,1:50]
+#' index_train <- caret::createDataPartition(Y_proteomic$event, p = .4, list = FALSE, times = 1)
+#' X_train <- X_proteomic[index_train,1:30]
 #' Y_train <- Y_proteomic[index_train,]
-#' X_test <- X_proteomic[-index_train,1:50]
+#' X_test <- X_proteomic[-index_train,1:30]
 #' Y_test <- Y_proteomic[-index_train,]
-#' splsicox.model <- splsicox(X_train, Y_train, n.comp = 2, penalty = 0.5, x.center = TRUE,
+#' splsicox.model <- splsicox(X_train, Y_train, n.comp = 1, penalty = 0.5, x.center = TRUE,
 #' x.scale = TRUE)
-#' splsdrcox.model <- splsdrcox_penalty(X_train, Y_train, n.comp = 2, penalty = 0.5, x.center = TRUE,
+#' splsdrcox.model <- splsdrcox_penalty(X_train, Y_train, n.comp = 1, penalty = 0.5, x.center = TRUE,
 #' x.scale = TRUE)
 #' lst_models = list("sPLSICOX" = splsicox.model, "sPLSDRCOX" = splsdrcox.model)
 #' plot_LP.multipleObservations.list(lst_models = lst_models, X_test[1:5,])

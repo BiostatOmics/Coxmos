@@ -50,14 +50,14 @@ in "?plot_LP.multipleObservations".
 data("X_proteomic")
 data("Y_proteomic")
 set.seed(123)
-index_train <- caret::createDataPartition(Y_proteomic$event, p = .5, list = FALSE, times = 1)
-X_train <- X_proteomic[index_train,1:50]
+index_train <- caret::createDataPartition(Y_proteomic$event, p = .4, list = FALSE, times = 1)
+X_train <- X_proteomic[index_train,1:30]
 Y_train <- Y_proteomic[index_train,]
-X_test <- X_proteomic[-index_train,1:50]
+X_test <- X_proteomic[-index_train,1:30]
 Y_test <- Y_proteomic[-index_train,]
-splsicox.model <- splsicox(X_train, Y_train, n.comp = 2, penalty = 0.5, x.center = TRUE,
+splsicox.model <- splsicox(X_train, Y_train, n.comp = 1, penalty = 0.5, x.center = TRUE,
 x.scale = TRUE)
-splsdrcox.model <- splsdrcox_penalty(X_train, Y_train, n.comp = 2, penalty = 0.5, x.center = TRUE,
+splsdrcox.model <- splsdrcox_penalty(X_train, Y_train, n.comp = 1, penalty = 0.5, x.center = TRUE,
 x.scale = TRUE)
 lst_models = list("sPLSICOX" = splsicox.model, "sPLSDRCOX" = splsdrcox.model)
 plot_LP.multipleObservations.list(lst_models = lst_models, X_test[1:5,])

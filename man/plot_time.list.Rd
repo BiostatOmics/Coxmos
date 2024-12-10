@@ -64,8 +64,8 @@ expectations.
 \examples{
 data("X_proteomic")
 data("Y_proteomic")
-X <- X_proteomic[,1:50]
-Y <- Y_proteomic
+X <- X_proteomic[1:30,1:30]
+Y <- Y_proteomic[1:30,]
 coxSW.model <- coxSW(X, Y, x.center = TRUE, x.scale = TRUE)
 coxEN.model <- coxEN(X, Y, x.center = TRUE, x.scale = TRUE)
 lst_models = list("coxSW" = coxSW.model, "coxEN" = coxEN.model)

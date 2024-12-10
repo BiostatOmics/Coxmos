@@ -130,9 +130,16 @@ splitData_Iterations_Folds <- function(X, Y, n_run, k_folds, seed = 123){
   lst_obs_index_test <- list()
 
   for(i in 1:n_run){
-    testIndex <- caret::createFolds(y = Y[,"event"],
-                                    k = k_folds,
-                                    list = TRUE)
+
+    if(length(unique(Y[,"event"]))==1){
+      testIndex <- caret::createFolds(y = Y[,"time"],
+                                       k = k_folds,
+                                       list = TRUE)
+    }else{
+      testIndex <- caret::createFolds(y = Y[,"event"],
+                                       k = k_folds,
+                                       list = TRUE)
+    }
 
     #for each fold, take the others as train
     lst_X_data_train <- lapply(testIndex, function(ind, dat) dat[-ind,,drop = FALSE], dat = X)
@@ -195,7 +202,7 @@ splitData_Iterations_Folds_indexes <- function(Y, n_run, k_folds, seed = 123){
   for(i in 1:n_run){
 
     if(length(unique(Y[,"event"]))==1){
-      testIndex <- caret::createFolds(y = 1:length(Y[,"event"]),
+      testIndex <- caret::createFolds(y = Y[,"time"],
                                       k = k_folds,
                                       list = TRUE)
     }else{
