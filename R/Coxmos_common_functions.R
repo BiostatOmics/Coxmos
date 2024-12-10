@@ -1727,10 +1727,16 @@ predict.Coxmos <- function(object, ..., newdata = NULL){
     predicted_scores = NULL
     components_used <- model$n.comp
     for(i in 1:length(lst_predicted_scores)){
+      ncol_used <- ncol(lst_predicted_scores[[i]])
+      if(ncol_used != components_used){
+        components_used <- ncol_used
+      }
       aux_df <- lst_predicted_scores[[i]][,1:components_used,drop=F]
       colnames(aux_df) <- paste0("comp_", 1:components_used, "_", names(lst_predicted_scores)[[i]])
 
       predicted_scores <- cbind(predicted_scores, aux_df)
+
+      components_used <- model$n.comp
     }
 
     predicted_scores <- predicted_scores[,colnames(predicted_scores) %in% names(model$survival_model$fit$coefficients), drop=F]
