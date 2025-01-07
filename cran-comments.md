@@ -1,4 +1,4 @@
-# CRAN Submission Comments (2024-11-26)
+# CRAN Submission Comments (2025-01-07)
 This resubmission incorporates the following adjustments:
 
 - Functions 'save_ggplot' and 'save_ggplot_lst' updated to support multiple formats.
