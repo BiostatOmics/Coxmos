@@ -295,7 +295,7 @@ splsdrcox_penalty <- function (X, Y,
     Xh[XXNA] <- 0
 
     # Step 1: Compute Z as X' %*% DR_coxph and normalize
-    # https://academic.oup.com/bioinformatics/article/31/3/397/2366078?login=false
+    # https://doi.org/10.1093/bioinformatics/btu660
     Z <- t(Xh) %*% DR_coxph #this Z is the same as the paper
     #norm_l2 <- sqrt(sum(Z^2)) # equivalent
     norm_l2 <- norm(Z, type = "2")

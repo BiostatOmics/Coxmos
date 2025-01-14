@@ -100,9 +100,9 @@ single model for Cox proportional hazards analysis.
 \examples{
 data("X_multiomic")
 data("Y_multiomic")
-X_multiomic$mirna <- X_multiomic$mirna[1:40,1:10]
-X_multiomic$proteomic <- X_multiomic$proteomic[1:40,1:10]
-Y_multiomic <- Y_multiomic[1:40,]
+X_multiomic$mirna <- X_multiomic$mirna[1:50,1:20]
+X_multiomic$proteomic <- X_multiomic$proteomic[1:50,1:20]
+Y_multiomic <- Y_multiomic[1:50,]
 set.seed(123)
 index_train <- caret::createDataPartition(Y_multiomic$event, p = .25, list = FALSE, times = 1)
 X_train <- X_multiomic
