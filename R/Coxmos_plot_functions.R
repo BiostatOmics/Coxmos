@@ -226,7 +226,7 @@ save_ggplot_lst <- function(lst_plots, folder, prefix = NULL, suffix = NULL, wid
       #remove illegal characters
       name <- transformIllegalChars(name, except = c("-"))
 
-      name <- paste0(folder,name)
+      name <- file.path(folder,name)
       if(!endsWith(name,paste0(".",format))){
         name <- paste0(name, ".", format)
       }
@@ -262,7 +262,7 @@ save_ggplot_lst <- function(lst_plots, folder, prefix = NULL, suffix = NULL, wid
       #remove illegal characters
       name <- transformIllegalChars(name, except = c("-"))
 
-      name <- paste0(folder,name)
+      name <- file.path(folder,name)
       if(!endsWith(name,paste0(".",format))){
         name <- paste0(name, ".", format)
       }
