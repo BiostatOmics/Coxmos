@@ -1502,7 +1502,7 @@ predict.Coxmos <- function(object, ..., newdata = NULL){
   }
 
   #Update test data by mean and sd
-  if((!is.null(x.mean) | !is.null(x.sd)) & !attr(model, "model") %in% c(pkg.env$singleblock_methods)){
+  if(!attr(model, "model") %in% c(pkg.env$singleblock_methods)){
     ### ### ###
     # MB approaches
     ### ### ###
@@ -1587,14 +1587,50 @@ predict.Coxmos <- function(object, ..., newdata = NULL){
       }
 
     }
-  # if not center and scale, X_test is just newdata without transformations
-  }else{
-    if(attr(model, "model") %in% c(pkg.env$multiblock_methods)){
-      if(all(names(newdata) %in% names(model$list_spls_models))){
-        X_test <- newdata
+  ### ### ###
+  # SB METHODS
+  ### ### ###
+  }else if(attr(model, "model") %in% c(pkg.env$singleblock_methods)){
+    if(!is.null(x.mean) | !is.null(x.sd)){
+
+      X_test <- list()
+      for(b in names(model$X$data)){
+        if(!isa(x.mean, "list")){
+          if(is.null(x.mean)){
+            center_value = FALSE
+          }else{
+            center_value = x.mean[[b]]
+          }
+        }else{
+          if(is.null(x.mean[[b]])){
+            center_value = FALSE
+          }else{
+            center_value = x.mean[[b]]
+          }
+        }
+
+        if(!isa(x.sd, "list")){
+          if(is.null(x.sd)){
+            scale_value = FALSE
+          }else{
+            scale_value = x.sd[[b]]
+          }
+        }else{
+          if(is.null(x.sd[[b]])){
+            scale_value = FALSE
+          }else{
+            scale_value = x.sd[[b]]
+          }
+        }
+
+        X_test[[b]] <- scale(newdata[[b]][,names(center_value),drop = FALSE], center = center_value, scale = scale_value)
+
       }
+
     }else{
-      X_test <- newdata
+      if(any(names(newdata) %in% names(model$list_spls_models))){
+        X_test <- newdata[names(newdata) %in% names(model$list_spls_models)]
+      }
     }
   }
 
@@ -1677,8 +1713,12 @@ predict.Coxmos <- function(object, ..., newdata = NULL){
       if(all(is.na(model$list_spls_models[[b]])) || is.null(model$list_spls_models[[b]]$survival_model)){
         next
       }else{
-        predicted_scores <- cbind(predicted_scores, predict.Coxmos(object = model$list_spls_models[[b]], newdata = X_test[[b]]))
-        cn.merge <- c(cn.merge, paste0(colnames(model$list_spls_models[[b]]$X$W.star)[1:ncol(model$list_spls_models[[b]]$X$W.star)], "_", b))
+        #as work as individual model, another correction for mean/sd is perform. Do not do it again.
+        aux_model <- model
+        aux_model$list_spls_models[[b]]$X$x.mean <- NULL
+        aux_model$list_spls_models[[b]]$X$x.sd <- NULL
+        predicted_scores <- cbind(predicted_scores, predict.Coxmos(object = aux_model$list_spls_models[[b]], newdata = X_test[[b]]))
+        cn.merge <- c(cn.merge, paste0(colnames(aux_model$list_spls_models[[b]]$X$W.star)[1:ncol(aux_model$list_spls_models[[b]]$X$W.star)], "_", b))
       }
     }
 

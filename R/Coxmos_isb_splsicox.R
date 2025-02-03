@@ -257,11 +257,19 @@ isb.splsicox <- function(X, Y,
           survival_model <- cox_model$survival_model
         }
 
+        all_scores <- NULL
+        for(b in names(lst_sb.spls)){
+          aux_scores <- lst_sb.spls[[b]]$X$scores
+          colnames(aux_scores) <- paste0(colnames(aux_scores), "_", b)
+          all_scores <- cbind(all_scores, aux_scores)
+        }
+
         t2 <- Sys.time()
         time <- difftime(t2,t1,units = "mins")
 
         # invisible(gc())
         return(isb.splsicox_class(list(X = list("data" = if(returnData) X_norm else NA,
+                                                "scores" = all_scores,
                                                 "x.mean" = xmeans, "x.sd" = xsds),
                                       Y = list("data" = Yh,
                                                "y.mean" = ymeans, "y.sd" = ysds),
