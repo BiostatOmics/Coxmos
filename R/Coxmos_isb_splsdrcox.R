@@ -426,7 +426,7 @@ cv.isb.splsdrcox_penalty <- function(X, Y,
   # tol Numeric. Tolerance for solving: solve(t(P) %*% W) (default: 1e-15).
   tol = 1e-10
 
-  t1 <- Sys.time()
+  t1_true <- Sys.time()
   y.center = y.scale = FALSE
   FREQ_CUT <- 95/5
 
@@ -573,8 +573,8 @@ cv.isb.splsdrcox_penalty <- function(X, Y,
   #### ### #
   func_call <- match.call()
 
-  t2 <- Sys.time()
-  time <- difftime(t2,t1,units = "mins")
+  t2_true <- Sys.time()
+  time <- difftime(t2_true,t1_true,units = "mins")
 
   # invisible(gc())
   return(cv.isb.splsdrcox_class(list(X = list("data" = if(returnData) X_norm else NA,

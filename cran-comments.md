@@ -1,4 +1,4 @@
-# CRAN Submission Comments (2025-0X-XX)
+# CRAN Submission Comments (2025-02-06)
 This resubmission incorporates the following adjustments:
 
 - Function 'predict.Coxmos' fixed for iSB and SB methods ('mean' and 'sd', and when not all block are present in final model and for NULL data).
@@ -6,6 +6,7 @@ This resubmission incorporates the following adjustments:
 - Function 'isb.splsdrcox' now return scores for all blocks.
 - Function 'isb.splsdrcox_dynamic' now return scores for all blocks.
 - Function 'isb.splsdacox_dynamic' now return scores for all blocks.
+- Functions 'cv.isb' now compute the consumed time correctly.
 
 # CRAN Submission Comments (2025-01-07)
 This resubmission incorporates the following adjustments:
