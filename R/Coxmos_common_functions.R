@@ -1594,7 +1594,15 @@ predict.Coxmos <- function(object, ..., newdata = NULL){
     if(!is.null(x.mean) | !is.null(x.sd)){
 
       X_test <- list()
-      for(b in names(model$X$data)){
+
+      blocks <- NULL
+      if(!is.null(names(model$X$data))){
+        blocks <- names(model$X$data)
+      }else{
+        blocks <- names(model$list_spls_models)
+      }
+
+      for(b in blocks){
         if(!isa(x.mean, "list")){
           if(is.null(x.mean)){
             center_value = FALSE
@@ -1629,7 +1637,15 @@ predict.Coxmos <- function(object, ..., newdata = NULL){
 
     }else{
       if(any(names(newdata) %in% names(model$list_spls_models))){
-        X_test <- newdata[names(newdata) %in% names(model$list_spls_models)]
+
+        blocks <- NULL
+        if(!is.null(names(model$X$data))){
+          blocks <- names(model$X$data)
+        }else{
+          blocks <- names(model$list_spls_models)
+        }
+
+        X_test <- newdata[names(newdata) %in% blocks]
       }
     }
   }
