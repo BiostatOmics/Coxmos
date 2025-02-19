@@ -1,4 +1,4 @@
-**Coxmos** is still a beta-version. Work in progress. We strongly recommend to not use it yet.
+**Coxmos** is still a beta-version. Work in progress.
 
 * [Introduction](https://github.com/BiostatOmics/Coxmos/edit/master/README.md#introduction)
 
