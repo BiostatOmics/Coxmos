@@ -149,13 +149,13 @@ After loading the data, it may be of interest for the user to perform a survival
 
 *Coxmos* provides the following methodologies:
 
-* Classical approaches: COX, COX StepWise and COX Elastic Net.
-* sPLS approaches: sPLS-ICOX, sPLS-DRCOX, sPLS-DRCOX-Dynamic and sPLS-DACOX-Dynamic.
+* **Classical approaches**: COX, COX StepWise and COX Elastic Net.
+* **sPLS approaches**: sPLS-ICOX, sPLS-DRCOX, sPLS-DRCOX-Dynamic and sPLS-DACOX-Dynamic.
 
 More information for each approach could be found in the help section for each function. The function name for each methodology are:
 
-* Classical approaches: `cox()`, `coxSW()` and `coxEN()`.
-* sPLS approaches: `splsicox()`, `splsdrcox()`, `splsdrcox_penalty()` and `splsdacox()`.
+* **Classical approaches**: `cox()`, `coxSW()` and `coxEN()`.
+* **sPLS approaches**: `splsicox()`, `splsdrcox()`, `splsdrcox_penalty()` and `splsdacox()`.
 
 To perform a survival analysis with our example, we will use methodologies that can work with high-dimensional data. These are the set of methodologies that use PLS and COX Elastic Net techniques.
 
@@ -239,7 +239,7 @@ cv.coxen_res <- cv.coxEN(X = X_train, Y = Y_train,
                          remove_near_zero_variance = T, remove_zero_variance = F, toKeep.zv = NULL,
                          remove_variance_at_fold_level = F,
                          remove_non_significant = F, alpha = 0.05, 
-                         w_AIC = 0, w_c.index = 0, w_AUC = 1, w_BRIER = 0, times = NULL, max_time_points = 15,
+                         w_AIC = 0, w_C.Index = 0, w_AUC = 1, w_I.BRIER = 0, times = NULL, max_time_points = 15,
                          MIN_AUC_INCREASE = 0.01, MIN_AUC = 0.8, MIN_COMP_TO_CHECK = 3,
                          pred.attr = "mean", pred.method = "cenROC", fast_mode = F,
                          MIN_EPV = 5, return_models = F, 
@@ -302,7 +302,7 @@ cv.splsicox_res <- cv.splsicox(X = X_train, Y = Y_train,
                                remove_near_zero_variance = T, remove_zero_variance = F, toKeep.zv = NULL,
                                remove_variance_at_fold_level = F,
                                remove_non_significant_models = F, alpha = 0.05, 
-                               w_AIC = 0, w_c.index = 0, w_AUC = 1, w_BRIER = 0, times = NULL, max_time_points = 15,
+                               w_AIC = 0, w_C.Index = 0, w_AUC = 1, w_I.BRIER = 0, times = NULL, max_time_points = 15,
                                MIN_AUC_INCREASE = 0.01, MIN_AUC = 0.8, MIN_COMP_TO_CHECK = 3,
                                pred.attr = "mean", pred.method = "cenROC", fast_mode = F,
                                MIN_EPV = 5, return_models = F, remove_non_significant = F, returnData = F, 
@@ -346,7 +346,7 @@ cv.splsdrcox_penalty_res <- cv.splsdrcox_penalty(X = X_train, Y = Y_train,
                                  x.center = T, x.scale = F,
                                  remove_near_zero_variance = T, remove_zero_variance = F, toKeep.zv = NULL,
                                  remove_non_significant_models = F, alpha = 0.05, 
-                                 w_AIC = 0, w_c.index = 0, w_AUC = 1, w_BRIER = 0, times = NULL,
+                                 w_AIC = 0, w_C.Index = 0, w_AUC = 1, w_I.BRIER = 0, times = NULL,
                                  MIN_AUC_INCREASE = 0.01, MIN_AUC = 0.8, MIN_COMP_TO_CHECK = 3,
                                  pred.attr = "mean", pred.method = "cenROC", fast_mode = F,
                                  MIN_EPV = 5, return_models = F,
@@ -394,7 +394,7 @@ cv.splsdrcox_dynamic_res <- cv.splsdrcox(X = X_train, Y = Y_train,
                                                  toKeep.zv = NULL,
                                                  remove_non_significant_models = F, alpha = 0.05,
                                                  remove_variance_at_fold_level = F, remove_non_significant = F, 
-                                                 w_AIC = 0, w_c.index = 0, w_AUC = 1, w_BRIER = 0, 
+                                                 w_AIC = 0, w_C.Index = 0, w_AUC = 1, w_I.BRIER = 0, 
                                                  times = NULL, max_time_points = 15, returnData = F,
                                                  MIN_AUC_INCREASE = 0.01, MIN_AUC = 0.8, MIN_COMP_TO_CHECK = 3,
                                                  pred.attr = "mean", pred.method = "cenROC", fast_mode = F,
@@ -440,7 +440,7 @@ cv.splsdacox_dynamic_res <- cv.splsdacox(X = X_train, Y = Y_train,
                                                  toKeep.zv = NULL,
                                                  remove_variance_at_fold_level = F, remove_non_significant = F, 
                                                  remove_non_significant_models = F, alpha = 0.05, 
-                                                 w_AIC = 0, w_c.index = 0, w_AUC = 1, w_BRIER = 0, 
+                                                 w_AIC = 0, w_C.Index = 0, w_AUC = 1, w_I.BRIER = 0, 
                                                  times = NULL, max_time_points = 15, returnData = F, 
                                                  MIN_AUC_INCREASE = 0.01, MIN_AUC = 0.8, MIN_COMP_TO_CHECK = 3,
                                                  pred.attr = "mean", pred.method = "cenROC", fast_mode = F,
@@ -520,7 +520,7 @@ However, we can also obtain graphical results where we can compare each method o
 
 ```{r, warning=F}
 lst_eval_results <- plot_evaluation(eval_results, evaluation = "AUC", pred.attr = "mean")
-lst_eval_results_BRIER <- plot_evaluation(eval_results, evaluation = "Brier", pred.attr = "mean")
+lst_eval_results_BRIER <- plot_evaluation(eval_results, evaluation = "IBS", pred.attr = "mean")
 ```
 
 After performing the cross-validation, we obtain a list in R that contains two new lists. The first of these refers to the evaluation over time for each of the methods used, as well as a variant where the average value of each of them is shown. On the other hand, we can compare the mean results of each method using: T-test, Wilcoxon-test, anova or Kruskal-Wallis.
@@ -840,7 +840,7 @@ To generate a Kaplan-Meier curve for original variables, the "type" parameter mu
 
 Additionally, the "top" parameter can be used to plot a specific number of variables, sorted by P-Value (Log-Rank test). The best cutpoint is determined by the "surv_cutpoint" function. Both qualitative and quantitative variables are supported.
 
-```{r}
+```{r, warning=FALSE}
 # LST_KM_RES_VAR <- getAutoKM.list(type = "VAR",
 #                                  lst_models = lst_models,
 #                                  comp = 1:10, #select how many components you want to compute for the pseudo beta
@@ -860,7 +860,6 @@ LST_KM_RES_VAR <- getAutoKM(type = "VAR",
 
 ```{r, fig.small=T, warning=F}
 LST_KM_RES_VAR$LST_PLOTS$var_840
-LST_KM_RES_VAR$LST_PLOTS$var_3897
 ```
 
 ```{r}
@@ -881,7 +880,6 @@ LST_KM_TEST_VAR <- getTestKM(model = lst_models$`sPLS-DRCOX-Dynamic`,
 
 ```{r, fig.small=T, warning=F}
 LST_KM_TEST_VAR$var_840
-LST_KM_TEST_VAR$var_3897
 ```
 
 # New patients
@@ -900,15 +898,15 @@ As shown, this is a censored patient who has the last observation at time 254.
 knitr::kable(Y_test[rownames(new_pat),])
 ```
 
-The function `plot_pseudobeta_newObservation.list()` or `plot_pseudobeta_newObservation()` allows the user to compare the characteristics of a new patient with the pseudo-beta values obtained from a specific model. The goal is to understand in a general way which variables are associated with an increased risk of an event or a decreased risk, in comparison to the variables predicted by the model.
+The function `plot_observation.pseudobeta.list()` or `plot_observation.pseudobeta()` allows the user to compare the characteristics of a new patient with the pseudo-beta values obtained from a specific model. The goal is to understand in a general way which variables are associated with an increased risk of an event or a decreased risk, in comparison to the variables predicted by the model.
 
 ```{r, warning=F}
-# ggp.simulated_beta_newObs <- plot_pseudobeta_newObservation.list(lst_models = lst_models, 
+# ggp.simulated_beta_newObs <- plot_observation.pseudobeta.list(lst_models = lst_models, 
 #                                                              new_observation = new_pat,
 #                                                              error.bar = T, onlySig = T, alpha = 0.05,
 #                                                              zero.rm = T, auto.limits = T, show.betas = T, top = 20)
 
-ggp.simulated_beta_newObs <- plot_pseudobeta_newObservation(model = lst_models$`sPLS-DRCOX-Dynamic`,
+ggp.simulated_beta_newObs <- plot_observation.pseudobeta(model = lst_models$`sPLS-DRCOX-Dynamic`,
                                                         new_observation = new_pat,
                                                         error.bar = T, onlySig = T, alpha = 0.05,
                                                         zero.rm = T, auto.limits = T, show.betas = T, top = 20)

@@ -21,9 +21,9 @@ cv.coxEN(
   remove_non_significant = FALSE,
   alpha = 0.05,
   w_AIC = 0,
-  w_c.index = 0,
+  w_C.Index = 0,
   w_AUC = 1,
-  w_BRIER = 0,
+  w_I.BRIER = 0,
   times = NULL,
   max_time_points = 15,
   MIN_AUC_INCREASE = 0.01,
@@ -89,11 +89,11 @@ forward selection (default: FALSE).}
 
 \item{w_AIC}{Numeric. Weight for AIC evaluator. All weights must sum 1 (default: 0).}
 
-\item{w_c.index}{Numeric. Weight for C-Index evaluator. All weights must sum 1 (default: 0).}
+\item{w_C.Index}{Numeric. Weight for C-Index evaluator. All weights must sum 1 (default: 0).}
 
 \item{w_AUC}{Numeric. Weight for AUC evaluator. All weights must sum 1 (default: 1).}
 
-\item{w_BRIER}{Numeric. Weight for BRIER SCORE evaluator. All weights must sum 1 (default: 0).}
+\item{w_I.BRIER}{Numeric. Weight for BRIER SCORE evaluator. All weights must sum 1 (default: 0).}
 
 \item{times}{Numeric vector. Time points where the AUC will be evaluated. If NULL, a maximum of
 'max_time_points' points will be selected equally distributed (default: NULL).}
@@ -156,8 +156,8 @@ information).
 \code{opt.nvar}: Optimal number of variables selected by the best_model.
 
 \code{plot_AIC}: AIC plot by each hyper-parameter.
-\code{plot_c_index}: C-Index plot by each hyper-parameter.
-\code{plot_BRIER}: Brier Score plot by each hyper-parameter.
+\code{plot_C.Index}: C-Index plot by each hyper-parameter.
+\code{plot_I.BRIER}: Integrative Brier Score plot by each hyper-parameter.
 \code{plot_AUC}: AUC plot by each hyper-parameter.
 
 \code{class}: Cross-Validated model class.
@@ -172,7 +172,7 @@ for test the models.
 \description{
 This function performs cross-validated CoxEN (coxEN).
 The function returns the optimal number of EN penalty value based on cross-validation.
-The performance could be based on multiple metrics as Area Under the Curve (AUC), Brier Score or
+The performance could be based on multiple metrics as Area Under the Curve (AUC), I. Brier Score or
 C-Index. Furthermore, the user could establish more than one metric simultaneously.
 }
 \details{
@@ -183,8 +183,8 @@ between lasso and ridge penalties for survival analysis.
 
 The cross-validation process is structured across multiple runs (\code{n_run}) and folds (\code{k_folds}),
 ensuring a comprehensive assessment of model performance. Users can prioritize specific evaluation
-metrics, such as AUC, Brier Score, or C-Index, by assigning weights (\code{w_AIC}, \code{w_c.index}, \code{w_AUC},
-\code{w_BRIER}). The function also offers flexibility in the AUC evaluation method (\code{pred.method}) and
+metrics, such as AUC, I. Brier Score, or C-Index, by assigning weights (\code{w_AIC}, \code{w_C.Index}, \code{w_AUC},
+\code{w_I.BRIER}). The function also offers flexibility in the AUC evaluation method (\code{pred.method}) and
 the attribute for metric evaluation (\code{pred.attr}).
 
 One of the distinguishing features of this function is its adaptive evaluation process. The

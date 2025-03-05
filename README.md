@@ -1,4 +1,6 @@
-**Coxmos** is still a beta-version. Work in progress. We strongly recommend to not use it yet.
+![](images/logo.png)
+
+![](https://cranlogs.r-pkg.org/badges/grand-total/Coxmos)
 
 * [Introduction](https://github.com/BiostatOmics/Coxmos/edit/master/README.md#introduction)
 
@@ -29,8 +31,6 @@ The pipeline includes three basic analysis blocks:
 after compare them, evaluate with test data, study the performance individually and in terms of 
 components and graph all the results to understand which variables are more relevant for each case 
 of study.
-
-![](images/logo.png)
 
 ### Installation
 

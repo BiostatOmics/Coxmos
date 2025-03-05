@@ -20,6 +20,7 @@
 #' @import svglite
 #' @importFrom tidyr pivot_longer starts_with
 #' @import utils
+#' @import patchwork
 
 #@importFrom survAUC predErr
 #suggest #grDevices
@@ -136,7 +137,7 @@ assign(x = 'AUC_evaluators', value = c(pkg.env$AUC_survivalROC, pkg.env$AUC_cenR
                                        pkg.env$AUC_smoothROCtime_C, pkg.env$AUC_smoothROCtime_I,
                                        pkg.env$AUC_risksetROC), pkg.env)
 
-assign(x = 'Brier', value = c("Brier_score"), pkg.env)
+assign(x = 'IBS', value = c("Integrative Brier Score"), pkg.env)
 
 #assign(x = 'IllegalChars', value = c("`", "*"), pkg.env)
 assign(x = 'IllegalChars', value = c("`"), pkg.env)
@@ -333,9 +334,9 @@ print.Coxmos <- function(x, ...){
           time_vector <- levels(x$df[x$df$method==m,c,drop = TRUE])
           time_vector <- unlist(lapply(time_vector, function(x){gsub("brier_time_", "", x)[[1]]}))
           message(paste0("\t",c,": ", paste0(time_vector, collapse = ", "), "\n"))
-        }else if(c=="Brier"){ #use integrative brier
+        }else if(c=="IBS"){ #use integrative brier
           ave <- x$lst_BRIER[[m]]$ierror
-          message(paste0("\t","I.Brier",": ", round(ave, 5), "\n"))
+          message(paste0("\t","I. Brier",": ", round(ave, 5), "\n"))
         }else{
           ave <- mean(x$df[x$df$method==m,c,drop = TRUE], na.rm = TRUE)
           message(paste0("\t",c,": ", round(ave, 5), "\n"))
@@ -383,6 +384,11 @@ print.Coxmos <- function(x, ...){
 #' getEPV(X,Y)
 
 getEPV <- function(X,Y){
+
+  if(!is.data.frame(X) & !is.matrix(X)){
+    stop("X must be a data.frame or a matrix object. If it is a list of omics use getEPV.mb().")
+  }
+
   if("event" %in% colnames(Y)){
     EPV <- sum(Y[,"event"]) / ncol(X)
   }else{
@@ -812,6 +818,19 @@ transformIllegalChars <- function(cn, except = NULL, recover = FALSE){
   return(v)
 }
 
+retransformIllegalChars <- function(cn) {
+  # Definir los caracteres ilegales y sus reemplazos
+  illegal_chars <- c(",", " ", "-", "+", "*", ">", "<", ">=", "<=", "^", "/", "\\", ":", "|", "?", "(", ")")
+  replacement <- c(".comma.", ".space.", ".minus.", ".plus.", ".star.", ".over.", ".under.", ".over_equal.", ".under_equal.", ".power.", ".divided.", ".backslash.", ".twocolons.", ".verticalLine.", ".questionmark.", ".LParenthesis.", ".RParenthesis.")
+
+  # Recorrer los reemplazos y revertirlos
+  for (i in seq_along(replacement)) {
+    cn <- vapply(cn, function(x) gsub(replacement[i], illegal_chars[i], x, fixed = TRUE), character(1))
+  }
+
+  return(cn)
+}
+
 checkColnamesIllegalChars <- function(X){
   new_cn_X <- deleteIllegalChars(colnames(X))
   new_cn_X <- transformIllegalChars(new_cn_X)
@@ -1056,6 +1075,20 @@ check.maxPredictors.cox <- function(X, Y, MIN_EPV = 5, FORCE){
     return(TRUE)
   }
   return(TRUE)
+}
+
+R2_indv <- function(R2){
+
+  R2_indv = list()
+  for(i in 1:length(R2)){
+    if(i==1){
+      R2_indv[[i]] = R2[[i]]
+    }else{
+      R2_indv[[i]] = R2[[i]] - R2[[i-1]]
+    }
+  }
+
+  return(R2_indv)
 }
 
 #### ## ### ## ### ##
@@ -1313,7 +1346,7 @@ getCOMPLETE_BRIER <- function(comp_index, eta_index = NULL, run, fold, X_test, Y
     ### ##
 
     # PROBLEMS
-    # The timepoint must be positive for time 0 and Brier Score metric.
+    # The timepoint must be positive for time 0 and Integrative Brier Score metric.
     # t != 0
     # Requires that coxph returns ALWAYS the x matrix (more data to process)
 
@@ -1680,12 +1713,18 @@ predict.Coxmos <- function(object, ..., newdata = NULL){
     #some times, n.comp is not the real number of components used
     t_pred <- matrix(0, nrow = nrow(X_test), ncol = ncol(model$X$scores))
 
+    w_ok <- matrix(0, nrow = ncol(X_test), ncol = ncol(model$X$scores))
+    p_ok <- matrix(0, nrow = ncol(X_test), ncol = ncol(model$X$scores))
+
     # for this predictions, we need to deflect the matrix in a loop instead of using W*
     for(h in 1:ncol(model$X$scores)){
       vars_h <- rownames(model$X$weightings_norm[,h,drop=F])
 
       wh_norm_h <- model$X$weightings_norm[,h,drop=F]
       ph_h <- model$X$loadings[,h,drop=F]
+
+      w_ok[, h] <- wh_norm_h
+      p_ok[, h] <- ph_h
 
       t_pred[, h] <- E_h[,vars_h,drop=F] %*% wh_norm_h[vars_h,,drop=F]
       E_h[, vars_h] <- E_h[, vars_h] - t_pred[, h] %*% t(ph_h[vars_h,])
@@ -1986,14 +2025,14 @@ getAUC_RUN_AND_COMP <- function(mode = "AUC", fast_mode, max.ncomp, n_run,
           #same max value, takes best c-index (no AUC bc if method complete no-exits)
           #mean c-index before take it
           if(length(names_max)>1){
-            sub_aux <- aux.run[,colnames(aux.run) %in% c("n.var", "c_index")]
+            sub_aux <- aux.run[,colnames(aux.run) %in% c("n.var", "C.Index")]
             sub_aux <- sub_aux[sub_aux$n.var %in% names_max,]
             sub_aux$n.var <- factor(sub_aux$n.var)
 
             best_n_var = NULL
             best_n_var_c_index = 0
             for(lv in levels(sub_aux$n.var)){
-              aux_c <- mean(sub_aux[sub_aux$n.var==lv,]$c_index, rm.na = TRUE)
+              aux_c <- mean(sub_aux[sub_aux$n.var==lv,]$C.Index, rm.na = TRUE)
               if(aux_c > best_n_var_c_index){
                 best_n_var_c_index = aux_c
                 best_n_var = lv
@@ -2021,7 +2060,7 @@ getAUC_RUN_AND_COMP <- function(mode = "AUC", fast_mode, max.ncomp, n_run,
           # message("\n\n")
           # message(mode)
 
-          if(mode=="BRIER"){
+          if(mode=="IBS"){
             eval_aux.r[[mode]] <- lst_AUC_component[[l.index]][[r]]
           }else if(mode == "AUC"){
             if(mode %in% names(lst_AUC_component[[l.index]][[r]])){
@@ -2048,14 +2087,14 @@ getAUC_RUN_AND_COMP <- function(mode = "AUC", fast_mode, max.ncomp, n_run,
 
         #same max value, takes best c-index (no AUC bc if method complete no-exits)
         if(length(names_max)>1){
-          sub_aux <- aux.l[,colnames(aux.l) %in% c("n.var", "c_index")]
+          sub_aux <- aux.l[,colnames(aux.l) %in% c("n.var", "C.Index")]
           sub_aux <- sub_aux[sub_aux$n.var %in% names_max,]
           sub_aux$n.var <- factor(sub_aux$n.var)
 
           best_n_var = NULL
           best_n_var_c_index = 0
           for(lv in levels(sub_aux$n.var)){
-            aux_c <- mean(sub_aux[sub_aux$n.var==lv,]$c_index, rm.na = TRUE)
+            aux_c <- mean(sub_aux[sub_aux$n.var==lv,]$C.Index, rm.na = TRUE)
             if(aux_c > best_n_var_c_index){
               best_n_var_c_index = aux_c
               best_n_var = lv
@@ -2092,8 +2131,8 @@ getAUC_RUN_AND_COMP <- function(mode = "AUC", fast_mode, max.ncomp, n_run,
           AUC_mean <- mean(AUC_v, na.rm = TRUE)
         }
         eval_aux[[mode]] <- AUC_mean
-      }else if(mode=="BRIER"){
-        eval_aux[[mode]] <- mean(df_results_evals_run[df_results_evals_run[,"n.comps"] == l, "BRIER"], na.rm = TRUE)
+      }else if(mode=="IBS"){
+        eval_aux[[mode]] <- mean(df_results_evals_run[df_results_evals_run[,"n.comps"] == l, "IBS"], na.rm = TRUE)
       }
 
       df_results_evals_comp <- rbind(df_results_evals_comp, eval_aux)
@@ -2125,7 +2164,7 @@ getAUC_RUN_AND_COMP <- function(mode = "AUC", fast_mode, max.ncomp, n_run,
           # same max value, takes best BRIER
           # as AUC could be not compute
           if(length(names_max)>1){
-            sub_aux <- aux.run[,colnames(aux.run) %in% c("n.var", "BRIER")]
+            sub_aux <- aux.run[,colnames(aux.run) %in% c("n.var", "IBS")]
             sub_aux <- sub_aux[sub_aux$n.var %in% names_max,]
             sub_aux$n.var <- factor(sub_aux$n.var)
 
@@ -2133,7 +2172,7 @@ getAUC_RUN_AND_COMP <- function(mode = "AUC", fast_mode, max.ncomp, n_run,
             # best_n_var_c_index = 0 #c-index is higher better
             best_n_var_c_index = 1
             for(lv in levels(sub_aux$n.var)){
-              aux_c <- mean(sub_aux[sub_aux$n.var==lv,]$BRIER, rm.na = TRUE)
+              aux_c <- mean(sub_aux[sub_aux$n.var==lv,]$IBS, rm.na = TRUE)
               # if(aux_c > best_n_var_c_index){ #c-index is higher better
               if(aux_c < best_n_var_c_index){
                 best_n_var_c_index = aux_c
@@ -2180,7 +2219,7 @@ getAUC_RUN_AND_COMP <- function(mode = "AUC", fast_mode, max.ncomp, n_run,
         # same max value, takes best BRIER
         # as AUC could be not compute
         if(length(names_max)>1){
-          sub_aux <- aux.l[,colnames(aux.l) %in% c("n.var", "BRIER")]
+          sub_aux <- aux.l[,colnames(aux.l) %in% c("n.var", "IBS")]
           sub_aux <- sub_aux[sub_aux$n.var %in% names_max,]
           sub_aux$n.var <- factor(sub_aux$n.var)
 
@@ -2188,7 +2227,7 @@ getAUC_RUN_AND_COMP <- function(mode = "AUC", fast_mode, max.ncomp, n_run,
           # best_n_var_c_index = 0
           best_n_var_c_index = 1
           for(lv in levels(sub_aux$n.var)){
-            aux_c <- mean(sub_aux[sub_aux$n.var==lv,]$BRIER, rm.na = TRUE)
+            aux_c <- mean(sub_aux[sub_aux$n.var==lv,]$IBS, rm.na = TRUE)
             # if(aux_c > best_n_var_c_index){
             if(aux_c < best_n_var_c_index){
               best_n_var_c_index = aux_c
@@ -2243,19 +2282,19 @@ getAUC_RUN_AND_COMP <- function(mode = "AUC", fast_mode, max.ncomp, n_run,
 
   if(method.train==pkg.env$splsdrcox_dynamic){ #num.var is text
     rownames(df_results_evals_run) <- NULL
-    colnames(df_results_evals_run) <- c("n.comps", "runs", "n.var", "AIC", "c_index", mode)
+    colnames(df_results_evals_run) <- c("n.comps", "runs", "n.var", "AIC", "C.Index", mode)
     df_results_evals_run <- as.data.frame(df_results_evals_run)
 
     rownames(df_results_evals_comp) <- NULL
-    colnames(df_results_evals_comp) <- c("n.comps", "n.var", "AIC", "c_index", mode)
+    colnames(df_results_evals_comp) <- c("n.comps", "n.var", "AIC", "C.Index", mode)
     df_results_evals_comp <- as.data.frame(df_results_evals_comp)
   }else{
     rownames(df_results_evals_run) <- NULL
-    colnames(df_results_evals_run) <- c("n.comps", "runs", "n.var", "AIC", "c_index", mode)
+    colnames(df_results_evals_run) <- c("n.comps", "runs", "n.var", "AIC", "C.Index", mode)
     df_results_evals_run <- as.data.frame(df_results_evals_run)
 
     rownames(df_results_evals_comp) <- NULL
-    colnames(df_results_evals_comp) <- c("n.comps", "n.var", "AIC", "c_index", mode)
+    colnames(df_results_evals_comp) <- c("n.comps", "n.var", "AIC", "C.Index", mode)
     df_results_evals_comp <- as.data.frame(df_results_evals_comp)
   }
 
@@ -2321,14 +2360,14 @@ getAUC_RUN_AND_COMP_sPLS <- function(mode = "AUC", fast_mode, max.ncomp, penalty
             #same max value, takes best c-index (no AUC bc if method complete no-exits)
             #mean c-index before take it
             if(length(names_max)>1){
-              sub_aux <- aux.run[,colnames(aux.run) %in% c("n.var", "c_index")]
+              sub_aux <- aux.run[,colnames(aux.run) %in% c("n.var", "C.Index")]
               sub_aux <- sub_aux[sub_aux$n.var %in% names_max,]
               sub_aux$n.var <- factor(sub_aux$n.var)
 
               best_n_var = NULL
               best_n_var_c_index = 0
               for(lv in levels(sub_aux$n.var)){
-                aux_c <- mean(sub_aux[sub_aux$n.var==lv,]$c_index, rm.na = TRUE)
+                aux_c <- mean(sub_aux[sub_aux$n.var==lv,]$C.Index, rm.na = TRUE)
                 if(aux_c > best_n_var_c_index){
                   best_n_var_c_index = aux_c
                   best_n_var = lv
@@ -2348,7 +2387,7 @@ getAUC_RUN_AND_COMP_sPLS <- function(mode = "AUC", fast_mode, max.ncomp, penalty
           if(optimal_comp_flag & l > (optimal_comp_index+MIN_COMP_TO_CHECK)){
             eval_aux.r[[mode]] <- NA
           }else{
-            if(mode %in% "BRIER"){
+            if(mode %in% "IBS"){
               if(length(lst_AUC_component)>=l.index && length(lst_AUC_component[[l.index]])>=e.index && length(lst_AUC_component[[l.index]][[e.index]])>=r){
                 eval_aux.r[[mode]] <- lst_AUC_component[[l.index]][[e.index]][[r]]
               }else{
@@ -2385,14 +2424,14 @@ getAUC_RUN_AND_COMP_sPLS <- function(mode = "AUC", fast_mode, max.ncomp, penalty
           #same max value, takes best c-index (no AUC bc if method complete no-exits)
           #mean c-index before take it
           if(length(names_max)>1){
-            sub_aux <- aux.run[,colnames(aux.run) %in% c("n.var", "c_index")]
+            sub_aux <- aux.run[,colnames(aux.run) %in% c("n.var", "C.Index")]
             sub_aux <- sub_aux[sub_aux$n.var %in% names_max,]
             sub_aux$n.var <- factor(sub_aux$n.var)
 
             best_n_var = NULL
             best_n_var_c_index = 0
             for(lv in levels(sub_aux$n.var)){
-              aux_c <- mean(sub_aux[sub_aux$n.var==lv,]$c_index, rm.na = TRUE)
+              aux_c <- mean(sub_aux[sub_aux$n.var==lv,]$C.Index, rm.na = TRUE)
               if(aux_c > best_n_var_c_index){
                 best_n_var_c_index = aux_c
                 best_n_var = lv
@@ -2416,7 +2455,7 @@ getAUC_RUN_AND_COMP_sPLS <- function(mode = "AUC", fast_mode, max.ncomp, penalty
         }else{
           AUC_v <- NULL
           for(r in 1:n_run){
-            if(mode %in% "BRIER"){
+            if(mode %in% "IBS"){
               if(length(lst_AUC_component)>=l.index && length(lst_AUC_component[[l.index]])>=e.index && length(lst_AUC_component[[l.index]][[e.index]])>=r){
                 AUC_v <- c(AUC_v, c(lst_AUC_component[[l.index]][[e.index]][[r]])) #MEAN FOR ALL COMPONENTS
               }else{
@@ -2471,11 +2510,11 @@ getAUC_RUN_AND_COMP_sPLS <- function(mode = "AUC", fast_mode, max.ncomp, penalty
   }
 
   rownames(df_results_evals_run) <- NULL
-  colnames(df_results_evals_run) <- c("n.comps", "penalty", "runs", "n.var", "AIC", "c_index", mode)
+  colnames(df_results_evals_run) <- c("n.comps", "penalty", "runs", "n.var", "AIC", "C.Index", mode)
   df_results_evals_run <- as.data.frame(df_results_evals_run)
 
   rownames(df_results_evals_comp) <- NULL
-  colnames(df_results_evals_comp) <- c("n.comps", "penalty", "n.var", "AIC", "c_index", mode)
+  colnames(df_results_evals_comp) <- c("n.comps", "penalty", "n.var", "AIC", "C.Index", mode)
   df_results_evals_comp <- as.data.frame(df_results_evals_comp)
 
   if(method.train %in% c(pkg.env$singleblock_methods)){
@@ -2486,10 +2525,10 @@ getAUC_RUN_AND_COMP_sPLS <- function(mode = "AUC", fast_mode, max.ncomp, penalty
   return(list(df_results_evals_comp = df_results_evals_comp, df_results_evals_run = df_results_evals_run))
 }
 
-get_EVAL_PLOTS <- function(fast_mode, best_model_info, w_AUC, w_BRIER, max.ncomp, penalty.list = NULL,
+get_EVAL_PLOTS <- function(fast_mode, best_model_info, w_AUC, w_I.BRIER, max.ncomp, penalty.list = NULL,
                            df_results_evals_fold, df_results_evals_run, df_results_evals_comp,
-                           x.text = "Component", colname_AIC = "AIC", colname_c_index = "c_index",
-                           colname_AUC = "AUC", colname_BRIER = "BRIER"){
+                           x.text = "Component", colname_AIC = "AIC", colname_c_index = "C.Index",
+                           colname_AUC = "AUC", colname_BRIER = "IBS", class = NULL){
 
   df_results_evals_comp_aux <- df_results_evals_comp
 
@@ -2582,8 +2621,8 @@ get_EVAL_PLOTS <- function(fast_mode, best_model_info, w_AUC, w_BRIER, max.ncomp
   df_results_evals_comp_aux$n.comps <- factor(df_results_evals_comp_aux$n.comps, levels = unique(df_results_evals_comp_aux$n.comps))
 
   ggp_AUC <- NULL
-  ggp_BRIER <- NULL
-  ggp_c_index <- NULL
+  ggp_IBS <- NULL
+  ggp_C.Index <- NULL
   ggp_AIC <- NULL
   if(!is.null(penalty.list)){
 
@@ -2595,21 +2634,55 @@ get_EVAL_PLOTS <- function(fast_mode, best_model_info, w_AUC, w_BRIER, max.ncomp
       ggp_AUC <- evalplot_errorbar(df = df_results_evals_comp_aux, x.var = "n.comps", y.var = colname_AUC, y.var.sd = "AUC.sd", x.color = penalty_name, best_component = best_model_info$n.comps, x.text = x.text, best_eta = best_model_info[[penalty_index]])
     }
 
-    ggp_BRIER <- evalplot_errorbar(df = df_results_evals_comp_aux, x.var = "n.comps", y.var = colname_BRIER, y.var.sd = "BRIER.sd", x.color = penalty_name, best_component = best_model_info$n.comps, x.text = x.text, best_eta = best_model_info[[penalty_index]])
-    ggp_c_index <- evalplot_errorbar(df = df_results_evals_comp_aux, x.var = "n.comps", y.var = colname_c_index, y.var.sd = "c_index.sd", x.color = penalty_name, best_component = best_model_info$n.comps, x.text = x.text, best_eta = best_model_info[[penalty_index]])
+    ggp_IBS <- evalplot_errorbar(df = df_results_evals_comp_aux, x.var = "n.comps", y.var = colname_BRIER, y.var.sd = "BRIER.sd", x.color = penalty_name, best_component = best_model_info$n.comps, x.text = x.text, best_eta = best_model_info[[penalty_index]])
+    ggp_C.Index <- evalplot_errorbar(df = df_results_evals_comp_aux, x.var = "n.comps", y.var = colname_c_index, y.var.sd = "c_index.sd", x.color = penalty_name, best_component = best_model_info$n.comps, x.text = x.text, best_eta = best_model_info[[penalty_index]])
     ggp_AIC <- evalplot_errorbar(df = df_results_evals_comp_aux, x.var = "n.comps", y.var = colname_AIC, y.var.sd = "AIC.sd", x.color = penalty_name, best_component = best_model_info$n.comps, x.text = x.text, best_eta = best_model_info[[penalty_index]])
+
+    ggp_title <- paste0("CV for ", class)
+
+    ggp <- ggp_AIC
+    ggp <- ggp + labs(title = ggp_title, subtitle = "AIC metric")
+    ggp_AIC <- ggp + guides(color = guide_legend(title = "Penalty"))
+
+    ggp <- ggp_C.Index
+    ggp <- ggp + labs(title = ggp_title, subtitle = "C-Index metric", y = "C-Index")
+    ggp_C.Index <- ggp + guides(color = guide_legend(title = "Penalty"))
+
+    ggp <- ggp_IBS
+    ggp <- ggp + labs(title = ggp_title, subtitle = "IBS metric", y = "IBS")
+    ggp_IBS <- ggp + guides(color = guide_legend(title = "Penalty"))
+
+    ggp <- ggp_AUC
+    ggp <- ggp + labs(title = ggp_title, subtitle = "AUC metric")
+    ggp_AUC <- ggp + guides(color = guide_legend(title = "Penalty"))
+
   }else{
     if(w_AUC!=0){
       ggp_AUC <- evalplot_errorbar(df = df_results_evals_comp_aux, x.var = "n.comps", y.var = colname_AUC, y.var.sd = "AUC.sd", best_component = best_model_info$n.comps, x.text = x.text)
     }
 
-    ggp_BRIER <- evalplot_errorbar(df = df_results_evals_comp_aux, x.var = "n.comps", y.var = colname_BRIER, y.var.sd = "BRIER.sd", best_component = best_model_info$n.comps, x.text = x.text)
-    ggp_c_index <- evalplot_errorbar(df = df_results_evals_comp_aux, x.var = "n.comps", y.var = colname_c_index, y.var.sd = "c_index.sd", best_component = best_model_info$n.comps, x.text = x.text)
+    ggp_IBS <- evalplot_errorbar(df = df_results_evals_comp_aux, x.var = "n.comps", y.var = colname_BRIER, y.var.sd = "BRIER.sd", best_component = best_model_info$n.comps, x.text = x.text)
+    ggp_C.Index <- evalplot_errorbar(df = df_results_evals_comp_aux, x.var = "n.comps", y.var = colname_c_index, y.var.sd = "c_index.sd", best_component = best_model_info$n.comps, x.text = x.text)
     ggp_AIC <- evalplot_errorbar(df = df_results_evals_comp_aux, x.var = "n.comps", y.var = colname_AIC, y.var.sd = "AIC.sd", best_component = best_model_info$n.comps, x.text = x.text)
+
+    ggp_title <- paste0("CV for ", class)
+
+    ggp <- ggp_AIC
+    ggp_AIC <- ggp + labs(title = ggp_title, subtitle = "AIC metric")
+
+    ggp <- ggp_C.Index
+    ggp_C.Index <- ggp + labs(title = ggp_title, subtitle = "C-Index metric", y = "C-Index")
+
+    ggp <- ggp_IBS
+    ggp_IBS <- ggp + labs(title = ggp_title, subtitle = "IBS metric", y = "IBS")
+
+    ggp <- ggp_AUC
+    ggp_AUC <- ggp + labs(title = ggp_title, subtitle = "AUC metric")
+
   }
 
   rownames(df_results_evals_comp_aux) <- NULL
-  return(list(df_results_evals_comp = df_results_evals_comp_aux, ggp_AUC = ggp_AUC, ggp_BRIER = ggp_BRIER, ggp_c_index = ggp_c_index, ggp_AIC = ggp_AIC))
+  return(list(df_results_evals_comp = df_results_evals_comp_aux, ggp_AUC = ggp_AUC, ggp_IBS = ggp_IBS, ggp_C.Index = ggp_C.Index, ggp_AIC = ggp_AIC))
 }
 
 #### ### ### ### ### ##
@@ -2718,7 +2791,7 @@ get_COX_evaluation_AIC_CINDEX <- function(comp_model_lst, max.ncomp, penalty.lis
     }#component
 
     if(!is.null(df_results_evals)){
-      colnames(df_results_evals) <- c("n.comps", "runs", "fold", "n.var", "AIC", "c_index")
+      colnames(df_results_evals) <- c("n.comps", "runs", "fold", "n.var", "AIC", "C.Index")
       df_results_evals <- as.data.frame(df_results_evals)
     }
 
@@ -2782,7 +2855,7 @@ get_COX_evaluation_AIC_CINDEX <- function(comp_model_lst, max.ncomp, penalty.lis
     }#component
 
     if(!all(is.null(df_results_evals))){
-      colnames(df_results_evals) <- c("n.comps", "penalty","runs", "fold", "n.var", "AIC", "c_index")
+      colnames(df_results_evals) <- c("n.comps", "penalty","runs", "fold", "n.var", "AIC", "C.Index")
       df_results_evals <- as.data.frame(df_results_evals)
     }
   }
@@ -2811,7 +2884,7 @@ get_COX_evaluation_BRIER <- function(comp_model_lst,
                                      df_results_evals, times = NULL,
                                      pred.method, pred.attr,
                                      max.ncomp, n_run, k_folds,
-                                     w_BRIER,
+                                     w_I.BRIER,
                                      MIN_AUC_INCREASE, MIN_AUC, MIN_COMP_TO_CHECK,
                                      method.train, PARALLEL = FALSE, verbose = FALSE){
 
@@ -2843,7 +2916,7 @@ get_COX_evaluation_BRIER <- function(comp_model_lst,
                                    width = 100)      # Ancho de la barra de progreso
   pb$tick(0)
 
-  message(paste0("Evaluating prediction acuracy with Brier Score...", ifelse(fast_mode, " [FAST_MODE]", " [BEST_MODE]")))
+  message(paste0("Evaluating prediction acuracy with Integrative Brier Score...", ifelse(fast_mode, " [FAST_MODE]", " [BEST_MODE]")))
 
   # EVAL BRIER FOR EACH FOLD
   if(fast_mode){
@@ -3022,7 +3095,7 @@ get_COX_evaluation_BRIER <- function(comp_model_lst,
   # }
 
   if(fast_mode){
-    df_results_evals$BRIER <- df_results_evals_BRIER
+    df_results_evals$IBS <- df_results_evals_BRIER
   }
 
   #### ### ### ### ### ### ### ###
@@ -3031,7 +3104,7 @@ get_COX_evaluation_BRIER <- function(comp_model_lst,
 
   #AUC per RUN AND COMP
   optimal_comp_index <- NULL
-  lst_AUC_RUN_COMP <- getAUC_RUN_AND_COMP(mode = "BRIER", fast_mode = fast_mode, max.ncomp = max.ncomp,
+  lst_AUC_RUN_COMP <- getAUC_RUN_AND_COMP(mode = "IBS", fast_mode = fast_mode, max.ncomp = max.ncomp,
                                           n_run = n_run, df_results_evals = df_results_evals,
                                           optimal_comp_flag = optimal_comp_flag,
                                           optimal_comp_index = optimal_comp_index, MIN_COMP_TO_CHECK = MIN_COMP_TO_CHECK,
@@ -3054,7 +3127,7 @@ get_COX_evaluation_BRIER_sPLS <- function(comp_model_lst,
                                           df_results_evals, times = NULL,
                                           pred.method, pred.attr,
                                           max.ncomp, penalty.list, n_run, k_folds,
-                                          w_BRIER,
+                                          w_I.BRIER,
                                           MIN_AUC_INCREASE, MIN_AUC, MIN_COMP_TO_CHECK, method.train,
                                           PARALLEL = FALSE, verbose = FALSE){
 
@@ -3090,7 +3163,7 @@ get_COX_evaluation_BRIER_sPLS <- function(comp_model_lst,
                                    width = 100)      # Ancho de la barra de progreso
   pb$tick(0)
 
-  message(paste0("Evaluating prediction acuracy with Brier Score...", ifelse(fast_mode, " [FAST_MODE]", " [BEST_MODE]")))
+  message(paste0("Evaluating prediction acuracy with Integrative Brier Score...", ifelse(fast_mode, " [FAST_MODE]", " [BEST_MODE]")))
 
   # EVAL BRIER FOR EACH FOLD
   if(fast_mode){
@@ -3303,7 +3376,7 @@ get_COX_evaluation_BRIER_sPLS <- function(comp_model_lst,
 
   #fold level
   if(fast_mode){
-    df_results_evals$BRIER <- df_results_evals_BRIER
+    df_results_evals$IBS <- df_results_evals_BRIER
   }
 
   #### ### ### ### ### ### ### ###
@@ -3312,7 +3385,7 @@ get_COX_evaluation_BRIER_sPLS <- function(comp_model_lst,
 
   #AUC per RUN AND COMP
   optimal_comp_index <- NULL
-  lst_AUC_RUN_COMP <- getAUC_RUN_AND_COMP_sPLS(mode = "BRIER", fast_mode = fast_mode,
+  lst_AUC_RUN_COMP <- getAUC_RUN_AND_COMP_sPLS(mode = "IBS", fast_mode = fast_mode,
                                                max.ncomp = max.ncomp, penalty.list = penalty.list,
                                                n_run = n_run, df_results_evals = df_results_evals,
                                                optimal_comp_flag = optimal_comp_flag,
@@ -5207,7 +5280,7 @@ eval_Coxmos_models <- function(lst_models, X_test, Y_test, pred.method = "cenROC
   # get BRIER times
   brier_times <- NULL
   for(m in names(lst_eval)){
-    brier_times <- c(brier_times, lst_eval[[m]]$brier.cox$times)
+    brier_times <- c(brier_times, lst_eval[[m]]$i.brier.cox$times)
   }
   brier_times <- unique(brier_times)
   brier_times <- brier_times[-which(is.na(brier_times))]
@@ -5218,13 +5291,13 @@ eval_Coxmos_models <- function(lst_models, X_test, Y_test, pred.method = "cenROC
   df <- NULL
   for(m in names(lst_eval)){
     lst_AUC[[m]] <- lst_eval[[m]]$lst_AUC_values
-    lst_BRIER[[m]] <- lst_eval[[m]]$brier.cox
+    lst_BRIER[[m]] <- lst_eval[[m]]$i.brier.cox
 
     aux_vector <- c(m, lst_eval[[m]]$model_time, lst_eval[[m]]$comp.time,
-                   lst_eval[[m]]$aic.cox, lst_eval[[m]]$c_index.cox)
+                   lst_eval[[m]]$aic.cox, lst_eval[[m]]$c.index.cox)
 
-    #if BRIER is NA, we cannot access to brier.cox$error
-    if(all(is.na(lst_eval[[m]]$brier.cox$error))){
+    #if BRIER is NA, we cannot access to i.brier.cox$error
+    if(all(is.na(lst_eval[[m]]$i.brier.cox$error))){
       aux_vector <- c(aux_vector, rep(NA, length(brier_times)))
     }else{
       # sometimes error repeat times
@@ -5260,18 +5333,18 @@ eval_Coxmos_models <- function(lst_models, X_test, Y_test, pred.method = "cenROC
   # }
 
   if(all(is.na(df[,2])) & ncol(df) < (5+length(final_times))){
-    colnames(df) <- c("method", "training.time","evaluating.time", "AIC", "c.index", "Brier", "AUC")
+    colnames(df) <- c("method", "training.time","evaluating.time", "AIC", "C.Index", "IBS", "AUC")
     df <- as.data.frame(df)
     new_df <- tidyr::pivot_longer(df, cols = starts_with("time_"), names_to = "time", values_to = "AUC",)
     new_df$time <- factor(new_df$time, levels = unique(new_df$time))
   }else{
-    colnames(df) <- c("method", "training.time","evaluating.time", "AIC", "c.index", paste0("brier_time_",unique(lst_eval[[m]]$brier.cox$times)), paste0("time_",final_times))
+    colnames(df) <- c("method", "training.time","evaluating.time", "AIC", "C.Index", paste0("brier_time_",unique(lst_eval[[m]]$i.brier.cox$times)), paste0("time_",final_times))
     df <- as.data.frame(df)
     df$method <- factor(df$method, levels = unique(df$method))
     #df[,!colnames(df) %in% "method"] <- apply(df[,!colnames(df) %in% "method"], 2, as.numeric)
 
     new_df <- tidyr::pivot_longer(df, cols = starts_with("time_"), names_to = "time", values_to = "AUC",)
-    new_df <- tidyr::pivot_longer(new_df, cols = starts_with("brier_time_"), names_to = "brier_time", values_to = "Brier",)
+    new_df <- tidyr::pivot_longer(new_df, cols = starts_with("brier_time_"), names_to = "brier_time", values_to = "IBS",)
     new_df$time <- factor(new_df$time, levels = unique(new_df$time))
     new_df$brier_time <- factor(new_df$brier_time, levels = unique(new_df$brier_time))
   }
@@ -5304,17 +5377,17 @@ evaluation_list_Coxmos <- function(model, X_test, Y_test, pred.method = "cenROC"
   if(!isa(model,pkg.env$model_class)){
     warning("Model must be an object of class Coxmos.")
     warning(model)
-    return(list(model_time = NA, comp.time = NA, aic.cox = NA, c_index.cox = NA, lst_AUC_values = NA))
+    return(list(model_time = NA, comp.time = NA, aic.cox = NA, c.index.cox = NA, lst_AUC_values = NA))
   }
 
   #atomic vector
   if(all(is.na(model))){
-    return(list(model_time = NA, comp.time = NA, aic.cox = NA, c_index.cox = NA, lst_AUC_values = NA))
+    return(list(model_time = NA, comp.time = NA, aic.cox = NA, c.index.cox = NA, lst_AUC_values = NA))
   }
 
   #NULL in Coxmos object (NA no anymore)
   if(all(is.null(model$survival_model))){
-    return(list(model_time = NA, comp.time = NA, aic.cox = NA, c_index.cox = NA, lst_AUC_values = NA))
+    return(list(model_time = NA, comp.time = NA, aic.cox = NA, c.index.cox = NA, lst_AUC_values = NA))
   }
 
   # fix illegal characters for all methods
@@ -5326,7 +5399,7 @@ evaluation_list_Coxmos <- function(model, X_test, Y_test, pred.method = "cenROC"
 
   cox <- model$survival_model$fit
   aic.cox <- stats::extractAIC(cox, k=2)[2] #k=2 <- AIC, [2] AIC Value
-  c_index.cox <- survival::concordance(cox)$concordance
+  c.index.cox <- survival::concordance(cox)$concordance
 
   #linear predictors
   if(isa(X_test, "list") & !attr(model, "model") %in% pkg.env$multiblock_methods){ #mix between multiblock and all PLS - Special case
@@ -5347,9 +5420,9 @@ evaluation_list_Coxmos <- function(model, X_test, Y_test, pred.method = "cenROC"
   t4 <- Sys.time()
   comp.time <- difftime(t4,t3,units = "mins")
 
-  #df <- rbind(df, c(m, model$time, comp.time, aic.cox, c_index.cox, lst_AUC_values$AUC.vector))
+  #df <- rbind(df, c(m, model$time, comp.time, aic.cox, c.index.cox, lst_AUC_values$AUC.vector))
 
-  return(list(model_time = model$time, comp.time = comp.time, aic.cox = aic.cox, c_index.cox = c_index.cox, brier.cox = brier_score, lst_AUC_values = lst_AUC_values))
+  return(list(model_time = model$time, comp.time = comp.time, aic.cox = aic.cox, c.index.cox = c.index.cox, i.brier.cox = brier_score, lst_AUC_values = lst_AUC_values))
 }
 
 evaluation_Coxmos_class = function(object, ...) {
@@ -5650,8 +5723,8 @@ getBestVector2 <- function(Xh, DR_coxph = NULL, Yh, n.comp, max.iter, vector, MI
     stop("Mode must be one of: 'spls' or 'splsda'")
   }
 
-  if(!EVAL_METHOD %in% c("AUC", "BRIER", "c_index")){
-    stop("Evaluation method must be one of: 'AUC', 'BRIER' or 'c_index'")
+  if(!EVAL_METHOD %in% c("AUC", "IBS", "C.Index")){
+    stop("Evaluation method must be one of: 'AUC', 'IBS' or 'C.Index'")
   }
 
   max_ncol <- ncol(Xh)
@@ -5718,13 +5791,13 @@ getBestVector2 <- function(Xh, DR_coxph = NULL, Yh, n.comp, max.iter, vector, MI
   for(i in 1:length(lst_cox_value)){
     if(EVAL_METHOD=="AUC"){
       df_cox_value <- rbind(df_cox_value, lst_cox_value[[i]]$AUC)
-    }else if(EVAL_METHOD=="c_index"){
-      df_cox_value <- rbind(df_cox_value, lst_cox_value[[i]]$c_index)
-    }else if(EVAL_METHOD=="BRIER"){
-      df_cox_value <- rbind(df_cox_value, lst_cox_value[[i]]$BRIER)
+    }else if(EVAL_METHOD=="C.Index"){
+      df_cox_value <- rbind(df_cox_value, lst_cox_value[[i]]$C.Index)
+    }else if(EVAL_METHOD=="IBS"){
+      df_cox_value <- rbind(df_cox_value, lst_cox_value[[i]]$IBS)
     }
   }
-  if(EVAL_METHOD=="BRIER"){
+  if(EVAL_METHOD=="IBS"){
     df_cox_value <- 1 - df_cox_value #maximize 1-brier
   }
 
@@ -5850,13 +5923,13 @@ getBestVector2 <- function(Xh, DR_coxph = NULL, Yh, n.comp, max.iter, vector, MI
     for(i in 1:length(lst_cox_value)){
       if(EVAL_METHOD=="AUC"){
         df_cox_value_aux <- rbind(df_cox_value_aux, lst_cox_value[[i]]$AUC)
-      }else if(EVAL_METHOD=="c_index"){
-        df_cox_value_aux <- rbind(df_cox_value_aux, lst_cox_value[[i]]$c_index)
-      }else if(EVAL_METHOD=="BRIER"){
-        df_cox_value_aux <- rbind(df_cox_value_aux, lst_cox_value[[i]]$BRIER)
+      }else if(EVAL_METHOD=="C.Index"){
+        df_cox_value_aux <- rbind(df_cox_value_aux, lst_cox_value[[i]]$C.Index)
+      }else if(EVAL_METHOD=="IBS"){
+        df_cox_value_aux <- rbind(df_cox_value_aux, lst_cox_value[[i]]$IBS)
       }
     }
-    if(EVAL_METHOD=="BRIER"){
+    if(EVAL_METHOD=="IBS"){
       df_cox_value_aux <- 1 - df_cox_value_aux #maximize 1-brier
     }
 
@@ -5895,8 +5968,8 @@ getBestVector <- function(Xh, DR_coxph = NULL, Yh, n.comp, max.iter, vector, MIN
     stop("Mode must be one of: 'spls' or 'splsda'")
   }
 
-  if(!EVAL_METHOD %in% c("AUC", "BRIER", "c_index")){
-    stop("Evaluation method must be one of: 'AUC', 'BRIER' or 'c_index'")
+  if(!EVAL_METHOD %in% c("AUC", "IBS", "C.Index")){
+    stop("Evaluation method must be one of: 'AUC', 'IBS' or 'C.Index'")
   }
 
   max_ncol <- ncol(Xh)
@@ -5972,15 +6045,15 @@ getBestVector <- function(Xh, DR_coxph = NULL, Yh, n.comp, max.iter, vector, MIN
   rownames(df_cox_value) <- names(lst_cox_value[[1]])
 
   # adjust for BRIER
-  df_cox_value["BRIER",] <- 1 - df_cox_value["BRIER",] #maximize 1-brier
+  df_cox_value["IBS",] <- 1 - df_cox_value["IBS",] #maximize 1-brier
 
   index <- which.max(df_cox_value[EVAL_METHOD,]) #MAX CONCORDANCE/AUC
 
   # manage errors
   if(length(index)==0){ #select another evaluator
     if(EVAL_METHOD %in% "AUC"){
-      message(paste0("Metric ", EVAL_METHOD, " cannot be used, using C-Index instead."))
-      EVAL_METHOD <- "c_index"
+      message(paste0("Metric ", EVAL_METHOD, " cannot be used, using C.Index instead."))
+      EVAL_METHOD <- "C.Index"
       index <- which.max(df_cox_value[EVAL_METHOD,]) #MAX CONCORDANCE/AUC
     }
   }
@@ -6103,13 +6176,13 @@ getBestVector <- function(Xh, DR_coxph = NULL, Yh, n.comp, max.iter, vector, MIN
     for(i in 1:length(lst_cox_value)){
       if(EVAL_METHOD=="AUC"){
         df_cox_value_aux <- rbind(df_cox_value_aux, lst_cox_value[[i]]$AUC)
-      }else if(EVAL_METHOD=="c_index"){
-        df_cox_value_aux <- rbind(df_cox_value_aux, lst_cox_value[[i]]$c_index)
-      }else if(EVAL_METHOD=="BRIER"){
-        df_cox_value_aux <- rbind(df_cox_value_aux, lst_cox_value[[i]]$BRIER)
+      }else if(EVAL_METHOD=="C.Index"){
+        df_cox_value_aux <- rbind(df_cox_value_aux, lst_cox_value[[i]]$C.Index)
+      }else if(EVAL_METHOD=="IBS"){
+        df_cox_value_aux <- rbind(df_cox_value_aux, lst_cox_value[[i]]$IBS)
       }
     }
-    if(EVAL_METHOD=="BRIER"){
+    if(EVAL_METHOD=="IBS"){
       df_cox_value_aux <- 1 - df_cox_value_aux #maximize 1-brier
     }
 
@@ -6159,7 +6232,7 @@ getCIndex_AUC_CoxModel_spls <- function(Xh, DR_coxph_ori, Yh, n.comp, keepX, sca
 
   if(FLAG_ERROR){
     FLAG_ERROR = FALSE
-    return(list("c_index" = NA, "AUC" = NA, "BRIER" = NA))
+    return(list("C.Index" = NA, "AUC" = NA, "IBS" = NA))
   }
 
   tt_mbsplsDR = model$variates
@@ -6187,7 +6260,7 @@ getCIndex_AUC_CoxModel_spls <- function(Xh, DR_coxph_ori, Yh, n.comp, keepX, sca
 
   if(all(is.na(cox_model$fit))){
     message("Model ran out of iterations and did not converge. Returning NAs for all metrics.")
-    return(list("c_index" = NA, "AUC" = NA, "BRIER" = NA))
+    return(list("C.Index" = NA, "AUC" = NA, "IBS" = NA))
   }
 
   lp <- getLinealPredictors(cox = cox_model$fit, data = d)
@@ -6203,7 +6276,7 @@ getCIndex_AUC_CoxModel_spls <- function(Xh, DR_coxph_ori, Yh, n.comp, keepX, sca
   #lst_BRIER_values <- survAUC_BRIER_LP(lp = lp$fit, Y = Yh, lp_new = lp$fit, Y_test = Yh)
   lst_BRIER_values <- SURVCOMP_BRIER_LP(lp_train = lp$fit, Y_train = Yh, lp_test = lp$fit, Y_test = Yh)
 
-  return(list("c_index" = cox_model$fit$concordance["concordance"], "AUC" = lst_AUC_values$AUC, "BRIER" = lst_BRIER_values$ierror))
+  return(list("C.Index" = cox_model$fit$concordance["concordance"], "AUC" = lst_AUC_values$AUC, "IBS" = lst_BRIER_values$ierror))
 }
 
 getCIndex_AUC_CoxModel_splsda <- function(Xh, Yh, n.comp, keepX, scale = FALSE, near.zero.var = FALSE,
@@ -6226,7 +6299,7 @@ getCIndex_AUC_CoxModel_splsda <- function(Xh, Yh, n.comp, keepX, scale = FALSE, 
 
   if(FLAG_ERROR){
     FLAG_ERROR = FALSE
-    return(list("c_index" = NA, "AUC" = NA, "BRIER" = NA))
+    return(list("C.Index" = NA, "AUC" = NA, "IBS" = NA))
   }
 
   tt_mbsplsDA = model$variates
@@ -6264,5 +6337,5 @@ getCIndex_AUC_CoxModel_splsda <- function(Xh, Yh, n.comp, keepX, scale = FALSE, 
   #lst_BRIER_values <- survAUC_BRIER_LP(lp = lp$fit, Y = Yh, lp_new = lp$fit, Y_test = Yh)
   lst_BRIER_values <- SURVCOMP_BRIER_LP(lp_train = lp$fit, Y_train = Yh, lp_test = lp$fit, Y_test = Yh)
 
-  return(list("c_index" = cox_model$fit$concordance["concordance"], "AUC" = lst_AUC_values$AUC, "BRIER" = lst_BRIER_values$ierror))
+  return(list("C.Index" = cox_model$fit$concordance["concordance"], "AUC" = lst_AUC_values$AUC, "IBS" = lst_BRIER_values$ierror))
 }

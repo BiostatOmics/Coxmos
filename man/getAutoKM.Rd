@@ -16,6 +16,7 @@ getAutoKM(
   only_sig = FALSE,
   alpha = 0.05,
   title = NULL,
+  subtitle = NULL,
   verbose = FALSE
 )
 }
@@ -49,6 +50,8 @@ returned (default: FALSE).}
 threshold (default: 0.05).}
 
 \item{title}{Character. Kaplan-Meier plot title (default: NULL).}
+
+\item{subtitle}{Character. Kaplan-Meier plot subtitle (default: NULL).}
 
 \item{verbose}{Logical. If verbose = TRUE, extra messages could be displayed (default: FALSE).}
 }

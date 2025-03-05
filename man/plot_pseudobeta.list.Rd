@@ -12,8 +12,20 @@ plot_pseudobeta.list(
   zero.rm = TRUE,
   top = NULL,
   auto.limits = TRUE,
+  selected_variables = NULL,
   show_percentage = TRUE,
   size_percentage = 3,
+  title = NULL,
+  title_size_text = 15,
+  subtitle = NULL,
+  subtitle_size_text = 12,
+  legend.position = "right",
+  legend_title = "Method",
+  legend_size_text = 12,
+  x_axis_size_text = 10,
+  y_axis_size_text = 10,
+  label_x_axis_size = 10,
+  label_y_axis_size = 10,
   verbose = FALSE
 )
 }
@@ -35,10 +47,34 @@ If top = NULL, all variables are shown (default: NULL).}
 \item{auto.limits}{Logical. If "auto.limits" = TRUE, limits are detected automatically
 (default: TRUE).}
 
+\item{selected_variables}{Character. Name of survival model variables to performed a custom selection (default: NULL).}
+
 \item{show_percentage}{Logical. If show_percentage = TRUE, it shows the contribution percentage
 for each variable to the full model (default: TRUE).}
 
 \item{size_percentage}{Numeric. Size of percentage text (default: 3).}
+
+\item{title}{Character. Plot title (default: NULL).}
+
+\item{title_size_text}{Numeric. Text size for title (default: 15).}
+
+\item{subtitle}{Character. Plot subtitle (default: NULL).}
+
+\item{subtitle_size_text}{Numeric. Text size for subtitle (default: 12).}
+
+\item{legend.position}{Character. Legend position. Must be one of the following: "top", "bottom", "right" or "left (default: "right").}
+
+\item{legend_title}{Character. Legend title (default: "Method").}
+
+\item{legend_size_text}{Numeric. Text size for legend title (default: 12).}
+
+\item{x_axis_size_text}{Numeric. Text size for x axis (default: 10).}
+
+\item{y_axis_size_text}{Numeric. Text size for y axis (default: 10).}
+
+\item{label_x_axis_size}{Numeric. Text size for x label axis (default: 10).}
+
+\item{label_y_axis_size}{Numeric. Text size for y label axis (default: 10).}
 
 \item{verbose}{Logical. If verbose = TRUE, extra messages could be displayed (default: FALSE).}
 }

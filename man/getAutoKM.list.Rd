@@ -16,6 +16,7 @@ getAutoKM.list(
   only_sig = FALSE,
   alpha = 0.05,
   title = NULL,
+  subtitle = NULL,
   verbose = FALSE
 )
 }
@@ -48,7 +49,9 @@ returned (default: FALSE).}
 \item{alpha}{Numeric. Numerical values are regarded as significant if they fall below the
 threshold (default: 0.05).}
 
-\item{title}{Character. Kaplan-Meier plot title (default: NULL).}
+\item{title}{Character. Kaplan-Meier plot title. If NULL, Coxmos model name will be used (default: NULL).}
+
+\item{subtitle}{Character. Kaplan-Meier plot subtitle (default: NULL).}
 
 \item{verbose}{Logical. If verbose = TRUE, extra messages could be displayed (default: FALSE).}
 }
@@ -63,6 +66,7 @@ Run the function "getAutoKM" for a list of models. More information in "?getAuto
 }
 \examples{
 data("X_proteomic")
+data("Y_proteomic")
 
 X_proteomic <- X_proteomic[1:30,1:20]
 Y_proteomic <- Y_proteomic[1:30,]

@@ -26,9 +26,9 @@ cv.isb.splsdacox(
   remove_non_significant = FALSE,
   alpha = 0.05,
   w_AIC = 0,
-  w_c.index = 0,
+  w_C.Index = 0,
   w_AUC = 1,
-  w_BRIER = 0,
+  w_I.BRIER = 0,
   times = NULL,
   max_time_points = 15,
   MIN_AUC = 0.8,
@@ -89,11 +89,11 @@ For the event column, accepted values are 0/1 or FALSE/TRUE for censored and eve
 
 \item{w_AIC}{Numeric. Weight for AIC in the evaluation. All weights must sum to 1 (default: 0).}
 
-\item{w_c.index}{Numeric. Weight for C-Index in the evaluation. All weights must sum to 1 (default: 0).}
+\item{w_C.Index}{Numeric. Weight for C-Index in the evaluation. All weights must sum to 1 (default: 0).}
 
 \item{w_AUC}{Numeric. Weight for AUC in the evaluation. All weights must sum to 1 (default: 1).}
 
-\item{w_BRIER}{Numeric. Weight for Brier Score in the evaluation. All weights must sum to 1 (default: 0).}
+\item{w_I.BRIER}{Numeric. Weight for Integrative Brier Score in the evaluation. All weights must sum to 1 (default: 0).}
 
 \item{times}{Numeric vector. Time points for AUC evaluation (default: NULL).}
 
@@ -141,7 +141,7 @@ An instance of class "Coxmos" and model "cv.SB.sPLS-DACOX-Dynamic", containing:
 This function performs cross-validated sparse partial least squares single-block for
 sPLS-DACOX-Dynamic. It returns the optimal number of components and the optimal sparsity penalty value based
 on cross-validation. Performance can be evaluated using multiple metrics, such as Area Under the Curve
-(AUC), Brier Score, or C-Index. Users can also specify more than one metric simultaneously.
+(AUC), I. Brier Score, or C-Index. Users can also specify more than one metric simultaneously.
 }
 \details{
 The \code{cv.isb.splsdacox_dynamic} function performs cross-validation for the single-block sparse partial least
@@ -151,7 +151,7 @@ The function systematically evaluates models across multiple runs and folds to d
 It allows flexibility in metrics, preprocessing steps (centering, scaling, variance filtering), and stopping criteria.
 
 For each run, the dataset is divided into training and test sets for the specified number of folds (\code{k_folds}).
-Various metrics, such as AIC, C-Index, Brier Score, and AUC, are computed to assess model performance. The
+Various metrics, such as AIC, C-Index, I. Brier Score, and AUC, are computed to assess model performance. The
 function identifies the optimal hyperparameters that yield the best performance based on the selected evaluation metrics.
 
 Additionally, it offers options to control the evaluation algorithm method (\code{pred.method}), whether to return

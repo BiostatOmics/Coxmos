@@ -21,9 +21,9 @@ cv.splsicox(
   remove_non_significant = FALSE,
   alpha = 0.05,
   w_AIC = 0,
-  w_c.index = 0,
+  w_C.Index = 0,
   w_AUC = 1,
-  w_BRIER = 0,
+  w_I.BRIER = 0,
   times = NULL,
   max_time_points = 15,
   MIN_AUC_INCREASE = 0.05,
@@ -88,11 +88,11 @@ threshold (default: 0.05).}
 
 \item{w_AIC}{Numeric. Weight for AIC evaluator. All weights must sum 1 (default: 0).}
 
-\item{w_c.index}{Numeric. Weight for C-Index evaluator. All weights must sum 1 (default: 0).}
+\item{w_C.Index}{Numeric. Weight for C-Index evaluator. All weights must sum 1 (default: 0).}
 
 \item{w_AUC}{Numeric. Weight for AUC evaluator. All weights must sum 1 (default: 1).}
 
-\item{w_BRIER}{Numeric. Weight for BRIER SCORE evaluator. All weights must sum 1 (default: 0).}
+\item{w_I.BRIER}{Numeric. Weight for BRIER SCORE evaluator. All weights must sum 1 (default: 0).}
 
 \item{times}{Numeric vector. Time points where the AUC will be evaluated. If NULL, a maximum of
 'max_time_points' points will be selected equally distributed (default: NULL).}
@@ -142,27 +142,37 @@ total cores - 1 will be used. It could lead to higher RAM consumption (default: 
 }
 \value{
 Instance of class "Coxmos" and model "cv.sPLS-ICOX".
+
 \code{best_model_info}: A data.frame with the information for the best model.
+
 \code{df_results_folds}: A data.frame with fold-level information.
+
 \code{df_results_runs}: A data.frame with run-level information.
+
 \code{df_results_comps}: A data.frame with component-level information (for cv.coxEN, EN.alpha
 information).
 
 \code{lst_models}: If return_models = TRUE, return a the list of all cross-validated models.
+
 \code{pred.method}: AUC evaluation algorithm method for evaluate the model performance.
 
 \code{opt.comp}: Optimal component selected by the best_model.
+
 \code{opt.penalty}: Optimal penalty value selected by the best_model.
 
 \code{plot_AIC}: AIC plot by each hyper-parameter.
-\code{plot_c_index}: C-Index plot by each hyper-parameter.
-\code{plot_BRIER}: Brier Score plot by each hyper-parameter.
+
+\code{plot_C.Index}: C-Index plot by each hyper-parameter.
+
+\code{plot_I.BRIER}: Integrative Brier Score plot by each hyper-parameter.
+
 \code{plot_AUC}: AUC plot by each hyper-parameter.
 
 \code{class}: Cross-Validated model class.
 
 \code{lst_train_indexes}: List (of lists) of indexes for the observations used in each run/fold
 for train the models.
+
 \code{lst_test_indexes}: List (of lists) of indexes for the observations used in each run/fold
 for test the models.
 
@@ -172,7 +182,7 @@ for test the models.
 This function performs cross-validated sparse partial least squares Cox (sPLS-ICOX).
 The function returns the optimal number of components and the optimal sparsity penalty value based
 on cross-validation. The performance could be based on multiple metrics as Area Under the Curve
-(AUC), Brier Score or C-Index. Furthermore, the user could establish more than one metric
+(AUC), I. Brier Score or C-Index. Furthermore, the user could establish more than one metric
 simultaneously.
 }
 \details{
@@ -180,12 +190,12 @@ The \verb{sPLS-ICOX Cross-Validation} function offers a systematic approach to d
 hyperparameters for the sparse partial least squares Cox (sPLS-ICOX) model through cross-validation.
 This function aims to identify the best combination of the number of PLS components (\code{max.ncomp})
 and the sparsity penalty (\code{penalty.list}) by evaluating model performance across multiple
-metrics such as Area Under the Curve (AUC), Brier Score, and C-Index.
+metrics such as Area Under the Curve (AUC), I. Brier Score, and C-Index.
 
 Cross-validation is executed through a series of runs (\code{n_run}) and folds (\code{k_folds}), ensuring a
 robust assessment of model performance. The function provides flexibility in defining the
-evaluation criteria, allowing users to set weights for different metrics (\code{w_AIC}, \code{w_c.index},
-\code{w_AUC}, \code{w_BRIER}) and to specify the desired evaluation method (\code{pred.method}).
+evaluation criteria, allowing users to set weights for different metrics (\code{w_AIC}, \code{w_C.Index},
+\code{w_AUC}, \code{w_I.BRIER}) and to specify the desired evaluation method (\code{pred.method}).
 
 An essential feature of this function is its ability to halt the evaluation process based on
 predefined conditions. If the improvement in AUC across successive models does not surpass the

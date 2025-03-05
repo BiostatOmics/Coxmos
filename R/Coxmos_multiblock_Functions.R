@@ -508,7 +508,7 @@ getCIndex_AUC_CoxModel_block.spls <- function(Xh, DR_coxph_ori, Yh, n.comp, keep
   #lst_BRIER_values <- survAUC_BRIER_LP(lp = lp$fit, Y = Yh, lp_new = lp$fit, Y_test = Yh)
   lst_BRIER_values <- SURVCOMP_BRIER_LP(lp_train = lp$fit, Y_train = Yh, lp_test = lp$fit, Y_test = Yh)
 
-  return(list("c_index" = cox_model$fit$concordance["concordance"], "AUC" = lst_AUC_values$AUC, "BRIER" = lst_BRIER_values$ierror))
+  return(list("C.Index" = cox_model$fit$concordance["concordance"], "AUC" = lst_AUC_values$AUC, "IBS" = lst_BRIER_values$ierror))
 }
 
 getCIndex_AUC_CoxModel_block.splsda <- function(Xh, Yh, n.comp, keepX, scale = FALSE,
@@ -558,7 +558,7 @@ getCIndex_AUC_CoxModel_block.splsda <- function(Xh, Yh, n.comp, keepX, scale = F
   #lst_BRIER_values <- survAUC_BRIER_LP(lp = lp$fit, Y = Yh, lp_new = lp$fit, Y_test = Yh)
   lst_BRIER_values <- SURVCOMP_BRIER_LP(lp_train = lp$fit, Y_train = Yh, lp_test = lp$fit, Y_test = Yh)
 
-  return(list("c_index" = cox_model$fit$concordance["concordance"], "AUC" = lst_AUC_values$AUC, "BRIER" = lst_BRIER_values$ierror))
+  return(list("C.Index" = cox_model$fit$concordance["concordance"], "AUC" = lst_AUC_values$AUC, "IBS" = lst_BRIER_values$ierror))
 }
 
 getVarExpModel_block.spls <- function(Xh, DR_coxph_ori, n.comp, keepX, scale = FALSE){
@@ -575,7 +575,7 @@ getBestVectorMB <- function(Xh, DR_coxph = NULL, Yh, n.comp, max.iter, vector, M
     stop("Mode must be one of: 'spls' or 'splsda'")
   }
 
-  if(!EVAL_METHOD %in% c("AUC", "BRIER", "c_index")){
+  if(!EVAL_METHOD %in% c("AUC", "IBS", "C.Index")){
     stop("Evaluation method must be one of: 'AUC', 'BRIER' or 'c_index'")
   }
 
@@ -675,13 +675,13 @@ getBestVectorMB <- function(Xh, DR_coxph = NULL, Yh, n.comp, max.iter, vector, M
   for(i in 1:length(lst_cox_value)){
     if(EVAL_METHOD=="AUC"){
       df_cox_value <- rbind(df_cox_value, lst_cox_value[[i]]$AUC)
-    }else if(EVAL_METHOD=="c_index"){
-      df_cox_value <- rbind(df_cox_value, lst_cox_value[[i]]$c_index)
-    }else if(EVAL_METHOD=="BRIER"){
-      df_cox_value <- rbind(df_cox_value, lst_cox_value[[i]]$BRIER)
+    }else if(EVAL_METHOD=="C.Index"){
+      df_cox_value <- rbind(df_cox_value, lst_cox_value[[i]]$C.Index)
+    }else if(EVAL_METHOD=="IBS"){
+      df_cox_value <- rbind(df_cox_value, lst_cox_value[[i]]$IBS)
     }
   }
-  if(EVAL_METHOD=="BRIER"){
+  if(EVAL_METHOD=="IBS"){
     df_cox_value <- 1 - df_cox_value #maximize 1-brier
   }
   rownames(df_cox_value) <- names(list_KeepX)
@@ -840,13 +840,13 @@ getBestVectorMB <- function(Xh, DR_coxph = NULL, Yh, n.comp, max.iter, vector, M
     for(i in 1:length(lst_cox_value)){
       if(EVAL_METHOD=="AUC"){
         df_cox_value_aux <- rbind(df_cox_value_aux, lst_cox_value[[i]]$AUC)
-      }else if(EVAL_METHOD=="c_index"){
-        df_cox_value_aux <- rbind(df_cox_value_aux, lst_cox_value[[i]]$c_index)
-      }else if(EVAL_METHOD=="BRIER"){
-        df_cox_value_aux <- rbind(df_cox_value_aux, lst_cox_value[[i]]$BRIER)
+      }else if(EVAL_METHOD=="C.Index"){
+        df_cox_value_aux <- rbind(df_cox_value_aux, lst_cox_value[[i]]$C.Index)
+      }else if(EVAL_METHOD=="IBS"){
+        df_cox_value_aux <- rbind(df_cox_value_aux, lst_cox_value[[i]]$IBS)
       }
     }
-    if(EVAL_METHOD=="BRIER"){
+    if(EVAL_METHOD=="IBS"){
       df_cox_value_aux <- 1 - df_cox_value_aux #maximize 1-brier
     }
     rownames(df_cox_value_aux) <- names(list_KeepX_aux)

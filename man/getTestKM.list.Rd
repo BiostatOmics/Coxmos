@@ -14,6 +14,7 @@ getTestKM.list(
   BREAKTIME = NULL,
   n.breaks = 20,
   title = NULL,
+  subtitle = NULL,
   verbose = FALSE
 )
 }
@@ -44,6 +45,8 @@ If BREAKTIME = NULL, "n.breaks" is used (default: NULL).}
 compute (default: 20).}
 
 \item{title}{Character. Kaplan-Meier plot title (default: NULL).}
+
+\item{subtitle}{Character. Kaplan-Meier plot subtitle (default: NULL).}
 
 \item{verbose}{Logical. If verbose = TRUE, extra messages could be displayed (default: FALSE).}
 }

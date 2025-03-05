@@ -4,7 +4,13 @@
 \alias{loadingplot.Coxmos}
 \title{loadingplot.Coxmos}
 \usage{
-loadingplot.Coxmos(model, zero.rm = TRUE, top = NULL, auto.limits = TRUE)
+loadingplot.Coxmos(
+  model,
+  zero.rm = TRUE,
+  top = NULL,
+  auto.limits = TRUE,
+  txt.x.angle = 0
+)
 }
 \arguments{
 \item{model}{Coxmos model.}
@@ -14,6 +20,8 @@ loadingplot.Coxmos(model, zero.rm = TRUE, top = NULL, auto.limits = TRUE)
 \item{top}{Numeric. Show "top" first variables. If top = NULL, all variables are shown (default: NULL).}
 
 \item{auto.limits}{Logical. If "auto.limits" = TRUE, limits are detected automatically (default: TRUE).}
+
+\item{txt.x.angle}{Numeric. Angle of X text (default: 0).}
 }
 \value{
 A list of \code{ggplot2} objects, each representing the loading values for a component of

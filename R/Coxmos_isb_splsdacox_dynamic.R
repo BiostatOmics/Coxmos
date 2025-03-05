@@ -295,7 +295,7 @@ isb.splsdacox <- function(X, Y,
 #' @description This function performs cross-validated sparse partial least squares single-block for
 #' sPLS-DACOX-Dynamic. It returns the optimal number of components and the optimal sparsity penalty value based
 #' on cross-validation. Performance can be evaluated using multiple metrics, such as Area Under the Curve
-#' (AUC), Brier Score, or C-Index. Users can also specify more than one metric simultaneously.
+#' (AUC), I. Brier Score, or C-Index. Users can also specify more than one metric simultaneously.
 #'
 #' @details
 #' The `cv.isb.splsdacox_dynamic` function performs cross-validation for the single-block sparse partial least
@@ -305,7 +305,7 @@ isb.splsdacox <- function(X, Y,
 #' It allows flexibility in metrics, preprocessing steps (centering, scaling, variance filtering), and stopping criteria.
 #'
 #' For each run, the dataset is divided into training and test sets for the specified number of folds (`k_folds`).
-#' Various metrics, such as AIC, C-Index, Brier Score, and AUC, are computed to assess model performance. The
+#' Various metrics, such as AIC, C-Index, I. Brier Score, and AUC, are computed to assess model performance. The
 #' function identifies the optimal hyperparameters that yield the best performance based on the selected evaluation metrics.
 #'
 #' Additionally, it offers options to control the evaluation algorithm method (`pred.method`), whether to return
@@ -334,9 +334,9 @@ isb.splsdacox <- function(X, Y,
 #' @param remove_non_significant Logical. If TRUE, non-significant components in the final Cox model are removed (default: FALSE).
 #' @param alpha Numeric. Significance threshold for selecting variables/components (default: 0.05).
 #' @param w_AIC Numeric. Weight for AIC in the evaluation. All weights must sum to 1 (default: 0).
-#' @param w_c.index Numeric. Weight for C-Index in the evaluation. All weights must sum to 1 (default: 0).
+#' @param w_C.Index Numeric. Weight for C-Index in the evaluation. All weights must sum to 1 (default: 0).
 #' @param w_AUC Numeric. Weight for AUC in the evaluation. All weights must sum to 1 (default: 1).
-#' @param w_BRIER Numeric. Weight for Brier Score in the evaluation. All weights must sum to 1 (default: 0).
+#' @param w_I.BRIER Numeric. Weight for Integrative Brier Score in the evaluation. All weights must sum to 1 (default: 0).
 #' @param times Numeric vector. Time points for AUC evaluation (default: NULL).
 #' @param max_time_points Numeric. Maximum number of time points for AUC evaluation (default: 15).
 #' @param MIN_AUC Numeric. Minimum AUC to achieve during cross-validation (default: 0.8).
@@ -394,7 +394,7 @@ cv.isb.splsdacox <- function(X, Y,
                                      remove_variance_at_fold_level = FALSE,
                                      remove_non_significant_models = FALSE, remove_non_significant = FALSE,
                                      alpha = 0.05,
-                                     w_AIC = 0, w_c.index = 0, w_AUC = 1, w_BRIER = 0, times = NULL,
+                                     w_AIC = 0, w_C.Index = 0, w_AUC = 1, w_I.BRIER = 0, times = NULL,
                                      max_time_points = 15,
                                      MIN_AUC = 0.8, MIN_COMP_TO_CHECK = 3,
                                      pred.attr = "mean", pred.method = "cenROC", fast_mode = FALSE,
@@ -413,7 +413,7 @@ cv.isb.splsdacox <- function(X, Y,
 
   #### Check values classes and ranges
   params_with_limits <- list("MIN_AUC_INCREASE" = MIN_AUC_INCREASE, "MIN_AUC" = MIN_AUC, "alpha" = alpha,
-                             "w_AIC" = w_AIC, "w_c.index" = w_c.index, "w_AUC" = w_AUC, "w_BRIER" = w_BRIER)
+                             "w_AIC" = w_AIC, "w_C.Index" = w_C.Index, "w_AUC" = w_AUC, "w_I.BRIER" = w_I.BRIER)
   check_min0_max1_variables(params_with_limits)
 
   numeric_params <- list("max.ncomp" = max.ncomp, "MIN_NVAR" = MIN_NVAR, "n.cut_points" = n.cut_points,
@@ -458,7 +458,7 @@ cv.isb.splsdacox <- function(X, Y,
   X <- lst_check$X
   Y <- lst_check$Y
 
-  check.cv.weights(c(w_AIC, w_c.index, w_BRIER, w_AUC))
+  check.cv.weights(c(w_AIC, w_C.Index, w_I.BRIER, w_AUC))
   max.ncomp <- check.mb.ncomp(X, max.ncomp)
   # if(!pred.method %in% c("risksetROC", "survivalROC", "cenROC", "nsROC", "smoothROCtime_C", "smoothROCtime_I")){
   #   stop_quietly(paste0("pred.method must be one of the following: ", paste0(c("risksetROC", "survivalROC", "cenROC", "nsROC", "smoothROCtime_C", "smoothROCtime_I"), collapse = ", ")))
@@ -546,7 +546,7 @@ cv.isb.splsdacox <- function(X, Y,
                                                      EVAL_METHOD = EVAL_METHOD,
                                                      n_run = n_run, k_folds = k_folds, alpha = alpha, remove_non_significant_models = remove_non_significant_models,
                                                      remove_non_significant = remove_non_significant,
-                                                     w_AIC = w_AIC, w_c.index = w_c.index, w_BRIER = w_BRIER, w_AUC = w_AUC, times = times, max_time_points = max_time_points,
+                                                     w_AIC = w_AIC, w_C.Index = w_C.Index, w_I.BRIER = w_I.BRIER, w_AUC = w_AUC, times = times, max_time_points = max_time_points,
                                                      MIN_AUC = MIN_AUC, MIN_COMP_TO_CHECK = MIN_COMP_TO_CHECK,
                                                      x.scale = x.scale[[b]], x.center = x.center[[b]],
                                                      #y.scale = y.scale, y.center = y.center,

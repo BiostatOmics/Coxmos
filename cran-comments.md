@@ -1,3 +1,37 @@
+# CRAN Submission Comments (2025-03-05)
+This resubmission incorporates the following adjustments:
+
+- Changed 'plot_BRIER' for 'plot_I.BRIER' in all CV methods and fix their descriptions.
+- Changed 'plot_c_index' for 'plot_C.Index' in all CV methods.
+- Changed 'w_c.index' for 'w_C.Index' in all CV methods.
+- Changed 'w_BRIER' for 'w_I.BRIER' in all CV methods.
+- Changed 'brier.cox' for 'i.brier.cox' in 'evaluation_list_Coxmos' function.
+- Changed 'c_index.cox' for 'c.index.cox' in 'evaluation_list_Coxmos' function.
+- Changed labels and titles for CV plots in 'get_EVAL_PLOTS' function and their respective CV methods.
+- Changed X label for 'comboplot.performance2.0' function.
+- Changed ggpubr::ggarrange by patchwork R package.
+- Fixed R2 values for all sPLS plots and description updated for methods that compute this value. 
+- Fixed 'getCutoffAutoKM' function for COMP mode.
+- Fixed KM plots. Now, if a variable was affected by transformIllegalChars(), now is reverted to plot it.
+- Fixed 'plot_pseudobeta' for MB models.
+- Fixed 'coxweightplot.fromVector.Coxmos'. Now, if a variable was affected by transformIllegalChars(), now is reverted to plot it.
+- Fixed 'plot_pseudobeta.newObservation' to work with observation with more variables than the model selection.
+- Fixed 'plot_LP.multipleObservations' to work with observation with more variables than the model selection.
+- Fixed 'pseudobetas' plot for y axis.
+- Updated 'plot_events' function to manage different number of decimals and angle of x.axis. Now return 4 plots and 4 data.frames instead 1. Percentage relative to observations, to group and to time added.
+- Updated 'getAutoKM', 'getAutoKM.list', 'getTestKM' and 'getTestKM.list' functions to manage subtitles. The 'getAutoKM.list' and and 'getTestKM.list' functions now use the model name as title when title is NULL.
+- Updated 'plot_pseudobeta' for work with a selection of cox variables instead of working only with full model.
+- Updated 'plot_pseudobeta' for MB models with a new plot which mix all omics together.
+- Updated 'plot_observation.pseudobeta' for better legend, arrange and text.
+- Updated 'plot_LP.multipleObservations' to manage more parameters for plot design.
+- Updated 'getEPV' to show error message when using a MB data instead of HD.
+- Renamed multiple parameters for 'plot_LP.multipleObservations' and 'plot_pseudobeta_newObservation' functions.
+- Miscellaneous changes in variables names.
+- Miscellaneous changes in all descriptions.
+- Miscellaneous changes in plot titles and axis.
+- Miscellaneous changes in function names.
+- README updated.
+
 # CRAN Submission Comments (2025-02-06)
 This resubmission incorporates the following adjustments:
 
@@ -29,8 +63,8 @@ This resubmission incorporates the following adjustments:
 - Function 'removeNAorINFcoxmodel' fixed.
 - Function 'getBestVector' fixed and messages updated.
 - Function 'getAUC_from_LP_2.0' fixed.
-- Function 'eval_Coxmos_models' fixed to handle cases where 'I.Brier' cannot be computed for the first model.
-  - Issues with repeated times in 'I.Brier' Score results have been resolved.
+- Function 'eval_Coxmos_models' fixed to handle cases where 'I. Brier' cannot be computed for the first model.
+  - Issues with repeated times in 'I. Brier' Score results have been resolved.
 - Function 'getCIndex_AUC_CoxModel_spls' fixed to handle non-converging models.
 - Function 'get_Coxmos_models2.0' updated to manage the 'EVAL_METHOD' parameter in MB functions.
 - Descriptions of 'Dynamic' functions updated to include all possible values for 'EVAL_METHOD'.

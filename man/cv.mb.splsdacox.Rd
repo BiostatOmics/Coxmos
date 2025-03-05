@@ -26,9 +26,9 @@ cv.mb.splsdacox(
   remove_non_significant = FALSE,
   alpha = 0.05,
   w_AIC = 0,
-  w_c.index = 0,
+  w_C.Index = 0,
   w_AUC = 1,
-  w_BRIER = 0,
+  w_I.BRIER = 0,
   times = NULL,
   max_time_points = 15,
   MIN_AUC_INCREASE = 0.01,
@@ -75,7 +75,7 @@ variables to use (default: 1000).}
 If only two cut points are selected, minimum and maximum size are used (default: 5).}
 
 \item{EVAL_METHOD}{Character. The selected metric will be use to compute the best
-number of variables. Must be one of the following: "AUC", "BRIER" or "c_index" (default: "AUC").}
+number of variables. Must be one of the following: "AUC", "IBS" or "C.Index" (default: "AUC").}
 
 \item{n_run}{Numeric. Number of runs for cross validation (default: 3).}
 
@@ -110,11 +110,11 @@ threshold (default: 0.05).}
 
 \item{w_AIC}{Numeric. Weight for AIC evaluator. All weights must sum 1 (default: 0).}
 
-\item{w_c.index}{Numeric. Weight for C-Index evaluator. All weights must sum 1 (default: 0).}
+\item{w_C.Index}{Numeric. Weight for C-Index evaluator. All weights must sum 1 (default: 0).}
 
 \item{w_AUC}{Numeric. Weight for AUC evaluator. All weights must sum 1 (default: 1).}
 
-\item{w_BRIER}{Numeric. Weight for BRIER SCORE evaluator. All weights must sum 1 (default: 0).}
+\item{w_I.BRIER}{Numeric. Weight for BRIER SCORE evaluator. All weights must sum 1 (default: 0).}
 
 \item{times}{Numeric vector. Time points where the AUC will be evaluated. If NULL, a maximum of
 'max_time_points' points will be selected equally distributed (default: NULL).}
@@ -180,8 +180,8 @@ information).
 \code{design}: Design matrix used for computing the MultiBlocks models.
 
 \code{plot_AIC}: AIC plot by each hyper-parameter.
-\code{plot_c_index}: C-Index plot by each hyper-parameter.
-\code{plot_BRIER}: Brier Score plot by each hyper-parameter.
+\code{plot_C.Index}: C-Index plot by each hyper-parameter.
+\code{plot_I.BRIER}: Integrative Brier Score plot by each hyper-parameter.
 \code{plot_AUC}: AUC plot by each hyper-parameter.
 
 \code{class}: Cross-Validated model class.

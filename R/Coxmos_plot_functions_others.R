@@ -24,6 +24,7 @@
 #' @param zero.rm Logical. Remove variables equal to 0 (default: TRUE).
 #' @param top Numeric. Show "top" first variables. If top = NULL, all variables are shown (default: NULL).
 #' @param auto.limits Logical. If "auto.limits" = TRUE, limits are detected automatically (default: TRUE).
+#' @param txt.x.angle Numeric. Angle of X text (default: 0).
 #'
 #' @return A list of \code{ggplot2} objects, each representing the loading values for a component of
 #' the Coxmos model.
@@ -38,7 +39,7 @@
 #' splsicox.model <- splsicox(X, Y, n.comp = 2, penalty = 0.5, x.center = TRUE, x.scale = TRUE)
 #' loadingplot.Coxmos(model = splsicox.model)
 
-loadingplot.Coxmos <- function(model, zero.rm = TRUE, top = NULL, auto.limits = TRUE){
+loadingplot.Coxmos <- function(model, zero.rm = TRUE, top = NULL, auto.limits = TRUE, txt.x.angle = 0){
 
   if(!isa(model,pkg.env$model_class)){
     warning("Model must be an object of class Coxmos.")
@@ -93,7 +94,7 @@ loadingplot.Coxmos <- function(model, zero.rm = TRUE, top = NULL, auto.limits = 
     ggp <- ggp +
       geom_bar(stat = "identity") +
       guides(color = "none") +
-      theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +
+      theme(axis.text.x = element_text(angle = txt.x.angle, vjust = 0.5, hjust=1)) +
       #scale_fill_discrete(name = "New Legend Title") +
       xlab(label = paste0("Variables")) +
       ylab(label = paste0("Loading Value")) +
@@ -144,8 +145,10 @@ loadingplot.Coxmos <- function(model, zero.rm = TRUE, top = NULL, auto.limits = 
 #' @param zero.rm Logical. Remove variables equal to 0 (default: FALSE).
 #' @param top Numeric. Show "top" first variables. If top = NULL, all variables are shown (default: NULL).
 #' @param auto.limits Logical. If "auto.limits" = TRUE, limits are detected automatically (default: TRUE).
+#' @param txt.x.angle Numeric. Angle of X text (default: 0).
 
-loadingplot.fromVector.Coxmos <- function(model, vector, zero.rm = FALSE, top = NULL, auto.limits = TRUE){
+loadingplot.fromVector.Coxmos <- function(model, vector, zero.rm = FALSE, top = NULL,
+                                          auto.limits = TRUE, txt.x.angle = 0){
 
   if(!isa(model,pkg.env$model_class)){
     warning("Model must be an object of class Coxmos.")
@@ -200,7 +203,7 @@ loadingplot.fromVector.Coxmos <- function(model, vector, zero.rm = FALSE, top = 
     ggp <- ggp +
       geom_bar(stat = "identity") +
       guides(color = "none") +
-      theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +
+      theme(axis.text.x = element_text(angle = txt.x.angle, vjust = 0.5, hjust=1)) +
       xlab(label = paste0("Variables")) +
       ylab(label = paste0("Loading Value")) +
       ggtitle(paste0(attr(model, "model"), " - ", col_name))
@@ -269,6 +272,7 @@ loadingplot.fromVector.Coxmos <- function(model, vector, zero.rm = FALSE, top = 
 #' @param zero.rm Logical. Remove variables equal to 0 (default: FALSE).
 #' @param top Numeric. Show "top" first variables. If top = NULL, all variables are shown (default: NULL).
 #' @param auto.limits Logical. If "auto.limits" = TRUE, limits are detected automatically (default: TRUE).
+#' @param txt.x.angle Numeric. Angle of X text (default: 0).
 #'
 #' @return A list of \code{ggplot2} objects, each representing the W* values for a component of
 #' the Coxmos model.
@@ -283,7 +287,7 @@ loadingplot.fromVector.Coxmos <- function(model, vector, zero.rm = FALSE, top = 
 #' splsicox.model <- splsicox(X, Y, n.comp = 2, penalty = 0.5, x.center = TRUE, x.scale = TRUE)
 #' w.starplot.Coxmos(model = splsicox.model)
 
-w.starplot.Coxmos <- function(model, zero.rm = FALSE, top = NULL, auto.limits = TRUE){
+w.starplot.Coxmos <- function(model, zero.rm = FALSE, top = NULL, auto.limits = TRUE, txt.x.angle = 0){
 
   if(!isa(model,pkg.env$model_class)){
     warning("Model must be an object of class Coxmos.")
@@ -338,7 +342,7 @@ w.starplot.Coxmos <- function(model, zero.rm = FALSE, top = NULL, auto.limits = 
     ggp <- ggp +
       geom_bar(stat = "identity") +
       guides(color = "none") +
-      theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +
+      theme(axis.text.x = element_text(angle = txt.x.angle, vjust = 0.5, hjust=1)) +
       #scale_fill_discrete(name = "New Legend Title") +
       xlab(label = paste0("Variables")) +
       ylab(label = paste0("W.star Value")) +

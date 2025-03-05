@@ -26,9 +26,9 @@ cv.splsdrcox(
   remove_non_significant = FALSE,
   alpha = 0.05,
   w_AIC = 0,
-  w_c.index = 0,
+  w_C.Index = 0,
   w_AUC = 1,
-  w_BRIER = 0,
+  w_I.BRIER = 0,
   times = NULL,
   max_time_points = 15,
   MIN_AUC = 0.8,
@@ -74,7 +74,7 @@ continue evaluating higher values in the multiple tested parameters. If it is no
 'MIN_COMP_TO_CHECK' models and the minimum 'MIN_AUC' value is reached, the evaluation stops (default: 0.01).}
 
 \item{EVAL_METHOD}{Character. The selected metric will be use to compute the best
-number of variables. Must be one of the following: "AUC", "BRIER" or "c_index" (default: "AUC").}
+number of variables. Must be one of the following: "AUC", "IBS" or "C.Index" (default: "AUC").}
 
 \item{n_run}{Numeric. Number of runs for cross validation (default: 3).}
 
@@ -109,11 +109,11 @@ threshold (default: 0.05).}
 
 \item{w_AIC}{Numeric. Weight for AIC evaluator. All weights must sum 1 (default: 0).}
 
-\item{w_c.index}{Numeric. Weight for C-Index evaluator. All weights must sum 1 (default: 0).}
+\item{w_C.Index}{Numeric. Weight for C-Index evaluator. All weights must sum 1 (default: 0).}
 
 \item{w_AUC}{Numeric. Weight for AUC evaluator. All weights must sum 1 (default: 1).}
 
-\item{w_BRIER}{Numeric. Weight for BRIER SCORE evaluator. All weights must sum 1 (default: 0).}
+\item{w_I.BRIER}{Numeric. Weight for BRIER SCORE evaluator. All weights must sum 1 (default: 0).}
 
 \item{times}{Numeric vector. Time points where the AUC will be evaluated. If NULL, a maximum of
 'max_time_points' points will be selected equally distributed (default: NULL).}
@@ -173,8 +173,8 @@ information).
 \code{opt.nvar}: Optimal number of variables selected by the best_model.
 
 \code{plot_AIC}: AIC plot by each hyper-parameter.
-\code{plot_c_index}: C-Index plot by each hyper-parameter.
-\code{plot_BRIER}: Brier Score plot by each hyper-parameter.
+\code{plot_C.Index}: C-Index plot by each hyper-parameter.
+\code{plot_I.BRIER}: Integrative Brier Score plot by each hyper-parameter.
 \code{plot_AUC}: AUC plot by each hyper-parameter.
 
 \code{class}: Cross-Validated model class.
@@ -213,7 +213,7 @@ removed from the evaluation based on user-defined criteria.
 
 The function also offers flexibility in model evaluation metrics. Users can choose between different
 metrics such as AUC, AIC, C-Index, and Brier Score. The importance of each metric in the evaluation
-can be controlled using weights (w_AIC, w_c.index, w_AUC, w_BRIER).
+can be controlled using weights (w_AIC, w_C.Index, w_AUC, w_I.BRIER).
 
 For computational efficiency, the function provides an option to run the cross-validation in parallel
 (PARALLEL). Additionally, verbose logging can be enabled to display extra messages during the execution.

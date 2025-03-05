@@ -14,18 +14,22 @@ plot_evaluation.list(
   decimals = 2,
   title = NULL,
   title_size_text = 15,
+  subtitle = NULL,
+  subtitle_size_text = 12,
+  legend.position = "right",
   legend_title = "Method",
   legend_size_text = 12,
   x_axis_size_text = 10,
   y_axis_size_text = 10,
   label_x_axis_size = 10,
-  label_y_axis_size = 10
+  label_y_axis_size = 10,
+  txt.x.angle = 0
 )
 }
 \arguments{
 \item{lst_eval_results}{List (named) of Coxmos evaluation results from \code{eval_Coxmos_models()}.}
 
-\item{evaluation}{Character. Perform the evaluation using the "AUC" or "Brier" metric (default: "AUC").}
+\item{evaluation}{Character. Perform the evaluation using the "AUC" or "IBS" metric (default: "AUC").}
 
 \item{pred.attr}{Character. Way to evaluate the metric selected. Must be one of the following:
 "mean" or "median" (default: "mean").}
@@ -43,7 +47,13 @@ equal zero (default = 2).}
 
 \item{title}{Character. Plot title (default: NULL).}
 
-\item{title_size_text}{Numeric. Text size for legend title (default: 15).}
+\item{title_size_text}{Numeric. Text size for title (default: 15).}
+
+\item{subtitle}{Character. Plot subtitle (default: NULL).}
+
+\item{subtitle_size_text}{Numeric. Text size for subtitle (default: 12).}
+
+\item{legend.position}{Character. Legend position. Must be one of the following: "top", "bottom", "right" or "left (default: "right").}
 
 \item{legend_title}{Character. Legend title (default: "Method").}
 
@@ -56,6 +66,8 @@ equal zero (default = 2).}
 \item{label_x_axis_size}{Numeric. Text size for x label axis (default: 10).}
 
 \item{label_y_axis_size}{Numeric. Text size for y label axis (default: 10).}
+
+\item{txt.x.angle}{Numeric. Angle of X text (default: 0).}
 }
 \value{
 A list of lst_eval_results length. Each element is a list of three elements.

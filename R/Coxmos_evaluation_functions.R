@@ -1,10 +1,10 @@
-cv.getScoreFromWeight <- function(lst_cox_mean, w_AIC, w_c.index, w_BRIER, w_AUC,
+cv.getScoreFromWeight <- function(lst_cox_mean, w_AIC, w_C.Index, w_I.BRIER, w_AUC,
                                   colname_AIC = "AIC",
-                                  colname_c_index = "c_index", colname_AUC = "AUC",
-                                  colname_BRIER = "BRIER"){
+                                  colname_c_index = "C.Index", colname_AUC = "AUC",
+                                  colname_BRIER = "IBS"){
 
   all_metrics <- c(colname_AIC, colname_c_index, colname_BRIER, colname_AUC)
-  all_metrics_weight <- c(w_AIC, w_c.index, w_BRIER, w_AUC)
+  all_metrics_weight <- c(w_AIC, w_C.Index, w_I.BRIER, w_AUC)
 
   index_noZero <- which(all_metrics_weight != 0)
 
@@ -46,16 +46,16 @@ cv.getScoreFromWeight <- function(lst_cox_mean, w_AIC, w_c.index, w_BRIER, w_AUC
       #all values the same, same models across penalties or components...
       #we need to set the weigth to 0
       if(cn == "AIC"){
-        aux[,"AIC"] <- lst_cox_mean$AIC# / lst_cox_mean$AIC
+        aux[,"AIC"] <- lst_cox_mean$AIC # / lst_cox_mean$AIC
         w_AIC = 0
-      }else if(cn == "c_index"){
-        aux[,"c_index"] <- lst_cox_mean$c_index# / lst_cox_mean$c_index
-        w_c.index = 0
-      }else if(cn == "BRIER"){
-        aux[,"BRIER"] <- lst_cox_mean$BRIER# / lst_cox_mean$BRIER
-        w_BRIER = 0
+      }else if(cn == "C.Index"){
+        aux[,"C.Index"] <- lst_cox_mean$C.Index # / lst_cox_mean$C.Index
+        w_C.Index = 0
+      }else if(cn == "IBS"){
+        aux[,"IBS"] <- lst_cox_mean$IBS # / lst_cox_mean$BRIER
+        w_I.BRIER = 0
       }else if(cn == "AUC"){
-        aux[,"AUC"] <- lst_cox_mean$AUC# / lst_cox_mean$AUC
+        aux[,"AUC"] <- lst_cox_mean$AUC # / lst_cox_mean$AUC
         w_AUC = 0
       }
     }
@@ -66,9 +66,9 @@ cv.getScoreFromWeight <- function(lst_cox_mean, w_AIC, w_c.index, w_BRIER, w_AUC
 
   # at least one metric with different values, so at least one could be use to compute the score
   if(w_AUC!=0){
-    score = aux %*% c(w_AIC, w_c.index, w_BRIER, w_AUC)
+    score = aux %*% c(w_AIC, w_C.Index, w_I.BRIER, w_AUC)
   }else{
-    score = aux %*% c(w_AIC, w_c.index, w_BRIER)
+    score = aux %*% c(w_AIC, w_C.Index, w_I.BRIER)
     lst_cox_mean <- removeColumn(lst_cox_mean, colname_AUC)
   }
 

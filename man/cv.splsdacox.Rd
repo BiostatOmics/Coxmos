@@ -26,9 +26,9 @@ cv.splsdacox(
   alpha = 0.05,
   EVAL_METHOD = "AUC",
   w_AIC = 0,
-  w_c.index = 0,
+  w_C.Index = 0,
   w_AUC = 1,
-  w_BRIER = 0,
+  w_I.BRIER = 0,
   times = NULL,
   max_time_points = 15,
   MIN_AUC = 0.8,
@@ -105,15 +105,15 @@ forward selection (default: FALSE).}
 threshold (default: 0.05).}
 
 \item{EVAL_METHOD}{Character. The selected metric will be use to compute the best
-number of variables. Must be one of the following: "AUC", "BRIER" or "c_index" (default: "AUC").}
+number of variables. Must be one of the following: "AUC", "IBS" or "C.Index" (default: "AUC").}
 
 \item{w_AIC}{Numeric. Weight for AIC evaluator. All weights must sum 1 (default: 0).}
 
-\item{w_c.index}{Numeric. Weight for C-Index evaluator. All weights must sum 1 (default: 0).}
+\item{w_C.Index}{Numeric. Weight for C-Index evaluator. All weights must sum 1 (default: 0).}
 
 \item{w_AUC}{Numeric. Weight for AUC evaluator. All weights must sum 1 (default: 1).}
 
-\item{w_BRIER}{Numeric. Weight for BRIER SCORE evaluator. All weights must sum 1 (default: 0).}
+\item{w_I.BRIER}{Numeric. Weight for BRIER SCORE evaluator. All weights must sum 1 (default: 0).}
 
 \item{times}{Numeric vector. Time points where the AUC will be evaluated. If NULL, a maximum of
 'max_time_points' points will be selected equally distributed (default: NULL).}
@@ -173,8 +173,8 @@ information).
 \code{opt.nvar}: Optimal number of variables selected by the best_model.
 
 \code{plot_AIC}: AIC plot by each hyper-parameter.
-\code{plot_c_index}: C-Index plot by each hyper-parameter.
-\code{plot_BRIER}: Brier Score plot by each hyper-parameter.
+\code{plot_C.Index}: C-Index plot by each hyper-parameter.
+\code{plot_I.BRIER}: Integrative Brier Score plot by each hyper-parameter.
 \code{plot_AUC}: AUC plot by each hyper-parameter.
 
 \code{class}: Cross-Validated model class.
@@ -205,7 +205,7 @@ The function also provides an option to remove variables based on their coeffici
 The core of the function revolves around the cross-validation process. Data is split into training
 and test sets for each run and fold. For each combination of run, fold, and specified number of PLS
 components, a sPLS-DA-COX-Dynamic model is trained. The performance of these models is then evaluated
-using a combination of metrics, including the Akaike Information Criterion (AIC), C-index, Brier Score,
+using a combination of metrics, including the Akaike Information Criterion (AIC), C-index, I. Brier Score,
 and Area Under the Curve (AUC). The function provides flexibility in choosing the evaluation metric
 and its method.
 }

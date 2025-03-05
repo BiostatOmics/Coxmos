@@ -60,7 +60,7 @@ If only two cut points are selected, minimum and maximum size are used. For MB a
 as n.cut_points^n.blocks models will be computed as minimum (default: 5).}
 
 \item{EVAL_METHOD}{Character. The selected metric will be use to compute the best
-number of variables. Must be one of the following: "AUC", "BRIER" or "c_index" (default: "AUC").}
+number of variables. Must be one of the following: "AUC", "IBS" or "C.Index" (default: "AUC").}
 
 \item{x.center}{Logical. If x.center = TRUE, X matrix is centered to zero means (default: TRUE).}
 
@@ -155,7 +155,7 @@ elements:
 
 \code{B.hat}: PLS beta matrix
 
-\code{R2}: PLS R2
+\code{R2}: sPLS acumulate R2
 
 \code{nzv}: Variables removed by remove_near_zero_variance or remove_zero_variance.
 

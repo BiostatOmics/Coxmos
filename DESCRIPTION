@@ -1,6 +1,6 @@
 Package: Coxmos
 Title: Cox MultiBlock Survival
-Version: 1.1.1
+Version: 1.1.2
 Authors@R: 
     c(person("Pedro", "Salguero García", , "pedrosalguerog@gmail.com", role = c("aut", "cre", "rev"),
            comment = c(ORCID = "0000-0002-1879-3374")),
@@ -47,6 +47,7 @@ Imports:
     glmnet,
     MASS,
     mixOmics,
+    patchwork,
     progress,
     purrr,
     Rdpack,
@@ -63,7 +64,6 @@ Suggests:
     grDevices,
     knitr, 
     nsROC,
-    patchwork,
     RColorConesa,
     risksetROC,
     rmarkdown,

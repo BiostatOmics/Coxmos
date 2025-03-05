@@ -4,7 +4,13 @@
 \alias{w.starplot.Coxmos}
 \title{w.starplot.Coxmos}
 \usage{
-w.starplot.Coxmos(model, zero.rm = FALSE, top = NULL, auto.limits = TRUE)
+w.starplot.Coxmos(
+  model,
+  zero.rm = FALSE,
+  top = NULL,
+  auto.limits = TRUE,
+  txt.x.angle = 0
+)
 }
 \arguments{
 \item{model}{Coxmos model.}
@@ -14,6 +20,8 @@ w.starplot.Coxmos(model, zero.rm = FALSE, top = NULL, auto.limits = TRUE)
 \item{top}{Numeric. Show "top" first variables. If top = NULL, all variables are shown (default: NULL).}
 
 \item{auto.limits}{Logical. If "auto.limits" = TRUE, limits are detected automatically (default: TRUE).}
+
+\item{txt.x.angle}{Numeric. Angle of X text (default: 0).}
 }
 \value{
 A list of \code{ggplot2} objects, each representing the W* values for a component of

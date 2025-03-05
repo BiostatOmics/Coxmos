@@ -96,7 +96,7 @@ EPV
 #                           remove_near_zero_variance = T, remove_zero_variance = F, toKeep.zv = NULL,
 #                           remove_variance_at_fold_level = F,
 #                           remove_non_significant = F, alpha = 0.05,
-#                           w_AIC = 0, w_c.index = 0, w_AUC = 1, w_BRIER = 0, times = NULL, max_time_points = 15,
+#                           w_AIC = 0, w_C.Index = 0, w_AUC = 1, w_I.BRIER = 0, times = NULL, max_time_points = 15,
 #                           MIN_AUC_INCREASE = 0.01, MIN_AUC = 0.8, MIN_COMP_TO_CHECK = 3,
 #                           pred.attr = "mean", pred.method = "cenROC", fast_mode = F,
 #                           MIN_EPV = 5, return_models = F,
@@ -142,7 +142,7 @@ coxen_model$nsv
 #                                 remove_near_zero_variance = T, remove_zero_variance = F, toKeep.zv = NULL,
 #                                 remove_variance_at_fold_level = F,
 #                                 remove_non_significant_models = F, alpha = 0.05,
-#                                 w_AIC = 0, w_c.index = 0, w_AUC = 1, w_BRIER = 0, times = NULL, max_time_points = 15,
+#                                 w_AIC = 0, w_C.Index = 0, w_AUC = 1, w_I.BRIER = 0, times = NULL, max_time_points = 15,
 #                                 MIN_AUC_INCREASE = 0.01, MIN_AUC = 0.8, MIN_COMP_TO_CHECK = 3,
 #                                 pred.attr = "mean", pred.method = "cenROC", fast_mode = F,
 #                                 MIN_EPV = 5, return_models = F, remove_non_significant = F, returnData = F,
@@ -174,7 +174,7 @@ splsicox_model
 #                                   x.center = T, x.scale = F,
 #                                   remove_near_zero_variance = T, remove_zero_variance = F, toKeep.zv = NULL,
 #                                   remove_non_significant_models = F, alpha = 0.05,
-#                                   w_AIC = 0, w_c.index = 0, w_AUC = 1, w_BRIER = 0, times = NULL,
+#                                   w_AIC = 0, w_C.Index = 0, w_AUC = 1, w_I.BRIER = 0, times = NULL,
 #                                   MIN_AUC_INCREASE = 0.01, MIN_AUC = 0.8, MIN_COMP_TO_CHECK = 3,
 #                                   pred.attr = "mean", pred.method = "cenROC", fast_mode = F,
 #                                   MIN_EPV = 5, return_models = F,
@@ -210,7 +210,7 @@ splsdrcox_penalty_model
 #                                                   toKeep.zv = NULL,
 #                                                   remove_non_significant_models = F, alpha = 0.05,
 #                                                   remove_variance_at_fold_level = F, remove_non_significant = F,
-#                                                   w_AIC = 0, w_c.index = 0, w_AUC = 1, w_BRIER = 0,
+#                                                   w_AIC = 0, w_C.Index = 0, w_AUC = 1, w_I.BRIER = 0,
 #                                                   times = NULL, max_time_points = 15, returnData = F,
 #                                                   MIN_AUC_INCREASE = 0.01, MIN_AUC = 0.8, MIN_COMP_TO_CHECK = 3,
 #                                                   pred.attr = "mean", pred.method = "cenROC", fast_mode = F,
@@ -246,7 +246,7 @@ splsdrcox_dynamic_model
 #                                                   toKeep.zv = NULL,
 #                                                   remove_variance_at_fold_level = F, remove_non_significant = F,
 #                                                   remove_non_significant_models = F, alpha = 0.05,
-#                                                   w_AIC = 0, w_c.index = 0, w_AUC = 1, w_BRIER = 0,
+#                                                   w_AIC = 0, w_C.Index = 0, w_AUC = 1, w_I.BRIER = 0,
 #                                                   times = NULL, max_time_points = 15, returnData = F,
 #                                                   MIN_AUC_INCREASE = 0.01, MIN_AUC = 0.8, MIN_COMP_TO_CHECK = 3,
 #                                                   pred.attr = "mean", pred.method = "cenROC", fast_mode = F,
@@ -300,7 +300,7 @@ eval_results
 
 ## ---- warning=F---------------------------------------------------------------
 lst_eval_results <- plot_evaluation(eval_results, evaluation = "AUC", pred.attr = "mean")
-lst_eval_results_BRIER <- plot_evaluation(eval_results, evaluation = "Brier", pred.attr = "mean")
+lst_eval_results_BRIER <- plot_evaluation(eval_results, evaluation = "IBS", pred.attr = "mean")
 
 ## ---- fig.small=T, warning=F--------------------------------------------------
 lst_eval_results$lineplot.mean
@@ -497,7 +497,7 @@ LST_KM_TEST_COMP <- getTestKM(model = lst_models$`sPLS-DRCOX-Dynamic`,
 LST_KM_TEST_COMP$comp_1
 LST_KM_TEST_COMP$comp_2
 
-## -----------------------------------------------------------------------------
+## ---- warning=FALSE-----------------------------------------------------------
 # LST_KM_RES_VAR <- getAutoKM.list(type = "VAR",
 #                                  lst_models = lst_models,
 #                                  comp = 1:10, #select how many components you want to compute for the pseudo beta
@@ -516,7 +516,6 @@ LST_KM_RES_VAR <- getAutoKM(type = "VAR",
 
 ## ---- fig.small=T, warning=F--------------------------------------------------
 LST_KM_RES_VAR$LST_PLOTS$var_840
-LST_KM_RES_VAR$LST_PLOTS$var_3897
 
 ## -----------------------------------------------------------------------------
 # lst_cutoff <- getCutoffAutoKM.list(LST_KM_RES_VAR)
@@ -535,7 +534,6 @@ LST_KM_TEST_VAR <- getTestKM(model = lst_models$`sPLS-DRCOX-Dynamic`,
 
 ## ---- fig.small=T, warning=F--------------------------------------------------
 LST_KM_TEST_VAR$var_840
-LST_KM_TEST_VAR$var_3897
 
 ## -----------------------------------------------------------------------------
 new_pat <- X_test[1,,drop=F]
@@ -544,12 +542,12 @@ new_pat <- X_test[1,,drop=F]
 knitr::kable(Y_test[rownames(new_pat),])
 
 ## ---- warning=F---------------------------------------------------------------
-# ggp.simulated_beta_newObs <- plot_pseudobeta_newObservation.list(lst_models = lst_models, 
+# ggp.simulated_beta_newObs <- plot_observation.pseudobeta.list(lst_models = lst_models, 
 #                                                              new_observation = new_pat,
 #                                                              error.bar = T, onlySig = T, alpha = 0.05,
 #                                                              zero.rm = T, auto.limits = T, show.betas = T, top = 20)
 
-ggp.simulated_beta_newObs <- plot_pseudobeta_newObservation(model = lst_models$`sPLS-DRCOX-Dynamic`,
+ggp.simulated_beta_newObs <- plot_observation.pseudobeta(model = lst_models$`sPLS-DRCOX-Dynamic`,
                                                         new_observation = new_pat,
                                                         error.bar = T, onlySig = T, alpha = 0.05,
                                                         zero.rm = T, auto.limits = T, show.betas = T, top = 20)

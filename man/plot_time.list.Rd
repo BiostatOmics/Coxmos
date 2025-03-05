@@ -10,7 +10,7 @@ plot_time.list(
   y.text = NULL,
   legend.title = "Method",
   x.text.size = 12,
-  x.text.angle = 0,
+  txt.x.angle = 0,
   legend.text.size = 12,
   value.text.size = 4,
   value.nudge.y = 0.005
@@ -28,7 +28,7 @@ minutes (cross-validation models could be also added to this function).}
 
 \item{x.text.size}{Numeric. Size of the text for the x-axis labels (default: 12).}
 
-\item{x.text.angle}{Numeric. Angle of the text for the x-axis labels (default: 0).}
+\item{txt.x.angle}{Numeric. Angle of the text for the x-axis labels (default: 0).}
 
 \item{legend.text.size}{Numeric. Size of the text for the legend labels (default: 12).}
 
@@ -70,7 +70,7 @@ coxSW.model <- coxSW(X, Y, x.center = TRUE, x.scale = TRUE)
 coxEN.model <- coxEN(X, Y, x.center = TRUE, x.scale = TRUE)
 lst_models = list("coxSW" = coxSW.model, "coxEN" = coxEN.model)
 plot_time.list(lst_models, x.text = "Method", legend.title = "Model Method",
-               x.text.size = 14, x.text.angle = 90, legend.text.size = 14,
+               x.text.size = 14, txt.x.angle = 90, legend.text.size = 14,
                value.text.size = 5, value.nudge.y = 0.2)
 }
 \author{

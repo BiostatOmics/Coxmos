@@ -9,7 +9,8 @@ loadingplot.fromVector.Coxmos(
   vector,
   zero.rm = FALSE,
   top = NULL,
-  auto.limits = TRUE
+  auto.limits = TRUE,
+  txt.x.angle = 0
 )
 }
 \arguments{
@@ -22,6 +23,8 @@ loadingplot.fromVector.Coxmos(
 \item{top}{Numeric. Show "top" first variables. If top = NULL, all variables are shown (default: NULL).}
 
 \item{auto.limits}{Logical. If "auto.limits" = TRUE, limits are detected automatically (default: TRUE).}
+
+\item{txt.x.angle}{Numeric. Angle of X text (default: 0).}
 }
 \description{
 loadingplot.fromVector.Coxmos

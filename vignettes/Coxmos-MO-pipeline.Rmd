@@ -143,13 +143,13 @@ After loading the data, it may be of interest for the user to perform a survival
 
 *Coxmos* provides the following methodologies for multi-omic approaches:
 
-* SB.sPLS approaches: SB.sPLS-ICOX, iSB.sPLS-ICOX, SB.sPLS-DRCOX-Penalty, iSB.sPLS-DRCOX-Penalty, SB.sPLS-DRCOX-Dynamic, iSB.sPLS-DRCOX-Dynamic, SB.sPLS-DACOX-Dynamic and iSB.sPLS-DACOX-Dynamic.
-* MB.sPLS approaches: MB.sPLS-DRCOX-Dynamic and MB.sPLS-DACOX-Dynamic.
+* **SB.sPLS approaches**: SB.sPLS-ICOX, iSB.sPLS-ICOX, SB.sPLS-DRCOX-Penalty, iSB.sPLS-DRCOX-Penalty, SB.sPLS-DRCOX-Dynamic, iSB.sPLS-DRCOX-Dynamic, SB.sPLS-DACOX-Dynamic and iSB.sPLS-DACOX-Dynamic.
+* **MB.sPLS approaches**: MB.sPLS-DRCOX-Dynamic and MB.sPLS-DACOX-Dynamic.
 
 More information for each approach could be found in the help section for each function. The function name for each methodology are:
 
-* SB.sPLS approaches: `sb.splsicox()`, `isb.splsicox()`, `sb.splsdrcox()`, `isb.splsdrcox()`, `sb.splsdrcox()`, `isb.splsdrcox()`, `sb.splsdacox()` and `isb.splsdacox()`.
-* MB.sPLS approaches: `mb.splsdrcox()` and `mb.splsdacox()`.
+* **SB.sPLS approaches**: `sb.splsicox()`, `isb.splsicox()`, `sb.splsdrcox()`, `isb.splsdrcox()`, `sb.splsdrcox()`, `isb.splsdrcox()`, `sb.splsdacox()` and `isb.splsdacox()`.
+* **MB.sPLS approaches**: `mb.splsdrcox()` and `mb.splsdacox()`.
 
 To perform a survival analysis with our example, we will use methodologies that can work with high-dimensional data. These are the set of methodologies that use sPLS techniques.
 
@@ -223,7 +223,7 @@ cv.sb.splsicox_res <- cv.sb.splsicox(X = X_train, Y = Y_train,
                                      remove_near_zero_variance = T, remove_zero_variance = F, toKeep.zv = NULL,
                                      remove_variance_at_fold_level = F,
                                      remove_non_significant_models = F, alpha = 0.05, 
-                                     w_AIC = 0, w_c.index = 0, w_AUC = 1, w_BRIER = 0, times = NULL, max_time_points = 15,
+                                     w_AIC = 0, w_C.Index = 0, w_AUC = 1, w_I.BRIER = 0, times = NULL, max_time_points = 15,
                                      MIN_AUC_INCREASE = 0.01, MIN_AUC = 0.8, MIN_COMP_TO_CHECK = 3,
                                      pred.attr = "mean", pred.method = "cenROC", fast_mode = F,
                                      MIN_EPV = 5, return_models = F, remove_non_significant = F, returnData = F,
@@ -276,7 +276,7 @@ cv.isb.splsicox_res <- cv.isb.splsicox(X = X_train, Y = Y_train,
                                      remove_near_zero_variance = T, remove_zero_variance = F, toKeep.zv = NULL,
                                      remove_variance_at_fold_level = F,
                                      remove_non_significant_models = F, alpha = 0.05, 
-                                     w_AIC = 0, w_c.index = 0, w_AUC = 1, w_BRIER = 0, times = NULL, max_time_points = 15,
+                                     w_AIC = 0, w_C.Index = 0, w_AUC = 1, w_I.BRIER = 0, times = NULL, max_time_points = 15,
                                      MIN_AUC_INCREASE = 0.01, MIN_AUC = 0.8, MIN_COMP_TO_CHECK = 3,
                                      pred.attr = "mean", pred.method = "cenROC", fast_mode = F,
                                      MIN_EPV = 5, return_models = F, remove_non_significant = F, returnData = F,
@@ -313,7 +313,7 @@ cv.sb.splsdrcox_res <- cv.sb.splsdrcox(X = X_train, Y = Y_train,
                                        remove_near_zero_variance = T, remove_zero_variance = F, toKeep.zv = NULL,
                                        remove_variance_at_fold_level = F,
                                        remove_non_significant_models = F, alpha = 0.05, 
-                                       w_AIC = 0, w_c.index = 0, w_AUC = 1, w_BRIER = 0, times = NULL, max_time_points = 15,
+                                       w_AIC = 0, w_C.Index = 0, w_AUC = 1, w_I.BRIER = 0, times = NULL, max_time_points = 15,
                                        MIN_AUC_INCREASE = 0.01, MIN_AUC = 0.8, MIN_COMP_TO_CHECK = 3,
                                        pred.attr = "mean", pred.method = "cenROC", fast_mode = F,
                                        MIN_EPV = 5, return_models = F, remove_non_significant = F, returnData = F,
@@ -347,7 +347,7 @@ cv.isb.splsdrcox_res <- cv.isb.splsdrcox(X = X_train, Y = Y_train,
                                      remove_near_zero_variance = T, remove_zero_variance = F, toKeep.zv = NULL,
                                      remove_variance_at_fold_level = F,
                                      remove_non_significant_models = F, alpha = 0.05, 
-                                     w_AIC = 0, w_c.index = 0, w_AUC = 1, w_BRIER = 0, times = NULL, max_time_points = 15,
+                                     w_AIC = 0, w_C.Index = 0, w_AUC = 1, w_I.BRIER = 0, times = NULL, max_time_points = 15,
                                      MIN_AUC_INCREASE = 0.01, MIN_AUC = 0.8, MIN_COMP_TO_CHECK = 3,
                                      pred.attr = "mean", pred.method = "cenROC", fast_mode = F,
                                      MIN_EPV = 5, return_models = F, remove_non_significant = F, returnData = F,
@@ -390,7 +390,7 @@ cv.mb.splsdrcox_res <- cv.mb.splsdrcox(X = X_train, Y = Y_train,
                                        remove_near_zero_variance = T, remove_zero_variance = F, toKeep.zv = NULL,
                                        remove_variance_at_fold_level = F,
                                        remove_non_significant_models = F, alpha = 0.05, 
-                                       w_AIC = 0, w_c.index = 0, w_AUC = 1, w_BRIER = 0, times = NULL, max_time_points = 15,
+                                       w_AIC = 0, w_C.Index = 0, w_AUC = 1, w_I.BRIER = 0, times = NULL, max_time_points = 15,
                                        MIN_AUC_INCREASE = 0.01, MIN_AUC = 0.8, MIN_COMP_TO_CHECK = 3,
                                        pred.attr = "mean", pred.method = "cenROC", fast_mode = F,
                                        MIN_EPV = 5, return_models = F, remove_non_significant = F, returnData = F,
@@ -431,7 +431,7 @@ cv.mb.splsdacox_res <- cv.mb.splsdacox(X = X_train, Y = Y_train,
                                        remove_near_zero_variance = T, remove_zero_variance = F, toKeep.zv = NULL,
                                        remove_variance_at_fold_level = F,
                                        remove_non_significant_models = F, alpha = 0.05, 
-                                       w_AIC = 0, w_c.index = 0, w_AUC = 1, w_BRIER = 0, times = NULL, max_time_points = 15,
+                                       w_AIC = 0, w_C.Index = 0, w_AUC = 1, w_I.BRIER = 0, times = NULL, max_time_points = 15,
                                        MIN_AUC_INCREASE = 0.01, MIN_AUC = 0.8, MIN_COMP_TO_CHECK = 3,
                                        pred.attr = "mean", pred.method = "cenROC", fast_mode = F,
                                        MIN_EPV = 5, return_models = F, remove_non_significant = F, returnData = F,
@@ -513,7 +513,7 @@ However, we can also obtain graphical results where we can compare each method o
 
 ```{r, warning=F}
 lst_eval_results <- plot_evaluation(eval_results, evaluation = "AUC")
-lst_eval_results_brier <- plot_evaluation(eval_results, evaluation = "Brier")
+lst_eval_results_brier <- plot_evaluation(eval_results, evaluation = "IBS")
 ```
 
 After performing the cross-validation, we obtain a list in R that contains two new lists. The first of these refers to the evaluation over time for each of the methods used, as well as a variant where the average value of each of them is shown. On the other hand, we can compare the mean results of each method using: T-test, Wilcoxon-test, anova or Kruskal-Wallis.
@@ -545,7 +545,7 @@ lst_models_time <- list(#cv.sb.splsicox_res,
 ```
 
 ```{r}
-ggp_time <- plot_time.list(lst_models_time)
+ggp_time <- plot_time.list(lst_models_time, txt.x.angle = 90)
 ```
 
 ```{r, fig.small=T}
@@ -685,7 +685,7 @@ The plot shows the AUC for the full model (called LP), and then, the AUC per eac
 
 In order to improve the interpretability of a PLS model, a subset of the most influential variables can be selected. In this example, the top 20 variables are chosen. Additionally, non-significant PLS components are excluded by setting the "onlySig" parameter to "TRUE".
 
-```{r}
+```{r, warning=FALSE}
 # ggp.simulated_beta <- plot_pseudobpenalty.list(lst_models = lst_models, 
 #                                            error.bar = T, onlySig = T, alpha = 0.05, 
 #                                            zero.rm = T, auto.limits = T, top = 20,
@@ -701,8 +701,14 @@ The iSB.sPLS-DRCOX model was computed using a total of 2 components. Although th
 
 The following plot illustrates the pseudo-beta coefficient for the original variables in the iSB.sPLS-DRCOX model. As only the top 20 variables are shown, in some case a percentage of the total linear predictor total value could be shown. To view the complete model, all variables would need to be included in the plot by assigning the value NULL to the "top" parameter.
 
-```{r, fig.small=T}
+```{r, fig.small=T, warning=FALSE}
 ggp.simulated_beta$plot
+```
+
+In addition, for MB datasets, all omics are combined into a single plot. In this case, the relative pseudobeta per variable is shown. The user must take into account that each omic has a different survival beta, which influences the relative importance of each original variable. In this case, only proteomic variables are shown.
+
+```{r, fig.small=T, warning=FALSE}
+ggp.simulated_beta$mb_plot$plot
 ```
 
 ## Kaplan-Meier
@@ -733,7 +739,7 @@ LST_KM_RES_LP <- getAutoKM(type = "LP",
 
 As a result, the Kaplan-Meier curve could be plotted.  
 
-```{r, fig.small=T}
+```{r, fig.small=T, warning=FALSE}
 LST_KM_RES_LP$LST_PLOTS$LP
 ```
 
@@ -743,7 +749,7 @@ Once the vector is obtained, the function `getTestKM.list()` or `getTestKM()` ca
 
 A log-rank test will be displayed to determine if the chosen cutoff is an effective way to split the data into groups with higher and lower risk.
 
-```{r}
+```{r, warning=FALSE}
 # lst_cutoff <- getCutoffAutoKM.list(LST_KM_RES_LP)
 # LST_KM_TEST_LP <- getTestKM.list(lst_models = lst_models, 
 #                                  X_test = X_test, Y_test = Y_test, 
@@ -759,7 +765,7 @@ LST_KM_TEST_LP <- getTestKM(model = lst_models$`SB.sPLS-DRCOX`,
                             cutoff = lst_cutoff)
 ```
 
-```{r}
+```{r, warning=FALSE}
 LST_KM_TEST_LP
 ```
 
@@ -785,7 +791,7 @@ LST_KM_RES_COMP <- getAutoKM(type = "COMP",
                              only_sig = T, alpha = 0.05)
 ```
 
-```{r, fig.small=T}
+```{r, fig.small=T, warning=FALSE}
 LST_KM_RES_COMP$LST_PLOTS$mirna$comp_2
 LST_KM_RES_COMP$LST_PLOTS$proteomic$comp_1
 LST_KM_RES_COMP$LST_PLOTS$proteomic$comp_2
@@ -807,7 +813,7 @@ LST_KM_TEST_COMP <- getTestKM(model = lst_models$`SB.sPLS-DRCOX`,
                               cutoff = lst_cutoff)
 ```
 
-```{r, fig.small=T}
+```{r, fig.small=T, warning=FALSE}
 LST_KM_TEST_COMP$comp_2_mirna
 LST_KM_TEST_COMP$comp_1_proteomic
 LST_KM_TEST_COMP$comp_2_proteomic
@@ -837,13 +843,13 @@ LST_KM_RES_VAR <- getAutoKM(type = "VAR",
                             only_sig = T, alpha = 0.05)
 ```
 
-```{r, fig.small=T}
+```{r, fig.small=T, warning=FALSE}
 LST_KM_RES_VAR$LST_PLOTS$mirna$hsa.minus.miR.minus.21.minus.5p
 LST_KM_RES_VAR$LST_PLOTS$proteomic$var_840
 LST_KM_RES_VAR$LST_PLOTS$proteomic$var_7535
 ```
 
-```{r}
+```{r, warning=FALSE}
 # lst_cutoff <- getCutoffAutoKM.list(LST_KM_RES_VAR)
 # LST_KM_TEST_VAR <- getTestKM.list(lst_models = lst_models, 
 #                                   X_test = X_test, Y_test = Y_test, 
@@ -859,7 +865,7 @@ LST_KM_TEST_VAR <- getTestKM(model = lst_models$`SB.sPLS-DRCOX`,
                              cutoff = lst_cutoff)
 ```
 
-```{r, fig.small=T}
+```{r, fig.small=T, warning=FALSE}
 LST_KM_TEST_VAR$mirna$hsa.minus.miR.minus.21.minus.5p
 LST_KM_TEST_VAR$proteomic$var_840
 LST_KM_TEST_VAR$proteomic$var_7535
@@ -885,23 +891,24 @@ As shown, this is a censored patient who has the last observation at time 825.
 knitr::kable(Y_test[rownames(new_pat$mirna),])
 ```
 
-The function `plot_pseudobeta_newObservation.list()` or `plot_pseudobeta_newObservation()` allows the user to compare the characteristics of a new patient with the pseudo-beta values obtained from a specific model. The goal is to understand in a general way which variables are associated with an increased risk of an event or a decreased risk, in comparison to the variables predicted by the model.
+The function `plot_observation.pseudobeta.list()` or `plot_observation.pseudobeta()` allows the user to compare the characteristics of a new patient with the pseudo-beta values obtained from a specific model. The goal is to understand in a general way which variables are associated with an increased risk of an event or a decreased risk, in comparison to the variables predicted by the model.
 
-```{r}
-# ggp.simulated_beta_newPat <- plot_pseudobeta_newObservation.list(lst_models = lst_models, 
-#                                                              new_observation = new_pat,
+```{r, warning=FALSE}
+# ggp.simulated_beta_newPat <- plot_observation.pseudobeta.list(lst_models = lst_models, 
+#                                                              observation = new_pat,
 #                                                              error.bar = T, onlySig = T, alpha = 0.05,
 #                                                              zero.rm = T, auto.limits = T, show.betas = T, top = 20)
 
-ggp.simulated_beta_newPat <- plot_pseudobeta_newObservation(model = lst_models$`SB.sPLS-DRCOX`,
-                                                        new_observation = new_pat,
+ggp.simulated_beta_newPat <- plot_observation.pseudobeta(model = lst_models$`SB.sPLS-DRCOX`,
+                                                        observation = new_pat,
                                                         error.bar = T, onlySig = T, alpha = 0.05,
-                                                        zero.rm = T, auto.limits = T, show.betas = T, top = 20)
+                                                        zero.rm = T, auto.limits = T, show.betas = T, 
+                                                        top = 20, txt.x.angle = 90)
 ```
 
 On the left, a linear predictor value is shown for the observation and each variable. On the right, the pseudo-beta coefficients for the model's original variables are illustrated. This allows the user to compare the direction of the linear predictors per variable. A change in direction means that the variable's value is below the mean for hazard variables or above the mean for protective ones. Having an opposite direction for hazard variables and maintaining the direction for protective variables makes the observation safer over time.
 
-```{r, fig.small=T}
+```{r, fig.small=T, warning=FALSE}
 ggp.simulated_beta_newPat$plot$mirna
 ggp.simulated_beta_newPat$plot$proteomic
 ```
@@ -910,14 +917,14 @@ ggp.simulated_beta_newPat$plot$proteomic
 
 Additionally, the new observation can be added to the density and histogram plots that the model has computed. While this function can be useful in visualizing the results, it is important to note that no definitive conclusions can be drawn from these types of plots alone. They serve as an additional means of viewing the predictive values for the new patient ("lp", "risk", "expected", "terms", "survival") in relation to the training dataset and its histogram or density plot, along with the events or censored patients.
 
-```{r}
+```{r, warning=FALSE}
 pat_density <- plot_observation.eventDensity(observation = new_pat, 
                                              model = lst_models$`SB.sPLS-DRCOX`, 
                                              time = NULL, 
                                              type = "lp")
 ```
 
-```{r, fig.small=T}
+```{r, fig.small=T, warning=FALSE}
 pat_density
 ```
 
@@ -928,7 +935,7 @@ pat_histogram <- plot_observation.eventHistogram(observation = new_pat,
                                                  type = "lp")
 ```
 
-```{r, fig.small=T}
+```{r, fig.small=T, warning=FALSE}
 pat_histogram
 ```
 
@@ -949,20 +956,20 @@ for(b in names(X_test)){
 knitr::kable(Y_test[rownames(sub_X_test$proteomic),])
 ```
 
-To generate the figure, the function `plot_LP.multipleObservations.list()` or `plot_LP.multipleObservations()` can be used.
+To generate the figure, the function `plot_multipleObservations.LP.list()` or `plot_multipleObservations.LP()` can be used.
 
-```{r}
-# lst_cox.comparison <- plot_LP.multipleObservations.list(lst_models = lst_models,
-#                                                     new_observations = sub_X_test,
+```{r, warning=FALSE}
+# lst_cox.comparison <- plot_multipleObservations.LP.list(lst_models = lst_models,
+#                                                     observations = sub_X_test,
 #                                                     error.bar = T, zero.rm = T, onlySig = T,
 #                                                     alpha = 0.05, top = 5)
 
-lst_cox.comparison <- plot_LP.multipleObservations(model = lst_models$`SB.sPLS-DRCOX`,
-                                                   new_observations = sub_X_test,
+lst_cox.comparison <- plot_multipleObservations.LP(model = lst_models$`SB.sPLS-DRCOX`,
+                                                   observations = sub_X_test,
                                                    error.bar = T, zero.rm = T, onlySig = T,
                                                    alpha = 0.05, top = 5)
 ```
 
-```{r, fig.small=T}
+```{r, fig.small=T, warning=FALSE}
 lst_cox.comparison$plot
 ```

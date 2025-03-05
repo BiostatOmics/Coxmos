@@ -134,7 +134,7 @@ elements:
 
 \code{B.hat}: sPLS beta matrix
 
-\code{R2}: sPLS R2
+\code{R2}: sPLS acumulate R2
 
 \code{SCR}: sPLS SCR
 
@@ -205,7 +205,7 @@ elements:
 
 \code{B.hat}: sPLS beta matrix
 
-\code{R2}: sPLS R2
+\code{R2}: sPLS acumulate R2
 
 \code{SCR}: sPLS SCR
 

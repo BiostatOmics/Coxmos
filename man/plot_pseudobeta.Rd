@@ -12,9 +12,14 @@ plot_pseudobeta(
   zero.rm = TRUE,
   top = NULL,
   auto.limits = TRUE,
+  selected_variables = NULL,
   show_percentage = TRUE,
   size_percentage = 3,
+  title = NULL,
   title_size_text = 15,
+  subtitle = NULL,
+  subtitle_size_text = 12,
+  legend.position = "right",
   legend_size_text = 12,
   x_axis_size_text = 10,
   y_axis_size_text = 10,
@@ -39,12 +44,22 @@ top = NULL, all variables are shown (default: NULL).}
 
 \item{auto.limits}{Logical. If "auto.limits" = TRUE, limits are detected automatically (default: TRUE).}
 
+\item{selected_variables}{Character. Name of survival model variables to performed a custom selection (default: NULL).}
+
 \item{show_percentage}{Logical. If show_percentage = TRUE, it shows the contribution percentage
 for each variable to the full model (default: TRUE).}
 
 \item{size_percentage}{Numeric. Size of percentage text (default: 3).}
 
-\item{title_size_text}{Numeric. Text size for legend title (default: 15).}
+\item{title}{Character. Plot title (default: NULL).}
+
+\item{title_size_text}{Numeric. Text size for title (default: 15).}
+
+\item{subtitle}{Character. Plot subtitle (default: NULL).}
+
+\item{subtitle_size_text}{Numeric. Text size for subtitle (default: 12).}
+
+\item{legend.position}{Character. Legend position. Must be one of the following: "top", "bottom", "right" or "left (default: "right").}
 
 \item{legend_size_text}{Numeric. Text size for legend title (default: 12).}
 
@@ -58,7 +73,15 @@ for each variable to the full model (default: TRUE).}
 }
 \value{
 A list containing the following elements:
-\code{plot}: Depending on the model type, this can either be a single ggplot object visualizing the pseudo-beta coefficients for the original variables in a single block PLS-Cox model, or a list of ggplot objects for each block in a multiblock PLS-Cox model. Each plot provides a comprehensive visualization of the pseudo-beta coefficients, potentially including error bars, significance filtering, and variable contribution percentages.
+\code{plot}: Depending on the model type, this can either be a single ggplot object visualizing
+the pseudo-beta coefficients for the original variables in a single block PLS-Cox model, or a list
+of ggplot objects for each block in a multiblock PLS-Cox model. Each plot provides a comprehensive
+visualization of the pseudo-beta coefficients, potentially including error bars, significance filtering,
+and variable contribution percentages.
+\code{mb_plot}: Only when multi-block model type is used. This is a single ggplot object visualizing
+the pseudo-beta coefficients for the original variables for all omics simultaneously. The plot provides a
+comprehensive visualization of the pseudo-beta coefficients, potentially including error bars, significance
+filtering, and variable contribution percentages.
 \code{beta}: A matrix or list of matrices (for multiblock models) containing the computed pseudo-beta coefficients for the original variables. These coefficients represent the influence of each original variable on the survival prediction.
 \code{sd.min}: A matrix or list of matrices (for multiblock models) representing the lower bounds of the error bars for the pseudo-beta coefficients.
 \code{sd.max}: A matrix or list of matrices (for multiblock models) representing the upper bounds of the error bars for the pseudo-beta coefficients.
@@ -87,6 +110,10 @@ elements.
 It's worth noting that the function supports both single block and multiblock PLS-Cox models. For
 multiblock models, the function returns a list of plots, one for each block, whereas for single
 block models, a single plot is returned.
+
+NOTE: For \code{splsicox}, the pseudobeta function provides an approximation rather than the actual
+coefficients for the original variables. This is because \code{splsicox} requires a deflation process,
+making it impossible to compute a real \( W^* \) vector.
 }
 \examples{
 data("X_proteomic")

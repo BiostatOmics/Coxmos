@@ -79,7 +79,7 @@ forward selection (default: FALSE).}
 threshold (default: 0.05).}
 
 \item{EVAL_METHOD}{Character. The selected metric will be use to compute the best
-number of variables. Must be one of the following: "AUC", "BRIER" or "c_index" (default: "AUC").}
+number of variables. Must be one of the following: "AUC", "IBS" or "C.Index" (default: "AUC").}
 
 \item{pred.method}{Character. AUC evaluation algorithm method for evaluate the model performance.
 Must be one of the following: "risksetROC", "survivalROC", "cenROC", "nsROC", "smoothROCtime_C",

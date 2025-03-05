@@ -307,7 +307,7 @@ save_ggplot_lst <- function(lst_plots, folder, prefix = NULL, suffix = NULL, wid
 #' @param y.text Character. Y axis title. If y.text = NULL, then y.text = "Time (mins)" (default: NULL).
 #' @param legend.title Character. Title of the legend (default: "Method").
 #' @param x.text.size Numeric. Size of the text for the x-axis labels (default: 12).
-#' @param x.text.angle Numeric. Angle of the text for the x-axis labels (default: 0).
+#' @param txt.x.angle Numeric. Angle of the text for the x-axis labels (default: 0).
 #' @param legend.text.size Numeric. Size of the text for the legend labels (default: 12).
 #' @param value.text.size Numeric. Size of the text for the values displayed on the bars (default: 4).
 #' @param value.nudge.y Numeric. Vertical adjustment for the text of the values displayed on the bars (default: 0.005).
@@ -327,11 +327,11 @@ save_ggplot_lst <- function(lst_plots, folder, prefix = NULL, suffix = NULL, wid
 #' coxEN.model <- coxEN(X, Y, x.center = TRUE, x.scale = TRUE)
 #' lst_models = list("coxSW" = coxSW.model, "coxEN" = coxEN.model)
 #' plot_time.list(lst_models, x.text = "Method", legend.title = "Model Method",
-#'                x.text.size = 14, x.text.angle = 90, legend.text.size = 14,
+#'                x.text.size = 14, txt.x.angle = 90, legend.text.size = 14,
 #'                value.text.size = 5, value.nudge.y = 0.2)
 
 plot_time.list <- function(lst_models, x.text = "Method", y.text = NULL, legend.title = "Method",
-                           x.text.size = 12, x.text.angle = 0,
+                           x.text.size = 12, txt.x.angle = 0,
                            legend.text.size = 12,
                            value.text.size = 4, value.nudge.y = 0.005){
 
@@ -396,7 +396,7 @@ plot_time.list <- function(lst_models, x.text = "Method", y.text = NULL, legend.
     scale_y_continuous(breaks = breaks) +
     geom_text(aes_string(label = "times"), vjust = 0, nudge_y = value.nudge.y, size = value.text.size) +
     theme(
-      axis.text.x = element_text(size = x.text.size, angle = x.text.angle, hjust = ifelse(x.text.angle == 90, 1, 0.5), vjust = ifelse(x.text.angle == 90, 0.5, 0.5)),
+      axis.text.x = element_text(size = x.text.size, angle = txt.x.angle, hjust = ifelse(txt.x.angle == 90, 1, 0.5), vjust = ifelse(txt.x.angle == 90, 0.5, 0.5)),
       legend.title = element_text(size = x.text.size),
       legend.text = element_text(size = legend.text.size)
     ) +
@@ -425,7 +425,7 @@ plot_time.list <- function(lst_models, x.text = "Method", y.text = NULL, legend.
 #' "?plot_evaluation".
 #'
 #' @param lst_eval_results List (named) of Coxmos evaluation results from `eval_Coxmos_models()`.
-#' @param evaluation Character. Perform the evaluation using the "AUC" or "Brier" metric (default: "AUC").
+#' @param evaluation Character. Perform the evaluation using the "AUC" or "IBS" metric (default: "AUC").
 #' @param pred.attr Character. Way to evaluate the metric selected. Must be one of the following:
 #' "mean" or "median" (default: "mean").
 #' @param y.min Numeric. Minimum Y value for establish the Y axis value. If y.min = NULL, automatic
@@ -436,13 +436,17 @@ plot_time.list <- function(lst_models, x.text = "Method", y.text = NULL, legend.
 #' @param decimals Numeric. Number of decimals to use in round times. Must be a value greater or
 #' equal zero (default = 2).
 #' @param title Character. Plot title (default: NULL).
+#' @param title_size_text Numeric. Text size for title (default: 15).
+#' @param subtitle Character. Plot subtitle (default: NULL).
+#' @param subtitle_size_text Numeric. Text size for subtitle (default: 12).
+#' @param legend.position Character. Legend position. Must be one of the following: "top", "bottom", "right" or "left (default: "right").
 #' @param legend_title Character. Legend title (default: "Method").
-#' @param title_size_text Numeric. Text size for legend title (default: 15).
 #' @param legend_size_text Numeric. Text size for legend title (default: 12).
 #' @param x_axis_size_text Numeric. Text size for x axis (default: 10).
 #' @param y_axis_size_text Numeric. Text size for y axis (default: 10).
 #' @param label_x_axis_size Numeric. Text size for x label axis (default: 10).
 #' @param label_y_axis_size Numeric. Text size for y label axis (default: 10).
+#' @param txt.x.angle Numeric. Angle of X text (default: 0).
 #'
 #' @return A list of lst_eval_results length. Each element is a list of three elements.
 #' \code{lst_plots}: A list of two plots. The evaluation over the time, and the extension adding the
@@ -473,10 +477,13 @@ plot_time.list <- function(lst_models, x.text = "Method", y.text = NULL, legend.
 
 plot_evaluation.list <- function(lst_eval_results, evaluation = "AUC", pred.attr = "mean", y.min = NULL,
                                  type = "both", round_times = FALSE, decimals = 2,
-                                 title = NULL, title_size_text = 15, legend_title = "Method",
+                                 title = NULL, title_size_text = 15,
+                                 subtitle = NULL, subtitle_size_text = 12,
+                                 legend.position = "right",
+                                 legend_title = "Method",
                                  legend_size_text = 12,
                                  x_axis_size_text = 10, y_axis_size_text = 10, label_x_axis_size = 10,
-                                 label_y_axis_size = 10){
+                                 label_y_axis_size = 10, txt.x.angle = 0){
 
   lst_res <- purrr::map(lst_eval_results, ~plot_evaluation(eval_results = .,
                                                            evaluation = evaluation,
@@ -484,9 +491,13 @@ plot_evaluation.list <- function(lst_eval_results, evaluation = "AUC", pred.attr
                                                            y.min = y.min, type = type,
                                                            round_times = round_times, decimals = decimals,
                                                            title = title, title_size_text = title_size_text,
+                                                           subtitle = subtitle, subtitle_size_text = subtitle_size_text,
+                                                           legend.position = legend.position,
                                                            legend_title = legend_title, legend_size_text = legend_size_text,
                                                            x_axis_size_text = x_axis_size_text, y_axis_size_text = y_axis_size_text,
-                                                           label_x_axis_size = label_x_axis_size, label_y_axis_size = label_y_axis_size))
+                                                           label_x_axis_size = label_x_axis_size,
+                                                           label_y_axis_size = label_y_axis_size,
+                                                           txt.x.angle = txt.x.angle))
 
   return(lst_res)
 
@@ -518,7 +529,8 @@ plot_evaluation.list <- function(lst_eval_results, evaluation = "AUC", pred.attr
 #' intended audience's expectations.
 #'
 #' @param eval_results Coxmos evaluation object from `eval_Coxmos_models()`.
-#' @param evaluation Character. Perform the evaluation using the "AUC" or "Brier" metric (default: "AUC").
+#' @param evaluation Character. Perform the evaluation using the "AUC" or "IBS" (Integrative Brier Score)
+#' metric (default: "AUC").
 #' @param pred.attr Character. Way to evaluate the metric selected. Must be one of the following:
 #' "mean" or "median" (default: "mean").
 #' @param y.min Numeric. Minimum Y value for establish the Y axis value. If y.min = NULL, automatic
@@ -529,13 +541,17 @@ plot_evaluation.list <- function(lst_eval_results, evaluation = "AUC", pred.attr
 #' @param decimals Numeric. Number of decimals to use in round times. Must be a value greater or equal
 #' zero (default = 2).
 #' @param title Character. Plot title (default: NULL).
+#' @param title_size_text Numeric. Text size for title (default: 15).
+#' @param subtitle Character. Plot subtitle (default: NULL).
+#' @param subtitle_size_text Numeric. Text size for subtitle (default: 12).
+#' @param legend.position Character. Legend position. Must be one of the following: "top", "bottom", "right" or "left (default: "right").
 #' @param legend_title Character. Legend title (default: "Method").
-#' @param title_size_text Numeric. Text size for legend title (default: 15).
 #' @param legend_size_text Numeric. Text size for legend title (default: 12).
 #' @param x_axis_size_text Numeric. Text size for x axis (default: 10).
 #' @param y_axis_size_text Numeric. Text size for y axis (default: 10).
 #' @param label_x_axis_size Numeric. Text size for x label axis (default: 10).
 #' @param label_y_axis_size Numeric. Text size for y label axis (default: 10).
+#' @param txt.x.angle Numeric. Angle of X text (default: 0).
 #'
 #' @return A list of lst_eval_results length. Each element is a list of three elements.
 #' \code{lst_plots}: A list of two plots. The evaluation over the time, and the extension adding the
@@ -563,13 +579,19 @@ plot_evaluation.list <- function(lst_eval_results, evaluation = "AUC", pred.attr
 
 plot_evaluation <- function(eval_results, evaluation = "AUC", pred.attr = "mean", y.min = NULL,
                             type = "both", round_times = FALSE, decimals = 2,
-                            title = NULL, title_size_text = 15, legend_title = "Method",
+                            title = NULL, title_size_text = 15,
+                            subtitle = NULL, subtitle_size_text = 12,
+                            legend.position = "bottom",
+                            legend_title = "Method",
                             legend_size_text = 12,
-                            x_axis_size_text = 10, y_axis_size_text = 10, label_x_axis_size = 10,
-                            label_y_axis_size = 10){
+                            x_axis_size_text = 10,
+                            y_axis_size_text = 10,
+                            label_x_axis_size = 10,
+                            label_y_axis_size = 10,
+                            txt.x.angle = 0){
 
-  if(!evaluation %in% c("AUC", "Brier")){
-    message("Evaluation parameter is not 'AUC' or 'Brier'. Changed to 'AUC'.")
+  if(!evaluation %in% c("AUC", "IBS")){
+    message("Evaluation parameter is not 'AUC' or 'IBS'. Changed to 'AUC'.")
     type = "AUC"
   }
 
@@ -586,7 +608,7 @@ plot_evaluation <- function(eval_results, evaluation = "AUC", pred.attr = "mean"
     if(evaluation=="AUC"){
       y.min <- floor(min(eval_results$df$AUC, na.rm = TRUE)*10)/10
     }else{
-      y.min <- floor(min(eval_results$df$Brier, na.rm = TRUE)*10)/10
+      y.min <- floor(min(eval_results$df$IBS, na.rm = TRUE)*10)/10
     }
 
   }
@@ -595,7 +617,7 @@ plot_evaluation <- function(eval_results, evaluation = "AUC", pred.attr = "mean"
     if(evaluation=="AUC"){
       message("All AUC is NA. Returning NA.")
     }else{
-      message("All Brier is NA. Returning NA.")
+      message("All I.Brier Score is NA. Returning NA.")
     }
     return(NA)
   }
@@ -605,15 +627,20 @@ plot_evaluation <- function(eval_results, evaluation = "AUC", pred.attr = "mean"
   lst_plots <- comboplot.performance2.0(df = eval_results$df,
                                         x.var = ifelse(evaluation=="AUC", "time", "brier_time"),
                                         y.var = evaluation,
-                                        y.lab = ifelse(evaluation=="AUC", "AUC", "Brier"),
+                                        y.lab = ifelse(evaluation=="AUC", "AUC", "IBS"),
                                         x.color = "method",
                                         legend_title = legend_title,
                                         y.limit = c(y.min, 1), pred.attr = pred.attr,
                                         round_times = round_times, decimals = decimals,
-                                        title = title, title_size_text = title_size_text,
+                                        title = title,
+                                        subtitle = subtitle,
+                                        legend.position = legend.position,
+                                        title_size_text = title_size_text,
+                                        subtitle_size_text = subtitle_size_text,
                                         legend_size_text = legend_size_text,
                                         x_axis_size_text = x_axis_size_text, y_axis_size_text = y_axis_size_text,
-                                        label_x_axis_size = label_x_axis_size, label_y_axis_size = label_y_axis_size)
+                                        label_x_axis_size = label_x_axis_size, label_y_axis_size = label_y_axis_size,
+                                        txt.x.angle = txt.x.angle)
   if(type == "both"){
     lst_ggp <- lst_plots
   }else if(type == "line"){
@@ -639,7 +666,7 @@ plot_evaluation <- function(eval_results, evaluation = "AUC", pred.attr = "mean"
                                 x.alpha = NULL,
                                 alpha.lab = NULL,
                                 x.lab = "Method",
-                                y.lab = ifelse(evaluation=="AUC", "AUC", "Brier Score"),
+                                y.lab = ifelse(evaluation=="AUC", "AUC", "I. Brier Score"),
                                 fill.lab = NULL,
                                 title = paste0("Method Performance"),
                                 y.limit = NULL,
@@ -1080,7 +1107,8 @@ boxplot.performance <- function(df, x.var, y.var, x.fill = NULL, x.alpha = NULL,
 
 lineplot.performace <- function(df, x.var = "time", y.var = "AUC", x.color = "method", x.lab = NULL,
                                 y.lab = NULL, y.limit = NULL, point = TRUE, legend_title = "Method",
-                                legend_size_text = 12, x_axis_size_text = 10, y_axis_size_text = 10){
+                                legend_size_text = 12, x_axis_size_text = 10, y_axis_size_text = 10,
+                                txt.x.angle = 0){
   MAX_X_ELEMENTS = 20
 
   if(point){
@@ -1106,11 +1134,7 @@ lineplot.performace <- function(df, x.var = "time", y.var = "AUC", x.color = "me
 
   }
 
-  if(length(df[,x.var]>MAX_X_ELEMENTS)){
-    ggp <- ggp + theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1, size = x_axis_size_text))
-  }else{
-    ggp <- ggp + theme(axis.text.x = element_text(vjust = 0.5, size = x_axis_size_text))
-  }
+  ggp <- ggp + theme(axis.text.x = element_text(angle = txt.x.angle, vjust = 0.5, hjust=1, size = x_axis_size_text))
 
   if(!is.null(y.limit)){
     ggp <- ggp + ylim(y.limit)
@@ -1124,9 +1148,9 @@ lineplot.performace <- function(df, x.var = "time", y.var = "AUC", x.color = "me
 }
 
 coxweightplot.fromVector.Coxmos <- function(model, vector, sd.min = NULL, sd.max = NULL, zero.rm = FALSE,
-                                            top = NULL, auto.limits = TRUE,
+                                            top = NULL, selected_variables = NULL, auto.limits = TRUE,
                                             block = NULL, show_percentage = TRUE,
-                                            size_percentage = 3){
+                                            size_percentage = 3, txt.x.angle = 90){
 
   if(!isa(model,pkg.env$model_class)){
     warning("Model must be an object of class Coxmos.")
@@ -1146,21 +1170,25 @@ coxweightplot.fromVector.Coxmos <- function(model, vector, sd.min = NULL, sd.max
 
   #accuracy <- ifelse(max(vector)-min(vector) < 0.15, 0.01, 0.1)
   accuracy <- 0.1
+  while(accuracy > max(abs(loading_values))){
+    accuracy <- round(accuracy / 2, 4)
+  }
 
+  auto.limits_value <- NULL
   if(auto.limits){
     if(!is.null(sd.min) & !is.null(sd.max)){
       auto.limits_min <- round2any(max(abs(sd.min)), accuracy = accuracy, f = ceiling)
       auto.limits_max <- round2any(max(abs(sd.max)), accuracy = accuracy, f = ceiling)
-      auto.limits <- max(auto.limits_min, auto.limits_max)
+      auto.limits_value <- max(auto.limits_min, auto.limits_max)
     }else{
-      auto.limits <- round2any(max(abs(loading_values)), accuracy = accuracy, f = ceiling)
+      auto.limits_value <- round2any(max(abs(loading_values)), accuracy = accuracy, f = ceiling)
     }
   }else{
-    auto.limits <- round2any(max(c(abs(sd.max), abs(sd.min), abs(loading_values))), accuracy = accuracy, f = ceiling)
+    auto.limits_value <- round2any(max(c(abs(sd.max), abs(sd.min), abs(loading_values))), accuracy = accuracy, f = ceiling)
   }
 
   for(i in 1:ncol(loading_values)){
-    df <- as.data.frame(loading_values[,i])
+    df <- as.data.frame(loading_values[,i,drop=F])
     df <- cbind(df, rownames(loading_values))
     colnames(df) <- c("pp", "variables")
 
@@ -1181,6 +1209,7 @@ coxweightplot.fromVector.Coxmos <- function(model, vector, sd.min = NULL, sd.max
     }
 
     df <- df[order(df$pp, decreasing = TRUE),]
+    df$variables <- retransformIllegalChars(df$variables)
 
     ggp <- NULL
     if(nrow(df)>limit_color){
@@ -1193,7 +1222,7 @@ coxweightplot.fromVector.Coxmos <- function(model, vector, sd.min = NULL, sd.max
     ggp <- ggp +
       geom_bar(stat = "identity") +
       guides(color = "none") +
-      theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +
+      theme(axis.text.x = element_text(angle = txt.x.angle, vjust = 0.5, hjust=1)) +
       #scale_fill_discrete(name = "New Legend Title") +
       xlab(label = paste0("Variables")) +
       ylab(label = paste0("Estimate Beta value"))
@@ -1202,12 +1231,12 @@ coxweightplot.fromVector.Coxmos <- function(model, vector, sd.min = NULL, sd.max
       ggp <- ggp + scale_fill_gradient2(low = RColorConesa::getConesaPalettes()$warm["blue"],
                                         mid = "white", midpoint = 0,
                                         high = RColorConesa::getConesaPalettes()$warm["magenta"],
-                                        limits = c(-1*auto.limits,auto.limits), name = "Beta value")
+                                        limits = c(-1*auto.limits_value,auto.limits_value), name = "Beta value")
     }else{
       ggp <- ggp + scale_fill_gradient2(low = "blue",
                                         mid = "white", midpoint = 0,
                                         high = "red",
-                                        limits = c(-1*auto.limits,auto.limits), name = "Beta value")
+                                        limits = c(-1*auto.limits_value,auto.limits_value), name = "Beta value")
     }
 
     #add total positive and negative values
@@ -1232,16 +1261,27 @@ coxweightplot.fromVector.Coxmos <- function(model, vector, sd.min = NULL, sd.max
 
     total_explained = risk_explained*perc_risk + preventive_explained*perc_preventive
 
-    if(!is.null(top)){
-      if(top < nrow(loading_values)){
-        txt.subtitle = paste0("Top ", top, " variables explain a ", round(total_explained, 2), " % of the model.")
+    if(!is.null(selected_variables)){
+      if(length(selected_variables == 1)){
+        txt_end <- paste0(" % of ", selected_variables)
       }else{
-        #all variables selected
-        txt.subtitle = paste0("Variables explain a ", round(total_explained, 2), " % of the model.")
+        txt_end <- paste0(" % of ", paste0(selected_variables[1:(length(selected_variables)-1)], collapse = ", "), " and ", selected_variables[length(selected_variables)])
       }
 
     }else{
-      txt.subtitle = paste0("Variables explain a ", round(total_explained, 2), " % of the model.")
+      txt_end <- " % of the model."
+    }
+
+    if(!is.null(top)){
+      if(top < nrow(loading_values)){
+        txt.subtitle = paste0("Top ", top, " variables explain a ", round(total_explained, 2), txt_end)
+      }else{
+        #all variables selected
+        txt.subtitle = paste0("Variables explain a ", round(total_explained, 2), txt_end)
+      }
+
+    }else{
+      txt.subtitle = paste0("Variables explain a ", round(total_explained, 2), txt_end)
     }
 
     explained_perc = NULL
@@ -1283,12 +1323,12 @@ coxweightplot.fromVector.Coxmos <- function(model, vector, sd.min = NULL, sd.max
         ggp <- ggp + scale_color_gradient2(low = RColorConesa::getConesaPalettes()$warm["blue"],
                                            mid = "white", midpoint = 0,
                                            high = RColorConesa::getConesaPalettes()$warm["magenta"],
-                                           limits = c(-1*auto.limits,auto.limits), name = "Beta value")
+                                           limits = c(-1*auto.limits_value,auto.limits_value), name = "Beta value")
       }else{
         ggp <- ggp + scale_color_gradient2("blue",
                                            mid = "white", midpoint = 0,
                                            high = "red",
-                                           limits = c(-1*auto.limits,auto.limits), name = "Beta value")
+                                           limits = c(-1*auto.limits_value,auto.limits_value), name = "Beta value")
       }
 
     }
@@ -1298,7 +1338,7 @@ coxweightplot.fromVector.Coxmos <- function(model, vector, sd.min = NULL, sd.max
       ggp <- ggp + scale_y_continuous(n.breaks = 10)
     }else{
       #ggp <- ggp + scale_y_continuous(breaks=seq(-1*auto.limits, auto.limits, 0.1), limits = c(-1*auto.limits, auto.limits))
-      ggp <- ggp + scale_y_continuous(n.breaks = 10, limits = c(-1*auto.limits, auto.limits))
+      ggp <- ggp + scale_y_continuous(n.breaks = 10, limits = c(-1*auto.limits_value, auto.limits_value))
     }
 
     if(!is.null(sd.min) & !is.null(sd.max)){
@@ -1406,7 +1446,8 @@ lineplot.performace2.0 <- function(df, x.var = "time", y.var = "AUC", x.color = 
                                    mean = FALSE, legend_rm = TRUE, round_times = FALSE, decimals = 0,
                                    legend_title = "Method", legend_size_text = 12,
                                    x_axis_size_text = 10, y_axis_size_text = 10,
-                                   label_x_axis_size = 10, label_y_axis_size = 10){
+                                   label_x_axis_size = 10, label_y_axis_size = 10,
+                                   txt.x.angle = 0){
 
   MAX_X_ELEMENTS = 20
 
@@ -1472,11 +1513,7 @@ lineplot.performace2.0 <- function(df, x.var = "time", y.var = "AUC", x.color = 
 
   }
 
-  if(length(unique(df[,x.var,drop = TRUE]))>MAX_X_ELEMENTS){
-    ggp <- ggp + theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1, size = x_axis_size_text))
-  }else{
-    ggp <- ggp + theme(axis.text.x = element_text(vjust = 0.5, size = x_axis_size_text))
-  }
+  ggp <- ggp + theme(axis.text.x = element_text(angle = txt.x.angle, vjust = 0.5, hjust=1, size = x_axis_size_text))
 
   ggp <- ggp + theme(axis.text.y = element_text(vjust = 0.5, hjust=1, size = y_axis_size_text))
 
@@ -1504,9 +1541,12 @@ lineplot.performace2.0 <- function(df, x.var = "time", y.var = "AUC", x.color = 
                                     labels = as.character(format(seq(y.limit[1], y.limit[2], 0.05), nsmall = 2)),
                                     breaks = seq(y.limit[1], y.limit[2], 0.05))
   }else{
-    ggp <- ggp + scale_y_continuous(minor_breaks = seq(floor(min(df$AUC)*10)/10, ceiling(max(df$AUC)*10)/10, 0.05),
-                                    labels = as.character(format(seq(floor(min(df$AUC)*10)/10, ceiling(max(df$AUC)*10)/10, 0.05), nsmall = 2)),
-                                    breaks = length(seq(round(min(df$AUC)*10)/10, ceiling(max(df$AUC)*10)/10, 0.05)))
+    minor_breaks <- seq(floor(min(df$AUC)*10)/10, ceiling(max(df$AUC)*10)/10, 0.05)
+    labels <- sprintf("%.2f", minor_breaks)
+    breaks <- minor_breaks
+    ggp <- ggp + scale_y_continuous(minor_breaks = minor_breaks,
+                                    labels = labels,
+                                    breaks = breaks)
   }
 
   return(ggp)
@@ -1517,7 +1557,7 @@ barplot.mean_performace2.0 <- function(df, x.var = "method", y.var="AUC", x.colo
                                        hide_labels = TRUE, legend_rm = NULL, legend_title = "Method",
                                        legend_size_text = 12,
                                        x_axis_size_text = 10, y_axis_size_text = 10,
-                                       label_x_axis_size = 10, label_y_axis_size = 10){
+                                       label_x_axis_size = 10, label_y_axis_size = 10, txt.x.angle = 0){
 
   #DFCALLS
   MAX_X_ELEMENTS = 20
@@ -1553,12 +1593,9 @@ barplot.mean_performace2.0 <- function(df, x.var = "method", y.var="AUC", x.colo
     ggp <- ggp + guides(color=guide_legend(title=legend_title))
   }
 
-  if(length(unique(df[,x.var,drop = TRUE]))>MAX_X_ELEMENTS){
-    ggp <- ggp + theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1, size = x_axis_size_text))
-  }else{
-    ggp <- ggp + theme(axis.text.x = element_text(vjust = 0.5, size = x_axis_size_text))
-  }
-  ggp <- ggp + theme(axis.text.y = element_text(vjust = 0.5, hjust=1, size = y_axis_size_text))
+  ggp <- ggp + theme(axis.text.x = element_text(angle = txt.x.angle, vjust = 0.5, hjust=1, size = x_axis_size_text))
+
+  ggp <- ggp + theme(axis.text.y = element_text(vjust = 0.5, hjust = 1, size = y_axis_size_text))
 
   if(!is.null(y.limit)){
     ggp <- ggp + coord_cartesian(ylim = y.limit)
@@ -1581,7 +1618,8 @@ point.sd.mean_performace2.0 <- function(df, x.var = "method", y.var = "AUC", x.c
                                         pred.attr = "mean", hide_labels = TRUE, legend_rm = NULL,
                                         legend_title = "Method", legend_size_text = 12,
                                         x_axis_size_text = 10, y_axis_size_text = 10,
-                                        label_x_axis_size = 10, label_y_axis_size = 10){
+                                        label_x_axis_size = 10, label_y_axis_size = 10,
+                                        txt.x.angle = 0){
 
   #DFCALLS
   MAX_X_ELEMENTS = 20
@@ -1632,11 +1670,8 @@ point.sd.mean_performace2.0 <- function(df, x.var = "method", y.var = "AUC", x.c
     ggp <- ggp + guides(color=guide_legend(title=legend_title), fill="none")
   }
 
-  if(length(unique(df[,x.var,drop = TRUE]))>MAX_X_ELEMENTS){
-    ggp <- ggp + theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1, size = x_axis_size_text))
-  }else{
-    ggp <- ggp + theme(axis.text.x = element_text(vjust = 0.5, size = x_axis_size_text))
-  }
+  ggp <- ggp + theme(axis.text.x = element_text(angle = txt.x.angle, vjust = 0.5, hjust=1, size = x_axis_size_text))
+
   ggp <- ggp + theme(axis.text.y = element_text(vjust = 0.5, hjust=1, size = y_axis_size_text))
 
   ggp <- ggp + theme(axis.title.x = element_text(size = label_x_axis_size))
@@ -1676,27 +1711,50 @@ point.sd.mean_performace2.0 <- function(df, x.var = "method", y.var = "AUC", x.c
 comboplot.performance2.0 <- function(df, x.var = "time", y.var = "AUC", x.color = "method",
                                      x.lab = NULL, y.lab = NULL, y.limit = NULL, pred.attr = "mean",
                                      point = TRUE, mean = FALSE, hide_labels = TRUE,
-                                     title = NULL, legend_title = "Method", round_times = FALSE,
+                                     title = NULL, subtitle = NULL,
+                                     legend_title = "Method", round_times = FALSE,
                                      decimals = 2,
-                                     title_size_text = 15, legend_size_text = 12,
-                                     x_axis_size_text = 10, y_axis_size_text = 10,
-                                     label_x_axis_size = 10, label_y_axis_size = 10){
+                                     legend.position = "right",
+                                     title_size_text = 15, subtitle_size_text = 12,
+                                     legend_size_text = 12,
+                                     x_axis_size_text = 10,
+                                     y_axis_size_text = 10,
+                                     label_x_axis_size = 10,
+                                     label_y_axis_size = 10,
+                                     txt.x.angle = 0){
 
   a <- lineplot.performace2.0(df = df, x.var = x.var, y.var = y.var, x.color = x.color, x.lab = x.lab, y.lab = y.lab, y.limit = y.limit, point = point,
-                              mean = FALSE, legend_rm = TRUE, round_times = round_times, decimals = decimals,
+                              mean = FALSE, legend_rm = FALSE, round_times = round_times, decimals = decimals,
                               legend_title = legend_title, legend_size_text = legend_size_text,
-                              x_axis_size_text = x_axis_size_text, y_axis_size_text = y_axis_size_text, label_x_axis_size = label_x_axis_size, label_y_axis_size = label_y_axis_size)
+                              x_axis_size_text = x_axis_size_text, y_axis_size_text = y_axis_size_text,
+                              label_x_axis_size = label_x_axis_size,
+                              label_y_axis_size = label_y_axis_size,
+                              txt.x.angle = txt.x.angle)
 
   b <- point.sd.mean_performace2.0(df = df, x.var = x.var, y.var = y.var, x.color = x.color, x.lab = NULL, y.lab = NULL, y.limit = y.limit,
                                    pred.attr = pred.attr, hide_labels = TRUE, legend_rm = FALSE,
                                    legend_title = legend_title, legend_size_text = legend_size_text,
-                                   x_axis_size_text = x_axis_size_text, y_axis_size_text = y_axis_size_text, label_x_axis_size = label_x_axis_size, label_y_axis_size = label_y_axis_size)
+                                   x_axis_size_text = x_axis_size_text, y_axis_size_text = y_axis_size_text,
+                                   label_x_axis_size = label_x_axis_size, label_y_axis_size = label_y_axis_size,
+                                   txt.x.angle = txt.x.angle)
 
   if(!is.null(title)){
-    a <- a + ggtitle(label = title) + theme(plot.title = element_text(size = title_size_text))
+    a <- a + ggtitle(label = title, subtitle = subtitle) +
+      theme(plot.title = element_text(size = title_size_text),
+            plot.subtitle = element_text(size = subtitle_size_text))
+    b <- b + ggtitle(label = " ", subtitle = " ") +
+      theme(plot.title = element_text(size = title_size_text),
+            plot.subtitle = element_text(size = subtitle_size_text))
   }
 
-  pp <- ggpubr::ggarrange(a, b, ncol = 2, widths = c(0.7, 0.3), align = "h")
+  a <- a + labs(x = "Time")
+  a <- a + theme(legend.position = legend.position)
+  b <- b + theme(legend.position = "none")
+  # pp <- ggpubr::ggarrange(a, b, ncol = 2, widths = c(0.8, 0.2), align = "h",
+  #                         common.legend = TRUE, legend = legend.position)
+
+  pp <- a + b + plot_layout(ncol = 2, widths = c(0.8, 0.2), guides = "collect")
+  pp <- (pp & theme(legend.position = legend.position)) + guides(color = "none")
 
   # transform margins to show full legend text
   pp <- pp + theme(plot.margin = margin(10, 20, 10, 10, "pt"))
@@ -1710,8 +1768,13 @@ comboplot.performance2.0 <- function(df, x.var = "time", y.var = "AUC", x.color 
   a <- a + theme(plot.margin = margin(10, 20, 10, 10, "pt"))
 
   if(!is.null(title)){
-    a <- a + ggtitle(label = title) + theme(plot.title = element_text(size = title_size_text))
+    a <- a + ggtitle(label = title, subtitle = subtitle) +
+      theme(plot.title = element_text(size = title_size_text),
+            plot.subtitle = element_text(size = subtitle_size_text))
   }
+
+  a <- a + labs(x = "Time")
+  a <- a + theme(legend.position = legend.position)
 
   return(list(lineplot = a, lineplot.mean = pp))
 }
@@ -1721,7 +1784,7 @@ plot_VAR_eval <- function(lst_BV, EVAL_METHOD = "AUC", dot_size = 3){
   best_keepX <- lst_BV$best.keepX
   best_keepX <- paste0(unlist(lapply(best_keepX, function(x){x[[1]]})), collapse = "_")
   df.pval <- data.frame(names = factor(names(lst_BV$p_val), levels = names(lst_BV$p_val)), values = lst_BV$p_val)
-  if(EVAL_METHOD == "BRIER"){
+  if(EVAL_METHOD == "IBS"){
     df.pval$values <- 1- df.pval$values
   }
 
@@ -1747,7 +1810,7 @@ plot_VAR_eval <- function(lst_BV, EVAL_METHOD = "AUC", dot_size = 3){
 
 #' plot_events
 #'
-#' @description Generates a bar plot visualizing the distribution of events over time, categorizing
+#' @description Generates multiple bar plots to visualize the distribution of events over time, categorizing
 #' observations as either censored or non-censored.
 #'
 #' @details The `plot_events` function is meticulously crafted to provide a visualization of event
@@ -1774,11 +1837,20 @@ plot_VAR_eval <- function(lst_BV, EVAL_METHOD = "AUC", dot_size = 3){
 #' @param categories Character vector. Vector of length two to name both categories for censored and
 #' non-censored observations (default: c("Censored","Death")).
 #' @param y.text Character. Y axis title (default: "Number of observations").
+#' @param decimals Numeric. Number of decimals to use in round times. Must be a value greater or
+#' equal zero (default = 5).
+#' @param txt.x.angle Numeric. Angle of the text for the x-axis labels (default: 0).
 #' @param verbose Logical. If verbose = TRUE, extra messages could be displayed (default: FALSE).
 #'
-#' @return A list of two elements.
-#' \code{plot}: Barplot.
-#' \code{df}: Data.frame used for the plotting.
+#' @return A list of 8 elements.
+#' \code{plot}: Ggplot object for ploting distribution of events per group.
+#' \code{plot_percent}: Ggplot object for ploting % of distribution of events per total number of observations.
+#' \code{plot_percent_class}: Ggplot object for ploting % of distribution of events relative to group.
+#' \code{plot_percent_time}: Ggplot object for ploting % of distribution of events relative to break-time.
+#' \code{df}: Data.frame used for the plotting corresponding plot.
+#' \code{df_percent}: Data.frame used for the plotting corresponding plot.
+#' \code{dd_percent_cat}: Data.frame used for the plotting corresponding plot.
+#' \code{dd_percent_time}: Data.frame used for the plotting corresponding plot.
 #'
 #' @author Pedro Salguero Garcia. Maintainer: pedsalga@upv.edu.es
 #'
@@ -1788,10 +1860,11 @@ plot_VAR_eval <- function(lst_BV, EVAL_METHOD = "AUC", dot_size = 3){
 #' data("X_proteomic")
 #' data("Y_proteomic")
 #' Y_train <- Y_proteomic
-#' plot_events(Y_train, categories = c("Censored","Death"))
+#' plot_events(Y_train, categories = c("Censored","Event"))
 
-plot_events <- function(Y, max.breaks = 20, roundTo = 0.1, categories = c("Censored","Death"),
-                        y.text = "Number of observations", verbose = FALSE){
+plot_events <- function(Y, max.breaks = 20, roundTo = 0.1, categories = c("Censored","Event"),
+                        y.text = "Number of observations", decimals = 5, txt.x.angle = 0,
+                        verbose = FALSE){
 
   #REQUIREMENTS
   if(length(categories)>2 | length(categories)<2 | !is.character(categories)){
@@ -1808,6 +1881,10 @@ plot_events <- function(Y, max.breaks = 20, roundTo = 0.1, categories = c("Censo
 
   if(!is.numeric(max.breaks)){
     stop("max.breaks parameter must be a numeric vector of length one.")
+  }
+
+  if(decimals<0){
+    stop("Decimals must be a positive number or zero.")
   }
 
   if(roundTo == 0){
@@ -1835,7 +1912,7 @@ plot_events <- function(Y, max.breaks = 20, roundTo = 0.1, categories = c("Censo
   breaks = seq(min(Y[,"time"]), max(Y[,"time"])+breaks_size, by=breaks_size)
   breaks = round2any(breaks, roundTo, f = floor)
   if(max(breaks)<max(Y[,"time"])){breaks=c(breaks, max(breaks)+breaks_size)}
-  x.names <- cut(x = Y[,"time"], breaks = breaks, include.lowest = TRUE)
+  x.names <- cut(x = Y[,"time"], breaks = breaks, include.lowest = TRUE, dig.lab = decimals)
 
   Y <- cbind(Y, "time_g" = x.names)
 
@@ -1862,17 +1939,82 @@ plot_events <- function(Y, max.breaks = 20, roundTo = 0.1, categories = c("Censo
     geom_bar(stat = "identity") +
     ylab(y.text) +
     scale_y_continuous(n.breaks = 10) +
-    guides(fill=guide_legend(title="Class"), color = "none")
+    guides(fill=guide_legend(title="Group"), color = "none")
 
-  if(length(levels(x.names))>15){
-    ggp_density <- ggp_density + theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+  if(!is.null(txt.x.angle)){
+    ggp_density <- ggp_density + theme(axis.text.x = element_text(angle = txt.x.angle, vjust = 0.5, hjust=1))
   }
 
   if(requireNamespace("RColorConesa", quietly = TRUE)){
     ggp_density <- ggp_density + RColorConesa::scale_fill_conesa()
   }
 
-  return(list(plot = ggp_density, df = dd))
+  # Plot 2: Percentage
+  dd_percent <- dd
+  dd_percent$Percent <- dd_percent$Values / nrow(Y) * 100
+
+  ggp_percent <- ggplot(dd_percent, aes(fill = Category, x = Time, y = !!sym("Percent"))) +
+    geom_bar(stat = "identity") +
+    ylab("% of observations per group") +
+    scale_y_continuous(n.breaks = 10) +
+    guides(fill = guide_legend(title = "Group"), color = "none")
+
+  ggp_percent <- ggp_percent + theme(axis.text.x = element_text(angle = txt.x.angle, vjust = 0.5, hjust = 1))
+
+  if (requireNamespace("RColorConesa", quietly = TRUE)) {
+    ggp_percent <- ggp_percent + RColorConesa::scale_fill_conesa()
+  }
+
+  # Plot 3: Percentage relative to class
+  dd_percent_cat <- dd
+  sum_values <- aggregate(Values ~ Category, data = dd, FUN = sum)
+  dd_percent_cat <- merge(dd, sum_values, by = "Category", suffixes = c("", "_total"))
+  dd_percent_cat$Percent <- dd_percent_cat$Values / dd_percent_cat$Values_total * 100
+  dd_percent_cat$Values_total <- NULL
+  dd_percent_cat <- dd_percent_cat[order(dd_percent_cat$Time),]
+
+  ggp_percent_cat <- ggplot(dd_percent_cat, aes(fill = Category, x = Time, y = !!sym("Percent"))) +
+    geom_bar(stat = "identity", position = "dodge") +
+    ylab("% of observations relative to group") +
+    scale_y_continuous(n.breaks = 10) +
+    guides(fill = guide_legend(title = "Group"), color = "none")
+
+  ggp_percent_cat <- ggp_percent_cat +
+      theme(axis.text.x = element_text(angle = txt.x.angle, vjust = 0.5, hjust = 1))
+
+  if (requireNamespace("RColorConesa", quietly = TRUE)) {
+    ggp_percent_cat <- ggp_percent_cat + RColorConesa::scale_fill_conesa()
+  }
+
+  # Plot 4: Percentage relative to break
+  dd_percent_time <- dd
+  sum_values <- aggregate(Values ~ Time, data = dd, FUN = sum)
+  dd_percent_time <- merge(dd, sum_values, by = "Time", suffixes = c("", "_total"))
+  dd_percent_time$Percent <- dd_percent_time$Values / dd_percent_time$Values_total * 100
+  dd_percent_time$Values_total <- NULL
+  dd_percent_time <- dd_percent_time[order(dd_percent_time$Time),]
+
+  ggp_percent_time <- ggplot(dd_percent_time, aes(fill = Category, x = Time, y = !!sym("Percent"))) +
+    geom_bar(stat = "identity") +
+    ylab("% of observations relative to time") +
+    scale_y_continuous(n.breaks = 10) +
+    guides(fill = guide_legend(title = "Group"), color = "none")
+
+  ggp_percent_time <- ggp_percent_time +
+      theme(axis.text.x = element_text(angle = txt.x.angle, vjust = 0.5, hjust = 1))
+
+  if (requireNamespace("RColorConesa", quietly = TRUE)) {
+    ggp_percent_time <- ggp_percent_time + RColorConesa::scale_fill_conesa()
+  }
+
+  return(list(plot = ggp_density,
+              plot_percent = ggp_percent,
+              plot_percent_class = ggp_percent_cat,
+              plot_percent_time = ggp_percent_time,
+              df = dd,
+              df_percent = dd_percent,
+              dd_percent_cat = dd_percent_cat,
+              dd_percent_time = dd_percent_time))
 }
 
 #' plot_divergent.biplot
@@ -2348,9 +2490,13 @@ plot_Coxmos.PLS.model <- function(model, comp = c(1,2), mode = "scores", factor 
 
     if("R2" %in% names(model)){
       txt.expression <- paste0("Scores (",attr(aux.model, "model"),") - ")
-      r2_1 <- round(model$R2[[comp[1]]], 4)
-      r2_2 <- round(model$R2[[comp[2]]], 4)
-      r2 <- round(sum(unlist(model$R2)), 4)
+      R2_ind <- R2_indv(model$R2)
+
+      r2_1 <- round(R2_ind[[comp[1]]], 4)
+      r2_2 <- round(R2_ind[[comp[2]]], 4)
+      # r2 <- round(sum(r2_1, r2_2), 4)
+      r2 <- round(model$R2[length(model$R2)][[1]], 4)
+
       ggp <- ggp + ggtitle(label = bquote(.(txt.expression) ~R^2 == .(r2))) +
         xlab(label = paste0("comp_",as.character(comp[1]), " (", as.character(r2_1*100), " %)")) +
         ylab(label = paste0("comp_",as.character(comp[2]), " (", as.character(r2_2*100), " %)"))
@@ -2424,9 +2570,14 @@ plot_Coxmos.PLS.model <- function(model, comp = c(1,2), mode = "scores", factor 
 
     if("R2" %in% names(model)){
       txt.expression <- paste0("Loadings (",attr(aux.model, "model"),") - ")
-      r2_1 <- round(model$R2[[comp[1]]], 4)
-      r2_2 <- round(model$R2[[comp[2]]], 4)
-      r2 <- round(sum(r2_1, r2_2), 4)
+
+      R2_ind <- R2_indv(model$R2)
+
+      r2_1 <- round(R2_ind[[comp[1]]], 4)
+      r2_2 <- round(R2_ind[[comp[2]]], 4)
+      # r2 <- round(sum(r2_1, r2_2), 4)
+      r2 <- round(model$R2[length(model$R2)][[1]], 4)
+
       if(FLAG_1_COMP){
         ggp <- ggp + ggtitle(label = bquote(.(txt.expression) ~R^2 == .(r2))) +
           xlab(label = paste0("comp_",as.character(1), " (", as.character(r2_1*100), " %)")) +
@@ -2501,7 +2652,10 @@ plot_Coxmos.PLS.model <- function(model, comp = c(1,2), mode = "scores", factor 
           ylab(label = paste0("comp_",as.character(1)))
       }
 
-      pp <- ggpubr::ggarrange(ggp_scores, ggp_loadings, ncol = 2, widths = c(0.5, 0.5), align = "h")
+      # pp <- ggpubr::ggarrange(ggp_scores, ggp_loadings, ncol = 2, widths = c(0.5, 0.5), align = "h")
+
+      pp <- ggp_scores + ggp_loadings +
+        plot_layout(ncol = 2, widths = c(0.5, 0.5), guides = "collect")
 
       return(list(plot = pp, outliers = NULL))
 
@@ -2528,9 +2682,14 @@ plot_Coxmos.PLS.model <- function(model, comp = c(1,2), mode = "scores", factor 
 
     if("R2" %in% names(model)){
       txt.expression <- paste0("Biplot (",attr(aux.model, "model"),") - ")
-      r2_1 <- round(model$R2[[comp[1]]], 4)
-      r2_2 <- round(model$R2[[comp[2]]], 4)
-      r2 <- round(sum(r2_1, r2_2), 4)
+
+      R2_ind <- R2_indv(model$R2)
+
+      r2_1 <- round(R2_ind[[comp[1]]], 4)
+      r2_2 <- round(R2_ind[[comp[2]]], 4)
+      # r2 <- round(sum(r2_1, r2_2), 4)
+      r2 <- round(model$R2[length(model$R2)][[1]], 4)
+
       if(FLAG_1_COMP){
         ggp <- ggp + ggtitle(label = bquote(.(txt.expression) ~R^2 == .(r2))) +
           xlab(label = paste0("comp_",as.character(1), " (", as.character(r2_1*100), " %)")) +
@@ -2793,9 +2952,13 @@ plot_Coxmos.MB.PLS.model <- function(model, comp = c(1,2), mode = "scores", fact
 
         if("R2" %in% names(model)){
           txt.expression <- paste0("Scores (",attr(aux.model, "model"),") - ", block, " - ")
-          r2_1 <- round(model$R2[[block]][[comp[1]]], 4)
-          r2_2 <- round(model$R2[[block]][[comp[2]]], 4)
-          r2 <- round(sum(r2_1, r2_2), 4)
+
+          R2_ind <- R2_indv(model$R2)
+
+          r2_1 <- round(R2_ind[[comp[1]]], 4)
+          r2_2 <- round(R2_ind[[comp[2]]], 4)
+          #r2 <- round(sum(r2_1, r2_2), 4)
+          r2 <- round(model$R2[length(model$R2)][[1]], 4)
 
           if(FLAG_1_COMP){
           ggp <- ggp + ggtitle(label = bquote(.(txt.expression) ~R^2 == .(r2))) +
@@ -2918,9 +3081,13 @@ plot_Coxmos.MB.PLS.model <- function(model, comp = c(1,2), mode = "scores", fact
 
         if("R2" %in% names(model)){
           txt.expression <- paste0("Loadings (",attr(aux.model, "model"),") - ", block, " - ")
-          r2_1 <- round(model$R2[[block]][[comp[1]]], 4)
-          r2_2 <- round(model$R2[[block]][[comp[2]]], 4)
-          r2 <- round(sum(r2_1, r2_2), 4)
+          R2_ind <- R2_indv(model$R2)
+
+          r2_1 <- round(R2_ind[[comp[1]]], 4)
+          r2_2 <- round(R2_ind[[comp[2]]], 4)
+          #r2 <- round(sum(r2_1, r2_2), 4)
+          r2 <- round(model$R2[length(model$R2)][[1]], 4)
+
           if(FLAG_1_COMP){
             ggp <- ggp + ggtitle(label = bquote(.(txt.expression) ~R^2 == .(r2))) +
               xlab(label = paste0("comp_",as.character(1), " (", as.character(r2_1*100), " %)")) +
@@ -2997,7 +3164,10 @@ plot_Coxmos.MB.PLS.model <- function(model, comp = c(1,2), mode = "scores", fact
                 ylab(label = paste0("comp_",as.character(1)))
             }
 
-            pp <- ggpubr::ggarrange(ggp_scores, ggp_loadings, ncol = 2, widths = c(0.5, 0.5), align = "h")
+            # pp <- ggpubr::ggarrange(ggp_scores, ggp_loadings, ncol = 2, widths = c(0.5, 0.5), align = "h")
+
+            pp <- ggp_scores + ggp_loadings +
+              plot_layout(ncol = 2, widths = c(0.5, 0.5), guides = "collect")
 
             return(list(plot = pp, outliers = NULL))
           }else{
@@ -3049,7 +3219,10 @@ plot_Coxmos.MB.PLS.model <- function(model, comp = c(1,2), mode = "scores", fact
                 ylab(label = paste0("comp_",as.character(1)))
             }
 
-            pp <- ggpubr::ggarrange(ggp_scores, ggp_loadings, ncol = 2, widths = c(0.5, 0.5), align = "h")
+            # pp <- ggpubr::ggarrange(ggp_scores, ggp_loadings, ncol = 2, widths = c(0.5, 0.5), align = "h")
+
+            pp <- ggp_scores + ggp_loadings +
+              plot_layout(ncol = 2, widths = c(0.5, 0.5), guides = "collect")
 
             return(list(plot = pp, outliers = NULL))
 
@@ -3086,9 +3259,12 @@ plot_Coxmos.MB.PLS.model <- function(model, comp = c(1,2), mode = "scores", fact
 
         if("R2" %in% names(model)){
           txt.expression <- paste0("Biplot (",attr(aux.model, "model"),") - ", block, " - ")
-          r2_1 <- round(model$R2[[block]][[comp[1]]], 4)
-          r2_2 <- round(model$R2[[block]][[comp[2]]], 4)
-          r2 <- round(sum(r2_1, r2_2), 4)
+          R2_ind <- R2_indv(model$R2)
+
+          r2_1 <- round(R2_ind[[comp[1]]], 4)
+          r2_2 <- round(R2_ind[[comp[2]]], 4)
+          #r2 <- round(sum(r2_1, r2_2), 4)
+          r2 <- round(model$R2[length(model$R2)][[1]], 4)
 
           if(FLAG_1_COMP){
             ggp <- ggp + ggtitle(label = bquote(.(txt.expression) ~R^2 == .(r2))) +
@@ -3288,7 +3464,7 @@ plot_proportionalHazard <- function(model){
 
   ph_preplot <- survival::cox.zph(model$survival_model$fit)
   ph_plot <- survminer::ggcoxzph(ph_preplot)
-  ph_ggplot <- ggcoxzph2ggplot(ph_preplot, ph_plot)
+  ph_ggplot <- ggcoxzph2ggplot(pre.ggcoxzph = ph_preplot, ggcoxzph = ph_plot)
   return(ph_ggplot)
 }
 
@@ -3323,8 +3499,16 @@ ggcoxzph2ggplot <- function(pre.ggcoxzph, ggcoxzph){
     nrow <- max(p.vector)
   }
 
-  ggp <- ggpubr::ggarrange(plotlist = lst_plots, nrow = nrow, ncol = ncol)
-  ggp_final <- ggpubr::annotate_figure(ggp, top = global_test.txt)
+  # ggp <- ggpubr::ggarrange(plotlist = lst_plots, nrow = nrow, ncol = ncol)
+  # ggp_final <- ggpubr::annotate_figure(ggp, top = global_test.txt)
+
+  ggp <- wrap_plots(lst_plots, nrow = nrow, ncol = ncol)
+
+  # Add global title by plot_annotation
+  ggp_final <- ggp + plot_annotation(
+    title = global_test.txt,
+    theme = theme(plot.title = element_text(hjust = 0.5, size = 16, face = "bold"))
+  )
 
   return(ggp_final)
 }
@@ -3614,6 +3798,9 @@ plot_cox.event <- function(model, type = "lp", n.breaks = 20){
     ggp.h <- ggp.h + RColorConesa::scale_fill_conesa() + RColorConesa::scale_color_conesa()
   }
 
+  ggp.d <- ggp.d + labs(y = "Density")
+  ggp.h <- ggp.h + labs(y = "Number of observations")
+
   return(list(df = df_hr, plot.density = ggp.d, plot.histogram = ggp.h))
 }
 
@@ -3712,6 +3899,8 @@ plot_observation.eventDensity <- function(observation, model, time = NULL, type 
     geom_point(data = df, aes(x = x, y = y), inherit.aes = FALSE, color = color, size = size) +
     geom_segment(data = df, aes(x = x, y = 0, xend = x, yend = y), inherit.aes = FALSE, color = color, size = 0.8)
 
+  plot.new <- plot.new + labs(y = "Density")
+
   return(plot.new)
 }
 
@@ -3793,6 +3982,9 @@ plot_observation.eventHistogram <- function(observation, model, time = NULL, typ
     geom_point(data = df, aes(x = x, y = y), inherit.aes = FALSE, color = color, size = size) +
     geom_segment(data = df, aes(x = x, y = 0, xend = x, yend = y), inherit.aes = FALSE, color = color, size = 0.8)
 
+
+  plot.new <- plot.new + labs(y = "Number of observations")
+
   return(plot.new)
 }
 
@@ -3814,9 +4006,21 @@ plot_observation.eventHistogram <- function(observation, model, time = NULL, typ
 #' If top = NULL, all variables are shown (default: NULL).
 #' @param auto.limits Logical. If "auto.limits" = TRUE, limits are detected automatically
 #' (default: TRUE).
+#' @param selected_variables Character. Name of survival model variables to performed a custom selection (default: NULL).
 #' @param show_percentage Logical. If show_percentage = TRUE, it shows the contribution percentage
 #' for each variable to the full model (default: TRUE).
 #' @param size_percentage Numeric. Size of percentage text (default: 3).
+#' @param title Character. Plot title (default: NULL).
+#' @param title_size_text Numeric. Text size for title (default: 15).
+#' @param subtitle Character. Plot subtitle (default: NULL).
+#' @param subtitle_size_text Numeric. Text size for subtitle (default: 12).
+#' @param legend.position Character. Legend position. Must be one of the following: "top", "bottom", "right" or "left (default: "right").
+#' @param legend_title Character. Legend title (default: "Method").
+#' @param legend_size_text Numeric. Text size for legend title (default: 12).
+#' @param x_axis_size_text Numeric. Text size for x axis (default: 10).
+#' @param y_axis_size_text Numeric. Text size for y axis (default: 10).
+#' @param label_x_axis_size Numeric. Text size for x label axis (default: 10).
+#' @param label_y_axis_size Numeric. Text size for y label axis (default: 10).
 #' @param verbose Logical. If verbose = TRUE, extra messages could be displayed (default: FALSE).
 #'
 #' @return A list containing the following elements per model:
@@ -3841,8 +4045,18 @@ plot_observation.eventHistogram <- function(observation, model, time = NULL, typ
 #' plot_pseudobeta.list(lst_models = lst_models)
 
 plot_pseudobeta.list <- function(lst_models, error.bar = TRUE, onlySig = FALSE, alpha = 0.05, zero.rm = TRUE,
-                                 top = NULL, auto.limits = TRUE, show_percentage = TRUE,
-                                 size_percentage = 3, verbose = FALSE){
+                                 top = NULL, auto.limits = TRUE, selected_variables = NULL, show_percentage = TRUE,
+                                 size_percentage = 3,
+                                 title = NULL, title_size_text = 15,
+                                 subtitle = NULL, subtitle_size_text = 12,
+                                 legend.position = "right",
+                                 legend_title = "Method",
+                                 legend_size_text = 12,
+                                 x_axis_size_text = 10,
+                                 y_axis_size_text = 10,
+                                 label_x_axis_size = 10,
+                                 label_y_axis_size = 10,
+                                 verbose = FALSE){
 
   #check names in lst_models
   lst_models <- checkModelNames(lst_models)
@@ -3860,8 +4074,18 @@ plot_pseudobeta.list <- function(lst_models, error.bar = TRUE, onlySig = FALSE, 
     lst_plots <- purrr::map(sub_lst_models, ~plot_pseudobeta(model = .,
                                                              error.bar = error.bar,
                                                              onlySig = onlySig, alpha = alpha,
-                                                             zero.rm = zero.rm, auto.limits = auto.limits, top = top,
-                                                             show_percentage = show_percentage, size_percentage = size_percentage))
+                                                             zero.rm = zero.rm, auto.limits = auto.limits,
+                                                             selected_variables = selected_variables, top = top,
+                                                             show_percentage = show_percentage, size_percentage = size_percentage,
+                                                             title = title, title_size_text = title_size_text,
+                                                             subtitle = subtitle, subtitle_size_text = subtitle_size_text,
+                                                             legend.position = legend.position,
+                                                             # legend_title = legend_title,
+                                                             legend_size_text = legend_size_text,
+                                                             x_axis_size_text = x_axis_size_text,
+                                                             y_axis_size_text = y_axis_size_text,
+                                                             label_x_axis_size = label_x_axis_size,
+                                                             label_y_axis_size = label_y_axis_size))
   }else{
     lst_plots <- NULL
   }
@@ -3893,6 +4117,10 @@ plot_pseudobeta.list <- function(lst_models, error.bar = TRUE, onlySig = FALSE, 
 #' multiblock models, the function returns a list of plots, one for each block, whereas for single
 #' block models, a single plot is returned.
 #'
+#' NOTE: For `splsicox`, the pseudobeta function provides an approximation rather than the actual
+#' coefficients for the original variables. This is because `splsicox` requires a deflation process,
+#' making it impossible to compute a real \( W^* \) vector.
+#'
 #' @param model Coxmos model.
 #' @param error.bar Logical. Show error bar (default: TRUE).
 #' @param onlySig Logical. Compute pseudobetas using only significant components (default: FALSE).
@@ -3902,10 +4130,15 @@ plot_pseudobeta.list <- function(lst_models, error.bar = TRUE, onlySig = FALSE, 
 #' @param top Numeric. Show "top" first variables with the higher pseudobetas in absolute value. If
 #' top = NULL, all variables are shown (default: NULL).
 #' @param auto.limits Logical. If "auto.limits" = TRUE, limits are detected automatically (default: TRUE).
+#' @param selected_variables Character. Name of survival model variables to performed a custom selection (default: NULL).
 #' @param show_percentage Logical. If show_percentage = TRUE, it shows the contribution percentage
 #' for each variable to the full model (default: TRUE).
 #' @param size_percentage Numeric. Size of percentage text (default: 3).
-#' @param title_size_text Numeric. Text size for legend title (default: 15).
+#' @param title Character. Plot title (default: NULL).
+#' @param title_size_text Numeric. Text size for title (default: 15).
+#' @param subtitle Character. Plot subtitle (default: NULL).
+#' @param subtitle_size_text Numeric. Text size for subtitle (default: 12).
+#' @param legend.position Character. Legend position. Must be one of the following: "top", "bottom", "right" or "left (default: "right").
 #' @param legend_size_text Numeric. Text size for legend title (default: 12).
 #' @param x_axis_size_text Numeric. Text size for x axis (default: 10).
 #' @param y_axis_size_text Numeric. Text size for y axis (default: 10).
@@ -3913,7 +4146,15 @@ plot_pseudobeta.list <- function(lst_models, error.bar = TRUE, onlySig = FALSE, 
 #' @param label_y_axis_size Numeric. Text size for y label axis (default: 10).
 #'
 #' @return A list containing the following elements:
-#' \code{plot}: Depending on the model type, this can either be a single ggplot object visualizing the pseudo-beta coefficients for the original variables in a single block PLS-Cox model, or a list of ggplot objects for each block in a multiblock PLS-Cox model. Each plot provides a comprehensive visualization of the pseudo-beta coefficients, potentially including error bars, significance filtering, and variable contribution percentages.
+#' \code{plot}: Depending on the model type, this can either be a single ggplot object visualizing
+#' the pseudo-beta coefficients for the original variables in a single block PLS-Cox model, or a list
+#' of ggplot objects for each block in a multiblock PLS-Cox model. Each plot provides a comprehensive
+#' visualization of the pseudo-beta coefficients, potentially including error bars, significance filtering,
+#' and variable contribution percentages.
+#' \code{mb_plot}: Only when multi-block model type is used. This is a single ggplot object visualizing
+#' the pseudo-beta coefficients for the original variables for all omics simultaneously. The plot provides a
+#' comprehensive visualization of the pseudo-beta coefficients, potentially including error bars, significance
+#' filtering, and variable contribution percentages.
 #' \code{beta}: A matrix or list of matrices (for multiblock models) containing the computed pseudo-beta coefficients for the original variables. These coefficients represent the influence of each original variable on the survival prediction.
 #' \code{sd.min}: A matrix or list of matrices (for multiblock models) representing the lower bounds of the error bars for the pseudo-beta coefficients.
 #' \code{sd.max}: A matrix or list of matrices (for multiblock models) representing the upper bounds of the error bars for the pseudo-beta coefficients.
@@ -3931,11 +4172,23 @@ plot_pseudobeta.list <- function(lst_models, error.bar = TRUE, onlySig = FALSE, 
 #' plot_pseudobeta(model = splsicox.model)
 
 plot_pseudobeta <- function(model, error.bar = TRUE, onlySig = FALSE, alpha = 0.05, zero.rm = TRUE, top = NULL,
-                            auto.limits = TRUE,
+                            auto.limits = TRUE, selected_variables = NULL,
                             show_percentage = TRUE, size_percentage = 3,
-                            title_size_text = 15, legend_size_text  = 12,
-                            x_axis_size_text  = 10, y_axis_size_text = 10,
-                            label_x_axis_size  = 10, label_y_axis_size = 10){
+                            title = NULL, title_size_text = 15,
+                            subtitle = NULL, subtitle_size_text = 12,
+                            legend.position = "right",
+                            legend_size_text = 12,
+                            x_axis_size_text = 10,
+                            y_axis_size_text = 10,
+                            label_x_axis_size = 10,
+                            label_y_axis_size = 10){
+
+  # edit next to use predict.Coxmos and predict.Cox
+  # model$X$W.star
+  # model$survival_model$fit$coefficients
+  # model$X$weightings_norm
+  # model$X$loadings
+  # model$mb.model
 
   if(!isa(model,pkg.env$model_class)){
     warning("Model must be an object of class Coxmos.")
@@ -3955,11 +4208,26 @@ plot_pseudobeta <- function(model, error.bar = TRUE, onlySig = FALSE, alpha = 0.
 
   if(attr(model, "model") %in% pkg.env$pls_methods){
 
-    if(onlySig){
+    if(attr(model, "model") %in% pkg.env$splsicox){
+      message("For sPLS-ICOX model, pseudobetas are an approximation as predictions work with a defaction process.")
+    }
+
+    if(onlySig & is.null(selected_variables)){
       rn <- rownames(df.aux)[df.aux$`Pr(>|z|)` <= alpha]
       coefficients <- as.matrix(model$survival_model$fit$coefficients)[rn,,drop = FALSE]
       sd <- df.aux[rn,"se(coef)",drop = FALSE]
       W.star <- model$X$W.star[,rn,drop = FALSE]
+    }else if(!is.null(selected_variables)){
+      rn <- rownames(df.aux)
+      if(any(selected_variables %in% rn)){
+        rn <- selected_variables
+        coefficients <- as.matrix(model$survival_model$fit$coefficients)[rn,,drop = FALSE]
+        sd <- df.aux[rn,"se(coef)",drop = FALSE]
+        W.star <- model$X$W.star[,rn,drop = FALSE]
+      }else{
+        stop(paste0("Selected variables must be one of: ", paste0(rn, collapse = ", ")))
+      }
+
     }else{
       coefficients <- as.matrix(model$survival_model$fit$coefficients)
       sd <- df.aux[,"se(coef)",drop = FALSE]
@@ -3967,6 +4235,14 @@ plot_pseudobeta <- function(model, error.bar = TRUE, onlySig = FALSE, alpha = 0.
     }
 
     vector <- W.star %*% coefficients
+
+    # CHECK for PSEUDOBETAS
+
+    # lp <- model$X$data %*% vector
+    # m <- predict.Coxmos(model)
+    # lp_good <- predict(model$survival_model$fit, newdata = as.data.frame(m), type = "lp")
+    # head(lp)
+    # head(data.frame(lp_good))
 
     if(error.bar){
       sd.min <- W.star %*% data.matrix(coefficients-sd)
@@ -3993,25 +4269,64 @@ plot_pseudobeta <- function(model, error.bar = TRUE, onlySig = FALSE, alpha = 0.
 
     plot <- coxweightplot.fromVector.Coxmos(model = model, vector = vector,
                                            sd.min = sd.min, sd.max = sd.max, auto.limits = auto.limits,
-                                           zero.rm = zero.rm, top = top,
+                                           zero.rm = zero.rm, top = top, selected_variables = selected_variables,
                                            show_percentage = show_percentage,
                                            size_percentage = size_percentage)
 
   }else if(attr(model, "model") %in% pkg.env$multiblock_methods){
 
-    if(onlySig){
+    if(attr(model, "model") %in% c(pkg.env$sb.splsicox, pkg.env$isb.splsicox)){
+      message("For iSB.sPLS-ICOX and SB.sPLS-ICOX model, pseudobetas are an approximation as predictions work with a defaction process.")
+    }
+
+    # onlySig
+    if(onlySig & is.null(selected_variables)){
       rn <- rownames(df.aux)[df.aux$`Pr(>|z|)` <= alpha]
       coefficients <- as.matrix(model$survival_model$fit$coefficients)[rn,,drop = FALSE]
       sd <- df.aux[rn,"se(coef)",drop = FALSE]
+
+      omics <- unique(unlist(lapply(rn, function(x){strsplit(x, "_")[[1]][[3]]})))
       W.star <- list()
       if(attr(model, "model") %in% c(pkg.env$singleblock_methods)){
-        for(b in names(model$list_spls_models)){
-          W.star[[b]] <- model$list_spls_models[[b]]$X$W.star
+        for(b in omics){
+          w_comp <- rn[which(endsWith(rn, b))]
+          w_comp <- unlist(lapply(w_comp, function(x){paste0(strsplit(x, "_")[[1]][1:2], collapse = "_")}))
+          W.star[[b]] <- model$list_spls_models[[b]]$X$W.star[,w_comp,drop=F]
         }
       }else{
-        W.star <- model$X$W.star
+        for(b in omics){
+          w_comp <- rn[which(endsWith(rn, b))]
+          w_comp <- unlist(lapply(w_comp, function(x){paste0(strsplit(x, "_")[[1]][1:2], collapse = "_")}))
+          W.star[[b]] <- model$X$W.star[[b]][,w_comp,drop=F]
+        }
       }
+    # selected_variables
+    }else if(!is.null(selected_variables)){
+      rn <- rownames(df.aux)
+      if(any(selected_variables %in% rn)){
+        rn <- selected_variables
+        coefficients <- as.matrix(model$survival_model$fit$coefficients)[rn,,drop = FALSE]
+        sd <- df.aux[rn,"se(coef)",drop = FALSE]
 
+        omics <- unique(unlist(lapply(rn, function(x){strsplit(x, "_")[[1]][[3]]})))
+        W.star <- list()
+        if(attr(model, "model") %in% c(pkg.env$singleblock_methods)){
+          for(b in omics){
+            w_comp <- rn[which(endsWith(rn, b))]
+            w_comp <- unlist(lapply(w_comp, function(x){paste0(strsplit(x, "_")[[1]][1:2], collapse = "_")}))
+            W.star[[b]] <- model$list_spls_models[[b]]$X$W.star[,w_comp,drop=F]
+          }
+        }else{
+          for(b in omics){
+            w_comp <- rn[which(endsWith(rn, b))]
+            w_comp <- unlist(lapply(w_comp, function(x){paste0(strsplit(x, "_")[[1]][1:2], collapse = "_")}))
+            W.star[[b]] <- model$X$W.star[[b]][,w_comp,drop=F]
+          }
+        }
+      }else{
+        stop(paste0("Selected variables must be one of: ", rn))
+      }
+    # otherwise
     }else{
       coefficients <- as.matrix(model$survival_model$fit$coefficients)
       sd <- df.aux[,"se(coef)",drop = FALSE]
@@ -4061,12 +4376,36 @@ plot_pseudobeta <- function(model, error.bar = TRUE, onlySig = FALSE, alpha = 0.
       }else{
         plot[[b]] <- coxweightplot.fromVector.Coxmos(model = model, vector = vector[[b]],
                                                     sd.min = sd.min[[b]], sd.max = sd.max[[b]], auto.limits = auto.limits,
-                                                    zero.rm = zero.rm, top = top, block = b,
+                                                    zero.rm = zero.rm, top = top, selected_variables = selected_variables,
+                                                    block = b,
                                                     show_percentage = show_percentage,
                                                     size_percentage = size_percentage)
       }
 
     }
+
+    all_rn <- unlist(lapply(vector, rownames))
+
+    # if variable names repeted between blocks...
+    if(any(table(all_rn)>1)){
+      for(b in names(vector)){
+        rownames(vector[[b]]) <- paste0(rownames(vector[[b]]), "_", b)
+      }
+    }
+
+    vector_MB <- do.call(rbind, vector)
+    sd.min_MB <- do.call(rbind, sd.min)
+    sd.max_MB <- do.call(rbind, sd.max)
+
+    rownames(sd.min_MB) <- rownames(vector_MB)
+    rownames(sd.max_MB) <- rownames(vector_MB)
+
+    full_MB_plot <- coxweightplot.fromVector.Coxmos(model = model, vector = vector_MB,
+                                                    sd.min = sd.min_MB, sd.max = sd.max_MB, auto.limits = auto.limits,
+                                                    zero.rm = zero.rm, top = top, selected_variables = NULL,
+                                                    block = NULL,
+                                                    show_percentage = show_percentage,
+                                                    size_percentage = size_percentage)
 
   }
 
@@ -4075,12 +4414,22 @@ plot_pseudobeta <- function(model, error.bar = TRUE, onlySig = FALSE, alpha = 0.
 
     #update sizes
     plot$plot = plot$plot + theme(plot.title = element_text(size = title_size_text),
+                                  plot.subtitle = element_text(size = subtitle_size_text),
                                   legend.text = element_text(size = legend_size_text),
                                   legend.title = element_text(size = legend_size_text),
                                   axis.text.x = element_text(size = x_axis_size_text),
                                   axis.text.y = element_text(size = y_axis_size_text),
                                   axis.title.x = element_text(size = label_x_axis_size),
-                                  axis.title.y = element_text(size = label_y_axis_size))
+                                  axis.title.y = element_text(size = label_y_axis_size),
+                                  legend.position = legend.position)
+
+    if(!is.null(title)){
+      plot$plot <- plot$plot + labs(title = title)
+    }
+
+    if(!is.null(subtitle)){
+      plot$plot <- plot$plot + labs(subtitle = subtitle)
+    }
 
     return(list(plot = plot$plot,
                 beta = vector,
@@ -4094,15 +4443,27 @@ plot_pseudobeta <- function(model, error.bar = TRUE, onlySig = FALSE, alpha = 0.
       aux_vector[[b]] <- plot[[b]]$coefficients
       aux_plot[[b]] <- plot[[b]]$plot
       aux_plot[[b]] <- aux_plot[[b]] + theme(plot.title = element_text(size = title_size_text),
+                                             plot.subtitle = element_text(size = subtitle_size_text),
                                              legend.text = element_text(size = legend_size_text),
                                              legend.title = element_text(size = legend_size_text),
                                              axis.text.x = element_text(size = x_axis_size_text),
                                              axis.text.y = element_text(size = y_axis_size_text),
                                              axis.title.x = element_text(size = label_x_axis_size),
-                                             axis.title.y = element_text(size = label_y_axis_size))
+                                             axis.title.y = element_text(size = label_y_axis_size),
+                                             legend.position = legend.position)
+
+      if(!is.null(title)){
+        aux_plot[[b]] <- aux_plot[[b]] + labs(title = title)
+      }
+
+      if(!is.null(subtitle)){
+        aux_plot[[b]] <- aux_plot[[b]] + labs(subtitle = subtitle)
+      }
+
     }
 
     return(list(plot = aux_plot,
+                mb_plot = full_MB_plot,
                 beta = aux_vector,
                 sd.min = sd.min,
                 sd.max = sd.max))
@@ -4114,18 +4475,30 @@ plot_pseudobeta <- function(model, error.bar = TRUE, onlySig = FALSE, alpha = 0.
 # PSEUDOBETA PLOTS - PREDICTION #
 #### ### ### ### ### ### ### ###
 
-#' plot_pseudobeta_newObservation.list
-#' @description Run the function "plot_pseudobeta_newObservation" for a list of models. More information
-#' in "?plot_pseudobeta_newObservation".
+#' plot_observation.pseudobeta.list
+#' @description Run the function "plot_observation.pseudobeta" for a list of models. More information
+#' in "?plot_observation.pseudobeta".
 #'
 #' @param lst_models List of Coxmos models.
-#' @param new_observation Numeric matrix or data.frame. New explanatory variables (raw data) for one
+#' @param observation Numeric matrix or data.frame. New explanatory variables (raw data) for one
 #' observation. Qualitative variables must be transform into binary variables.
 #' @param error.bar Logical. Show error bar (default: TRUE).
 #' @param onlySig Logical. Compute pseudobetas using only significant components (default: TRUE).
 #' @param alpha Numeric. Numerical values are regarded as significant if they fall below the
 #' threshold (default: 0.05).
 #' @param zero.rm Logical. Remove variables with a pseudobeta equal to 0 (default: TRUE).
+#' @param txt.x.angle Numeric. Angle of X text (default: 0).
+#' @param title Character. Plot title (default: NULL).
+#' @param title_size_text Numeric. Text size for title (default: 15).
+#' @param subtitle Character. Plot subtitle (default: NULL).
+#' @param subtitle_size_text Numeric. Text size for subtitle (default: 12).
+#' @param legend.position Character. Legend position. Must be one of the following: "top", "bottom", "right" or "left (default: "right").
+#' @param legend_title Character. Legend title (default: "Method").
+#' @param legend_size_text Numeric. Text size for legend title (default: 12).
+#' @param x_axis_size_text Numeric. Text size for x axis (default: 10).
+#' @param y_axis_size_text Numeric. Text size for y axis (default: 10).
+#' @param label_x_axis_size Numeric. Text size for x label axis (default: 10).
+#' @param label_y_axis_size Numeric. Text size for y label axis (default: 10).
 #' @param top Numeric. Show "top" first variables with the higher pseudobetas in absolute value. If
 #' top = NULL, all variables are shown (default: NULL).
 #' @param auto.limits Logical. If "auto.limits" = TRUE, limits are detected automatically (default: TRUE).
@@ -4156,11 +4529,20 @@ plot_pseudobeta <- function(model, error.bar = TRUE, onlySig = FALSE, alpha = 0.
 #' splsdrcox.model <- splsdrcox_penalty(X_train, Y_train, n.comp = 2, penalty = 0.5, x.center = TRUE,
 #' x.scale = TRUE)
 #' lst_models = list("sPLSICOX" = splsicox.model, "sPLSDRCOX" = splsdrcox.model)
-#' plot_pseudobeta_newObservation.list(lst_models, new_observation = X_test[1,,drop=FALSE])
+#' plot_observation.pseudobeta.list(lst_models, observation = X_test[1,,drop=FALSE])
 
-plot_pseudobeta_newObservation.list <- function(lst_models, new_observation, error.bar = TRUE, onlySig = TRUE,
-                                            alpha = 0.05, zero.rm = TRUE,
+plot_observation.pseudobeta.list <- function(lst_models, observation, error.bar = TRUE, onlySig = TRUE,
+                                            alpha = 0.05, zero.rm = TRUE, txt.x.angle = 0,
                                             top = NULL, auto.limits = TRUE, show.betas = FALSE,
+                                            title = NULL, title_size_text = 15,
+                                            subtitle = NULL, subtitle_size_text = 12,
+                                            legend.position = "right",
+                                            legend_title = "Method",
+                                            legend_size_text = 12,
+                                            x_axis_size_text = 10,
+                                            y_axis_size_text = 10,
+                                            label_x_axis_size = 10,
+                                            label_y_axis_size = 10,
                                             verbose = FALSE){
 
   #check names in lst_models
@@ -4175,12 +4557,21 @@ plot_pseudobeta_newObservation.list <- function(lst_models, new_observation, err
     }
   }
 
-  lst_plots <- purrr::map(sub_lst_models, ~plot_pseudobeta_newObservation(model = .,
-                                                                      new_observation = new_observation,
+  lst_plots <- purrr::map(sub_lst_models, ~plot_observation.pseudobeta(model = .,
+                                                                       observation = observation,
                                                                       error.bar = error.bar,
                                                                       onlySig = onlySig, alpha = alpha,
-                                                                      zero.rm = zero.rm, top = top,
-                                                                      auto.limits = auto.limits, show.betas = show.betas))
+                                                                      zero.rm = zero.rm, txt.x.angle = txt.x.angle, top = top,
+                                                                      auto.limits = auto.limits, show.betas = show.betas,
+                                                                      title = title, title_size_text = title_size_text,
+                                                                      subtitle = subtitle, subtitle_size_text = subtitle_size_text,
+                                                                      legend.position = legend.position,
+                                                                      # legend_title = legend_title,
+                                                                      legend_size_text = legend_size_text,
+                                                                      x_axis_size_text = x_axis_size_text,
+                                                                      y_axis_size_text = y_axis_size_text,
+                                                                      label_x_axis_size = label_x_axis_size,
+                                                                      label_y_axis_size = label_y_axis_size))
 
   return(lst_plots)
 
@@ -4212,13 +4603,24 @@ plot_pseudobeta_newObservation.list <- function(lst_models, new_observation, err
 #' interpretation and understanding of the data in the context of the model.
 #'
 #' @param model Coxmos model.
-#' @param new_observation Numeric matrix or data.frame. New explanatory variables (raw data) for one
+#' @param observation Numeric matrix or data.frame. New explanatory variables (raw data) for one
 #' observation. Qualitative variables must be transform into binary variables.
 #' @param error.bar Logical. Show error bar (default: TRUE).
 #' @param onlySig Logical. Compute pseudobetas using only significant components (default: TRUE).
 #' @param alpha Numeric. Numerical values are regarded as significant if they fall below the
 #' threshold (default: 0.05).
 #' @param zero.rm Logical. Remove variables with a pseudobeta equal to 0 (default: TRUE).
+#' @param txt.x.angle Numeric. Angle of X text (default: 0).
+#' @param title Character. Plot title (default: NULL).
+#' @param title_size_text Numeric. Text size for title (default: 15).
+#' @param subtitle Character. Plot subtitle (default: NULL).
+#' @param subtitle_size_text Numeric. Text size for subtitle (default: 12).
+#' @param legend.position Character. Legend position. Must be one of the following: "top", "bottom", "right" or "left (default: "right").
+#' @param legend_size_text Numeric. Text size for legend title (default: 12).
+#' @param x_axis_size_text Numeric. Text size for x axis (default: 10).
+#' @param y_axis_size_text Numeric. Text size for y axis (default: 10).
+#' @param label_x_axis_size Numeric. Text size for x label axis (default: 10).
+#' @param label_y_axis_size Numeric. Text size for y label axis (default: 10).
 #' @param top Numeric. Show "top" first variables with the higher pseudobetas in absolute value. If
 #' top = NULL, all variables are shown (default: NULL).
 #' @param auto.limits Logical. If "auto.limits" = TRUE, limits are detected automatically (default: TRUE).
@@ -4245,10 +4647,18 @@ plot_pseudobeta_newObservation.list <- function(lst_models, new_observation, err
 #' Y_test <- Y_proteomic[-index_train,]
 #' splsicox.model <- splsicox(X_train, Y_train, n.comp = 2, penalty = 0.5, x.center = TRUE,
 #' x.scale = TRUE)
-#' plot_pseudobeta_newObservation(model = splsicox.model, new_observation = X_test[1,,drop=FALSE])
+#' plot_observation.pseudobeta(model = splsicox.model, observation = X_test[1,,drop=FALSE])
 
-plot_pseudobeta_newObservation <- function(model, new_observation, error.bar = TRUE, onlySig = TRUE,
-                                       alpha = 0.05, zero.rm = TRUE,
+plot_observation.pseudobeta <- function(model, observation, error.bar = TRUE, onlySig = TRUE,
+                                       alpha = 0.05, zero.rm = TRUE, txt.x.angle = 0,
+                                       title = NULL, title_size_text = 15,
+                                       subtitle = NULL, subtitle_size_text = 12,
+                                       legend.position = "right",
+                                       legend_size_text = 12,
+                                       x_axis_size_text = 10,
+                                       y_axis_size_text = 10,
+                                       label_x_axis_size = 10,
+                                       label_y_axis_size = 10,
                                        top = NULL, auto.limits = TRUE, show.betas = FALSE){
 
   if(!isa(model,pkg.env$model_class)){
@@ -4259,29 +4669,52 @@ plot_pseudobeta_newObservation <- function(model, new_observation, error.bar = T
 
   if(attr(model, "model") %in% pkg.env$pls_methods){
     plot_pseudobeta.newObservation(model = model,
-                               new_observation = new_observation,
+                               observation = observation,
                                error.bar = error.bar,
                                onlySig = onlySig, alpha = alpha,
-                               zero.rm = zero.rm, top = top,
-                               auto.limits = auto.limits, show.betas = show.betas)
+                               zero.rm = zero.rm, txt.x.angle = txt.x.angle, top = top,
+                               auto.limits = auto.limits, show.betas = show.betas,
+                               title = title, title_size_text = title_size_text,
+                               subtitle = subtitle, subtitle_size_text = subtitle_size_text,
+                               legend.position = legend.position,
+                               legend_size_text = legend_size_text,
+                               x_axis_size_text = x_axis_size_text,
+                               y_axis_size_text = y_axis_size_text,
+                               label_x_axis_size = label_x_axis_size,
+                               label_y_axis_size = label_y_axis_size)
+
   }else if(attr(model, "model") %in% pkg.env$multiblock_methods){
     plot_MB.pseudobeta.newObservation(model = model,
-                                  new_observation = new_observation,
+                                  observation = observation,
                                   error.bar = error.bar,
                                   onlySig = onlySig, alpha = alpha,
-                                  zero.rm = zero.rm, top = top,
-                                  auto.limits = auto.limits, show.betas = show.betas)
+                                  zero.rm = zero.rm, txt.x.angle = txt.x.angle, top = top,
+                                  auto.limits = auto.limits, show.betas = show.betas,
+                                  title = title, title_size_text = title_size_text,
+                                  subtitle = subtitle, subtitle_size_text = subtitle_size_text,
+                                  legend.position = legend.position,
+                                  legend_size_text = legend_size_text,
+                                  x_axis_size_text = x_axis_size_text,
+                                  y_axis_size_text = y_axis_size_text,
+                                  label_x_axis_size = label_x_axis_size,
+                                  label_y_axis_size = label_y_axis_size)
   }else{
     stop("Model not belong to any PLS or MB Coxmos methods.")
   }
 }
 
-plot_pseudobeta.newObservation <- function(model, new_observation, error.bar = TRUE, onlySig = TRUE,
-                                       alpha = 0.05, zero.rm = TRUE,
+plot_pseudobeta.newObservation <- function(model, observation, error.bar = TRUE, onlySig = TRUE,
+                                       alpha = 0.05, zero.rm = TRUE, txt.x.angle = 0,
+                                       title = NULL, title_size_text = 15,
+                                       subtitle = NULL, subtitle_size_text = 12,
+                                       legend.position = "right",
+                                       legend_size_text = 12,
+                                       x_axis_size_text = 10, y_axis_size_text = 10, label_x_axis_size = 10,
+                                       label_y_axis_size = 10,
                                        top = NULL, auto.limits = TRUE, show.betas = FALSE){
 
   #check colnames and transform
-  new_observation <- checkColnamesIllegalChars(new_observation)
+  observation <- checkColnamesIllegalChars(observation)
 
   if(!isa(model,pkg.env$model_class)){
     warning("Model must be an object of class Coxmos.")
@@ -4294,7 +4727,17 @@ plot_pseudobeta.newObservation <- function(model, new_observation, error.bar = T
 
   #plot
   ggp.simulated_beta <- plot_pseudobeta(model = model, error.bar = error.bar, onlySig = onlySig,
-                                        alpha = alpha, zero.rm = zero.rm, auto.limits = auto.limits, top = top)
+                                        alpha = alpha, zero.rm = zero.rm, auto.limits = auto.limits, top = top,
+                                        title = title, title_size_text = title_size_text,
+                                        subtitle = subtitle, subtitle_size_text = subtitle_size_text,
+                                        legend.position = legend.position,
+                                        # legend_title = legend_title,
+                                        legend_size_text = legend_size_text,
+                                        x_axis_size_text = x_axis_size_text,
+                                        y_axis_size_text = y_axis_size_text,
+                                        label_x_axis_size = label_x_axis_size,
+                                        label_y_axis_size = label_y_axis_size)
+
   coefficients <- ggp.simulated_beta$beta
 
   if(all(coefficients==0)){
@@ -4309,20 +4752,21 @@ plot_pseudobeta.newObservation <- function(model, new_observation, error.bar = T
     coeff.max <- ggp.simulated_beta$sd.max
   }
 
-  #norm patient
+  # Norm. patient & select model variables
+  observation <- observation[,colnames(observation) %in% colnames(model$X$data), drop=FALSE]
 
   if(!is.null(model$X$x.mean) & !is.null(model$X$x.sd)){
-    norm_patient <- scale(new_observation, center = model$X$x.mean, scale = model$X$x.sd)
+    norm_patient <- scale(observation, center = model$X$x.mean, scale = model$X$x.sd)
   }else if(!is.null(model$X$x.mean)){
-    norm_patient <- scale(new_observation, center = model$X$x.mean, scale = FALSE)
+    norm_patient <- scale(observation, center = model$X$x.mean, scale = FALSE)
   }else if(!is.null(model$X$x.sd)){
-    norm_patient <- scale(new_observation, center = FALSE, scale = model$X$x.sd)
+    norm_patient <- scale(observation, center = FALSE, scale = model$X$x.sd)
   }else{
-    norm_patient <- new_observation
+    norm_patient <- observation
   }
 
-  #select selected variables
-  new_observation <- new_observation[,rownames(model$X$W.star),drop = FALSE]
+  # Select W* variables
+  norm_patient <- norm_patient[,rownames(model$X$W.star), drop=FALSE]
 
   #lp.new_observation_manual <- norm_patient[,rownames(coefficients)] %*% coefficients #predict lp
   lp.new_observation_variable <- as.data.frame(norm_patient[,rownames(coefficients)] * coefficients$value) #predict terms
@@ -4428,11 +4872,9 @@ plot_pseudobeta.newObservation <- function(model, new_observation, error.bar = T
   ggp <- ggp + guides(color= "none")
   ggp <- ggp + ylab(label = "Linear Predictor")
   ggp <- ggp + xlab(label = "Variables")
-  ggp <- ggp + ggtitle(label = paste0("Observation - ", rownames(new_observation)))
+  ggp <- ggp + ggtitle(label = paste0("Observation - ", rownames(observation)))
 
-  if(length(unique(df.pat$var))>15){
-    ggp <- ggp + theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
-  }
+  ggp <- ggp + theme(axis.text.x = element_text(angle = txt.x.angle, vjust = 0.5, hjust=1))
 
   if(show.betas){
 
@@ -4442,7 +4884,7 @@ plot_pseudobeta.newObservation <- function(model, new_observation, error.bar = T
     ggp.aux2 <- ggp.simulated_beta$plot
     ggp.aux2 <- ggp.aux2 + guides(fill = "none")
     suppressMessages(
-      ggp.aux2 <- ggp.aux2 + scale_y_continuous(n.breaks = 10, limits = c(-1*auto.limits, auto.limits))
+      ggp.aux2 <- ggp.aux2 + scale_y_continuous(n.breaks = 10) #, limits = c(-1*auto.limits, auto.limits))
     )
 
     sign.beta <- coefficients$value>0
@@ -4452,7 +4894,7 @@ plot_pseudobeta.newObservation <- function(model, new_observation, error.bar = T
     same.sign <- same.sign[rownames(ggp.simulated_beta$plot$data)]
 
     ggp.aux$mapping$fill[[2]] <- same.sign
-    ggp.aux <- ggp.aux + guides(fill = guide_legend(title="Same beta direction:")) + theme(legend.position="left")
+    ggp.aux <- ggp.aux + guides(fill = guide_legend(title="Consistent coefficient sign:")) + theme(legend.position="left")
 
     #overwriting fill generates a message
     suppressMessages({
@@ -4463,19 +4905,49 @@ plot_pseudobeta.newObservation <- function(model, new_observation, error.bar = T
       }
     })
 
-    ggp <- ggpubr::ggarrange(ggp.aux, ggp.aux2, ncol = 2, widths = c(0.5, 0.5), align = "h")
+    ggp.aux <- ggp.aux + theme(plot.title = element_text(size = title_size_text),
+                               plot.subtitle = element_text(size = subtitle_size_text),
+                               legend.text = element_text(size = legend_size_text),
+                               legend.title = element_text(size = legend_size_text),
+                               axis.text.x = element_text(size = x_axis_size_text),
+                               axis.text.y = element_text(size = y_axis_size_text),
+                               axis.title.x = element_text(size = label_x_axis_size),
+                               axis.title.y = element_text(size = label_y_axis_size),
+                               legend.position = legend.position)
+
+    if(!is.null(title)){
+      ggp.aux <- ggp.aux + labs(title = title)
+    }
+
+    if(!is.null(subtitle)){
+      ggp.aux <- ggp.aux + labs(subtitle = subtitle)
+    }
+
+    # ggp <- ggpubr::ggarrange(ggp.aux, ggp.aux2, ncol = 2, widths = c(0.5, 0.5), align = "h",
+    # common.legend = TRUE, legend = legend.position)
+
+    ggp <- ggp.aux + ggp.aux2 +
+      plot_layout(ncol = 2, widths = c(0.5, 0.5), guides = "collect") &
+      theme(legend.position = legend.position)
   }
 
-  return(list(plot = ggp, lp.var = lp.new_observation_variable, norm_observation = norm_patient, observation = new_observation))
+  return(list(plot = ggp, lp.var = lp.new_observation_variable, norm_observation = norm_patient, observation = observation))
 
 }
 
-plot_MB.pseudobeta.newObservation <- function(model, new_observation, error.bar = TRUE, onlySig = TRUE,
-                                          alpha = 0.05, zero.rm = TRUE,
+plot_MB.pseudobeta.newObservation <- function(model, observation, error.bar = TRUE, onlySig = TRUE,
+                                          alpha = 0.05, zero.rm = TRUE, txt.x.angle = 0,
+                                          title = NULL, title_size_text = 15,
+                                          subtitle = NULL, subtitle_size_text = 12,
+                                          legend.position = "right",
+                                          legend_title = "Method",
+                                          legend_size_text = 12,
+                                          x_axis_size_text = 10, y_axis_size_text = 10, label_x_axis_size = 10,
+                                          label_y_axis_size = 10,
                                           top = NULL, auto.limits = TRUE, show.betas = FALSE){
 
   #check colnames and transform
-  new_observation <- checkColnamesIllegalChars.mb(new_observation)
+  observation <- checkColnamesIllegalChars.mb(observation)
 
   if(!isa(model,pkg.env$model_class)){
     warning("Model must be an object of class Coxmos.")
@@ -4484,7 +4956,7 @@ plot_MB.pseudobeta.newObservation <- function(model, new_observation, error.bar 
   }
 
   #checks
-  if(!all(names(new_observation) == names(model$X$data))){
+  if(!all(names(observation) == names(model$X$data))){
     stop("New patint has to have the same blocks as the model.")
   }
 
@@ -4493,7 +4965,16 @@ plot_MB.pseudobeta.newObservation <- function(model, new_observation, error.bar 
 
   #plot
   ggp.simulated_beta <- plot_pseudobeta(model = model, error.bar = error.bar, onlySig = onlySig,
-                                        alpha = alpha, zero.rm = zero.rm, auto.limits = auto.limits, top = top)
+                                        alpha = alpha, zero.rm = zero.rm, auto.limits = auto.limits, top = top,
+                                        title = title, title_size_text = title_size_text,
+                                        subtitle = subtitle, subtitle_size_text = subtitle_size_text,
+                                        legend.position = legend.position,
+                                        # legend_title = legend_title,
+                                        legend_size_text = legend_size_text,
+                                        x_axis_size_text = x_axis_size_text,
+                                        y_axis_size_text = y_axis_size_text,
+                                        label_x_axis_size = label_x_axis_size,
+                                        label_y_axis_size = label_y_axis_size)
 
   coefficients <- ggp.simulated_beta$beta #list
 
@@ -4515,16 +4996,16 @@ plot_MB.pseudobeta.newObservation <- function(model, new_observation, error.bar 
   #for each block... that is returned in gg.suimulated_beta...
   for(b in names(model$X$data)[names(model$X$data) %in% names(ggp.simulated_beta$plot)]){
 
-    new_observation[[b]] <- new_observation[[b]][,names(model$X$x.mean[[b]]),drop = FALSE]
+    observation[[b]] <- observation[[b]][,names(model$X$x.mean[[b]]),drop = FALSE]
 
     if(!is.null(model$X$x.mean[[b]]) & !is.null(model$X$x.sd[[b]])){
-      norm_patient[[b]] <- scale(new_observation[[b]], center = model$X$x.mean[[b]], scale = model$X$x.sd[[b]])
+      norm_patient[[b]] <- scale(observation[[b]], center = model$X$x.mean[[b]], scale = model$X$x.sd[[b]])
     }else if(!is.null(model$X$x.mean[[b]])){
-      norm_patient[[b]] <- scale(new_observation[[b]], center = model$X$x.mean[[b]], scale = FALSE)
+      norm_patient[[b]] <- scale(observation[[b]], center = model$X$x.mean[[b]], scale = FALSE)
     }else if(!is.null(model$X$x.sd[[b]])){
-      norm_patient[[b]] <- scale(new_observation[[b]], center = FALSE, scale = model$X$x.sd[[b]])
+      norm_patient[[b]] <- scale(observation[[b]], center = FALSE, scale = model$X$x.sd[[b]])
     }else{
-      norm_patient <- new_observation
+      norm_patient <- observation
     }
 
     lp.new_observation_variable[[b]] <- as.data.frame(norm_patient[[b]][,rownames(coefficients[[b]])] * coefficients[[b]]$value) #predict terms
@@ -4620,11 +5101,9 @@ plot_MB.pseudobeta.newObservation <- function(model, new_observation, error.bar 
     ggp <- ggp + guides(color= "none")
     ggp <- ggp + ylab(label = "Linear Predictor")
     ggp <- ggp + xlab(label = "Variables")
-    ggp <- ggp + ggtitle(label = paste0("Observation - ", rownames(new_observation[[b]])))
+    ggp <- ggp + ggtitle(label = paste0("Observation - ", rownames(observation[[b]])))
 
-    if(length(unique(df.pat$var))>15){
-      ggp <- ggp + theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
-    }
+    ggp <- ggp + theme(axis.text.x = element_text(angle = txt.x.angle, vjust = 0.5, hjust=1))
 
     if(show.betas){
 
@@ -4634,7 +5113,7 @@ plot_MB.pseudobeta.newObservation <- function(model, new_observation, error.bar 
       ggp.aux2 <- ggp.simulated_beta$plot[[b]]
       ggp.aux2 <- ggp.aux2 + guides(fill = "none")
       suppressMessages(
-        ggp.aux2 <- ggp.aux2 + scale_y_continuous(n.breaks = 10, limits = c(-1*auto.limits, auto.limits))
+        ggp.aux2 <- ggp.aux2 + scale_y_continuous(n.breaks = 10) #, limits = c(-1*auto.limits, auto.limits))
       )
 
       sign.beta <- coefficients[[b]]$value>0
@@ -4644,7 +5123,7 @@ plot_MB.pseudobeta.newObservation <- function(model, new_observation, error.bar 
       same.sign <- same.sign[rownames(ggp.simulated_beta$plot[[b]]$data)]
 
       ggp.aux$mapping$fill[[2]] <- same.sign
-      ggp.aux <- ggp.aux + guides(fill = guide_legend(title="Same beta direction:")) + theme(legend.position="left")
+      ggp.aux <- ggp.aux + guides(fill = guide_legend(title="Consistent coefficient sign:")) + theme(legend.position="left")
 
       #overwriting fill generates a message
       suppressMessages({
@@ -4655,7 +5134,30 @@ plot_MB.pseudobeta.newObservation <- function(model, new_observation, error.bar 
         }
       })
 
-      ggp <- ggpubr::ggarrange(ggp.aux, ggp.aux2, ncol = 2, widths = c(0.5, 0.5), align = "h")
+      ggp.aux <- ggp.aux + theme(plot.title = element_text(size = title_size_text),
+                                 plot.subtitle = element_text(size = subtitle_size_text),
+                                 legend.text = element_text(size = legend_size_text),
+                                 legend.title = element_text(size = legend_size_text),
+                                 axis.text.x = element_text(size = x_axis_size_text),
+                                 axis.text.y = element_text(size = y_axis_size_text),
+                                 axis.title.x = element_text(size = label_x_axis_size),
+                                 axis.title.y = element_text(size = label_y_axis_size),
+                                 legend.position = legend.position)
+
+      if(!is.null(title)){
+        ggp.aux <- ggp.aux + labs(title = title)
+      }
+
+      if(!is.null(subtitle)){
+        ggp.aux <- ggp.aux + labs(subtitle = subtitle)
+      }
+
+      # ggp <- ggpubr::ggarrange(ggp.aux, ggp.aux2, ncol = 2, widths = c(0.5, 0.5), align = "h", common.legend = TRUE, legend = "bottom")
+
+      ggp <- ggp.aux + ggp.aux2 +
+        plot_layout(ncol = 2, widths = c(0.5, 0.5), guides = "collect") &
+        theme(legend.position = legend.position)
+
     }
 
     lst_plots[[b]] <- ggp
@@ -4663,7 +5165,7 @@ plot_MB.pseudobeta.newObservation <- function(model, new_observation, error.bar 
 
   }
 
-  return(list(plot = lst_plots, lp.var = lst_lp.var, norm_observation = norm_patient, observation = new_observation))
+  return(list(plot = lst_plots, lp.var = lst_lp.var, norm_observation = norm_patient, observation = observation))
 
 }
 
@@ -4693,7 +5195,8 @@ plot_MB.pseudobeta.newObservation <- function(model, new_observation, error.bar 
 #' returned (default: FALSE).
 #' @param alpha Numeric. Numerical values are regarded as significant if they fall below the
 #' threshold (default: 0.05).
-#' @param title Character. Kaplan-Meier plot title (default: NULL).
+#' @param title Character. Kaplan-Meier plot title. If NULL, Coxmos model name will be used (default: NULL).
+#' @param subtitle Character. Kaplan-Meier plot subtitle (default: NULL).
 #' @param verbose Logical. If verbose = TRUE, extra messages could be displayed (default: FALSE).
 #'
 #' @return A list of two elements per each model in the list:
@@ -4710,6 +5213,7 @@ plot_MB.pseudobeta.newObservation <- function(model, new_observation, error.bar 
 #'
 #' @examples
 #' data("X_proteomic")
+#' data("Y_proteomic")
 #'
 #' X_proteomic <- X_proteomic[1:30,1:20]
 #' Y_proteomic <- Y_proteomic[1:30,]
@@ -4727,7 +5231,8 @@ plot_MB.pseudobeta.newObservation <- function(model, new_observation, error.bar 
 #' getAutoKM.list(type = "LP", lst_models)
 
 getAutoKM.list <- function(type = "LP", lst_models, comp = 1:2, top = NULL, ori_data = TRUE,
-                           BREAKTIME = NULL, n.breaks = 20, minProp = 0.2, only_sig = FALSE, alpha = 0.05, title = NULL,
+                           BREAKTIME = NULL, n.breaks = 20, minProp = 0.2, only_sig = FALSE, alpha = 0.05,
+                           title = NULL, subtitle = NULL,
                            verbose = FALSE){
 
   #check names in lst_models
@@ -4756,6 +5261,51 @@ getAutoKM.list <- function(type = "LP", lst_models, comp = 1:2, top = NULL, ori_
   }else if(type == "LPVAR"){
     lst <- purrr::map(lst_models, ~getLPVarKM(model = ., comp = comp, top = top, ori_data = ori_data, BREAKTIME = BREAKTIME, n.breaks = n.breaks, minProp = minProp, only_sig = only_sig, alpha = alpha, title = title, verbose = verbose))
   }
+
+
+  for(m in names(lst)){
+    if(attr(lst_models[[m]], "model") %in% pkg.env$multiblock_methods){
+      for(b in names(lst[[m]]$LST_PLOTS)){
+
+        if(type %in% "LP"){
+          if(!is.null(subtitle)){
+            lst[[m]]$LST_PLOTS[[b]]$plot <- lst[[m]]$LST_PLOTS[[b]]$plot + labs(subtitle = subtitle)
+          }
+
+          if(is.null(title)){
+            title <- attr(lst_models[[m]], "model")
+            lst[[m]]$LST_PLOTS[[b]]$plot <- lst[[m]]$LST_PLOTS[[b]]$plot + labs(title = title)
+            title <- NULL
+          }
+        }else{
+          for(var in names(lst[[m]]$LST_PLOTS[[b]])){
+            if(!is.null(subtitle)){
+              lst[[m]]$LST_PLOTS[[b]][[var]]$plot <- lst[[m]]$LST_PLOTS[[b]][[var]]$plot + labs(subtitle = subtitle)
+            }
+
+            if(is.null(title)){
+              title <- attr(lst_models[[m]], "model")
+              lst[[m]]$LST_PLOTS[[b]][[var]]$plot <- lst[[m]]$LST_PLOTS[[b]][[var]]$plot + labs(title = title)
+              title <- NULL
+            }
+          }
+        }
+      }
+    }else{
+      for(var in names(lst[[m]]$LST_PLOTS)){
+        if(!is.null(subtitle)){
+          lst[[m]]$LST_PLOTS[[var]]$plot <- lst[[m]]$LST_PLOTS[[var]]$plot + labs(subtitle = subtitle)
+        }
+
+        if(is.null(title)){
+          title <- attr(lst_models[[m]], "model")
+          lst[[m]]$LST_PLOTS[[var]]$plot <- lst[[m]]$LST_PLOTS[[var]]$plot + labs(title = title)
+          title <- NULL
+        }
+      }
+    }
+  }
+
   return(lst)
 }
 
@@ -4800,6 +5350,7 @@ getAutoKM.list <- function(type = "LP", lst_models, comp = 1:2, top = NULL, ori_
 #' @param alpha Numeric. Numerical values are regarded as significant if they fall below the
 #' threshold (default: 0.05).
 #' @param title Character. Kaplan-Meier plot title (default: NULL).
+#' @param subtitle Character. Kaplan-Meier plot subtitle (default: NULL).
 #' @param verbose Logical. If verbose = TRUE, extra messages could be displayed (default: FALSE).
 #'
 #' @return A list of two elements per each model in the list:
@@ -4828,7 +5379,8 @@ getAutoKM.list <- function(type = "LP", lst_models, comp = 1:2, top = NULL, ori_
 #' getAutoKM(type = "LP", model = splsicox.model)
 
 getAutoKM <- function(type = "LP", model, comp = 1:2, top = 10, ori_data = TRUE, BREAKTIME = NULL,
-                      n.breaks = 20, minProp = 0.2, only_sig = FALSE, alpha = 0.05, title = NULL, verbose = FALSE){
+                      n.breaks = 20, minProp = 0.2, only_sig = FALSE, alpha = 0.05,
+                      title = NULL, subtitle = NULL, verbose = FALSE){
 
   if(!type %in% c("LP", "COMP", "VAR")){
     stop("Type parameters must be one of the following: LP, COMP or VAR")
@@ -4844,15 +5396,40 @@ getAutoKM <- function(type = "LP", model, comp = 1:2, top = 10, ori_data = TRUE,
     comp <- 1:comp
   }
 
+  lst_results <- NULL
   if(type == "LP"){
-    return(getLPKM(model = model, comp = comp, top = top, ori_data = ori_data, BREAKTIME = BREAKTIME, n.breaks = n.breaks, minProp = minProp, only_sig = only_sig, alpha = alpha, title = title, verbose = verbose))
+    lst_results <- getLPKM(model = model, comp = comp, top = top, ori_data = ori_data, BREAKTIME = BREAKTIME, n.breaks = n.breaks, minProp = minProp, only_sig = only_sig, alpha = alpha, title = title, verbose = verbose)
   }else if(type == "COMP"){
-    return(getCompKM(model, comp = comp, top = top, ori_data = ori_data, BREAKTIME = BREAKTIME, n.breaks = n.breaks, minProp = minProp, only_sig = only_sig, alpha = alpha, title = title, verbose = verbose))
+    lst_results <- getCompKM(model, comp = comp, top = top, ori_data = ori_data, BREAKTIME = BREAKTIME, n.breaks = n.breaks, minProp = minProp, only_sig = only_sig, alpha = alpha, title = title, verbose = verbose)
   }else if(type == "VAR"){
-    return(getVarKM(model, comp = comp, top = top, ori_data = ori_data, BREAKTIME = BREAKTIME, n.breaks = n.breaks, minProp = minProp, only_sig = only_sig, alpha = alpha, title = title, verbose = verbose))
+    lst_results <- getVarKM(model, comp = comp, top = top, ori_data = ori_data, BREAKTIME = BREAKTIME, n.breaks = n.breaks, minProp = minProp, only_sig = only_sig, alpha = alpha, title = title, verbose = verbose)
   }else if(type == "LPVAR"){
-    return(getLPVarKM(model, comp = comp, top = top, ori_data = ori_data, BREAKTIME = BREAKTIME, n.breaks = n.breaks, minProp = minProp, only_sig = only_sig, alpha = alpha, title = title, verbose = verbose))
+    lst_results <- getLPVarKM(model, comp = comp, top = top, ori_data = ori_data, BREAKTIME = BREAKTIME, n.breaks = n.breaks, minProp = minProp, only_sig = only_sig, alpha = alpha, title = title, verbose = verbose)
   }
+
+  if(attr(model, "model") %in% pkg.env$multiblock_methods){
+    if(!is.null(subtitle)){
+      for(b in names(lst_results$LST_PLOTS)){
+
+        if(type %in% "LP"){
+          lst_results$LST_PLOTS[[b]]$plot <- lst_results$LST_PLOTS[[b]]$plot + labs(subtitle = subtitle)
+        }else{
+          for(v in names(lst_results$LST_PLOTS[[b]])){
+            lst_results$LST_PLOTS[[b]][[v]]$plot <- lst_results$LST_PLOTS[[b]][[v]]$plot + labs(subtitle = subtitle)
+          }
+        }
+
+      }
+    }
+  }else{
+    if(!is.null(subtitle)){
+      for(b in names(lst_results$LST_PLOTS)){
+        lst_results$LST_PLOTS[[b]]$plot <- lst_results$LST_PLOTS[[b]]$plot + labs(subtitle = subtitle)
+      }
+    }
+  }
+
+  return(lst_results)
 }
 
 getLPKM <- function(model, comp = 1:2, top = 10, ori_data = TRUE, BREAKTIME = NULL, n.breaks = 20, minProp = 0.2,
@@ -5921,6 +6498,9 @@ plot_survivalplot.qual <- function(data, sdata, cn_variables, name_data = NULL, 
 
       # GGSURVPLOT DOES NOT PRINT INTERVALS IF ALL DATA IS NOT SELECTED FOR RIBBON STYLE
       # IF PROBLEMS CHANGE TO STEP STYLE
+
+      cn_good <- retransformIllegalChars(cn)
+
       kmplot <- survminer::ggsurvplot(fit = kmsurvival, censor.shape = "|", palette = colors,
                                       conf.int = TRUE, ggtheme = theme_bw(), legend.labs = levels(aux[,cn]),
                                       conf.int.style = "ribbon",
@@ -5929,7 +6509,7 @@ plot_survivalplot.qual <- function(data, sdata, cn_variables, name_data = NULL, 
                                       pval = TRUE,
                                       surv.median.line = "hv", # Add medians survival
                                       risk.table = TRUE,
-                                      legend.title = cn_ori,
+                                      legend.title = cn_good,
                                       break.time.by = BREAKTIME,
                                       font.caption = 8,
                                       font.x = 10,
@@ -6107,26 +6687,33 @@ getCutoffAutoKM <- function(result){
   }
 
   value <- list()
-  if(!is.null(result$info_logrank_qual)){
+  if(!is.null(result$info_logrank_num)){
     # Binary Matrix - SO
-    if("Variable" %in% names(result$info_logrank_qual)){
-      value[["qualitative"]] <- result$info_logrank_qual$Variable
+    if("Variable" %in% names(result$info_logrank_num)){
+      value[["quantitative"]] <- result$info_logrank_num$Variable
     }else{
       # MO
-      for(b in names(result$info_logrank_num)){
-        if(is.null(result$info_logrank_num[[b]]$df_nvar_lrtest)){
-          return(NULL)
+      if("df_nvar_lrtest" %in% names(result$info_logrank_num)){
+        # LP mode
+        value[["quantitative"]] <- c(value[["quantitative"]], result$info_logrank_num$df_nvar_lrtest$Cutoff)
+        names(value[["quantitative"]]) <- c(names(value[["quantitative"]])[names(value[["quantitative"]]) != ""], paste0(result$info_logrank_num$df_nvar_lrtest$Variable))
+      }else{
+        for(b in names(result$info_logrank_num)){
+          if(is.null(result$info_logrank_num[[b]]$df_nvar_lrtest)){
+            return(NULL)
+          }
+          value[["quantitative"]] <- c(value[["quantitative"]], result$info_logrank_num[[b]]$df_nvar_lrtest$Cutoff)
+          names(value[["quantitative"]]) <- c(names(value[["quantitative"]])[names(value[["quantitative"]]) != ""], paste0(result$info_logrank_num[[b]]$df_nvar_lrtest$Variable, "_", b))
         }
-        value[["quantitative"]] <- c(value[["quantitative"]], result$info_logrank_num[[b]]$df_nvar_lrtest$Cutoff)
-        names(value[["quantitative"]]) <- c(names(value[["quantitative"]])[names(value[["quantitative"]]) != ""], paste0(result$info_logrank_num[[b]]$df_nvar_lrtest$Variable, "_", b))
       }
     }
   }
 
-  if(!all(is.null(result$info_logrank_num))){
+  if(!all(is.null(result$info_logrank_qual))){
     # SO
-    if("Cutoff" %in% names(result$info_logrank_num$df_nvar_lrtest)){
-      value[["quantitative"]] <- result$info_logrank_num$df_nvar_lrtest$Cutoff
+    if("Cutoff" %in% names(result$info_logrank_qual$df_nvar_lrtest)){
+      value[["qualitative"]] <- result$info_logrank_qual$df_nvar_lrtest$Cutoff
+      names(value[["qualitative"]]) <- result$info_logrank_qual$df_nvar_lrtest$Variable
     }else{
       # MO
       for(b in names(result$info_logrank_qual)){
@@ -6164,6 +6751,7 @@ getCutoffAutoKM <- function(result){
 #' @param n.breaks Numeric. If BREAKTIME is NULL, "n.breaks" is the number of time-break points to
 #' compute (default: 20).
 #' @param title Character. Kaplan-Meier plot title (default: NULL).
+#' @param subtitle Character. Kaplan-Meier plot subtitle (default: NULL).
 #' @param verbose Logical. If verbose = TRUE, extra messages could be displayed (default: FALSE).
 #'
 #' @return A list where each element corresponds to a Kaplan-Meier plot generated for each model in
@@ -6199,7 +6787,7 @@ getCutoffAutoKM <- function(result){
 #' getTestKM.list(lst_models, X_test, Y_test, lst_cutoff)
 
 getTestKM.list <- function(lst_models, X_test, Y_test, lst_cutoff, type = "LP", ori_data = TRUE,
-                           BREAKTIME = NULL, n.breaks = 20, title = NULL, verbose = FALSE){
+                           BREAKTIME = NULL, n.breaks = 20, title = NULL, subtitle = NULL, verbose = FALSE){
 
   #check names in lst_models
   lst_models <- checkModelNames(lst_models)
@@ -6236,6 +6824,56 @@ getTestKM.list <- function(lst_models, X_test, Y_test, lst_cutoff, type = "LP", 
                                                                             X_test = X_test, Y_test = Y_test,
                                                                             cutoff = .y, type = type, ori_data = ori_data,
                                                                             BREAKTIME = BREAKTIME, n.breaks = n.breaks, title = title))
+  }
+
+  for(mod in names(LST_GGP)){
+
+    if(attr(lst_models[[mod]], "model") %in% pkg.env$multiblock_methods){
+      if(type %in% "VAR"){
+        for(o in names(LST_GGP[[mod]])){
+          for(v in names(LST_GGP[[mod]][[o]])){
+            if(!is.null(subtitle)){
+              LST_GGP[[mod]][[o]][[v]]$plot <- LST_GGP[[mod]][[o]][[v]]$plot + labs(subtitle = subtitle)
+            }else{
+              LST_GGP[[mod]][[o]][[v]]$plot <- LST_GGP[[mod]][[o]][[v]]$plot + labs(subtitle = "Variable - Test")
+            }
+          }
+        }
+      }else if(type %in% c("COMP")){
+        for(v in names(LST_GGP[[mod]])){
+          if(!is.null(subtitle)){
+            LST_GGP[[mod]][[v]]$plot <- LST_GGP[[mod]][[v]]$plot + labs(subtitle = subtitle)
+          }else{
+            LST_GGP[[mod]][[v]]$plot <- LST_GGP[[mod]][[v]]$plot + labs(subtitle = "Variable - Test")
+          }
+        }
+      }else if(type %in% c("LP")){
+        if(!is.null(subtitle)){
+          LST_GGP[[mod]]$plot <- LST_GGP[[mod]]$plot + labs(subtitle = subtitle)
+        }else{
+          LST_GGP[[mod]]$plot <- LST_GGP[[mod]]$plot + labs(subtitle = "Variable - Test")
+        }
+      }
+
+    }else{
+      if(type %in% "LP"){
+        if(!is.null(subtitle)){
+          LST_GGP[[mod]]$plot <- LST_GGP[[mod]]$plot + labs(subtitle = subtitle)
+        }else{
+          LST_GGP[[mod]]$plot <- LST_GGP[[mod]]$plot + labs(subtitle = "Variable - Test")
+        }
+      }else{
+        for(v in names(LST_GGP[[mod]])){
+          if(!is.null(subtitle)){
+            LST_GGP[[mod]][[v]]$plot <- LST_GGP[[mod]][[v]]$plot + labs(subtitle = subtitle)
+          }else{
+            LST_GGP[[mod]][[v]]$plot <- LST_GGP[[mod]][[v]]$plot + labs(subtitle = "Variable - Test")
+          }
+        }
+      }
+    }
+
+
   }
 
   return(LST_GGP)
@@ -6289,6 +6927,7 @@ getTestKM.list <- function(lst_models, X_test, Y_test, lst_cutoff, type = "LP", 
 #' @param n.breaks Numeric. If BREAKTIME is NULL, "n.breaks" is the number of time-break points to
 #' compute (default: 20).
 #' @param title Character. Kaplan-Meier plot title (default: NULL).
+#' @param subtitle Character. Kaplan-Meier plot subtitle (default: NULL).
 #'
 #' @return Depending on the specified \code{type} parameter, the function returns:
 #' \itemize{
@@ -6321,7 +6960,7 @@ getTestKM.list <- function(lst_models, X_test, Y_test, lst_cutoff, type = "LP", 
 #' getTestKM(splsicox.model, X_test, Y_test, cutoff)
 
 getTestKM <- function(model, X_test, Y_test, cutoff, type = "LP", ori_data = TRUE, BREAKTIME = NULL,
-                      n.breaks = 20, title = NULL){
+                      n.breaks = 20, title = NULL, subtitle = NULL){
 
   #### Check test times are less or equal than max train time:
   checkTestTimesVSTrainTimes(model, Y_test)
@@ -6351,7 +6990,7 @@ getTestKM <- function(model, X_test, Y_test, cutoff, type = "LP", ori_data = TRU
   if(is.null(title)){
     title = attr(model, "model")
   }else{
-    title = paste0(attr(model, "model"), " - ", title)
+    title = paste0(title)
   }
 
   #create new variable
@@ -6383,6 +7022,12 @@ getTestKM <- function(model, X_test, Y_test, cutoff, type = "LP", ori_data = TRU
                                   BREAKTIME = BREAKTIME,
                                   cn_variables = type,
                                   name_data = NULL, title = title)[[type]]
+
+    if(!is.null(subtitle)){
+      ggp$plot <- ggp$plot + labs(subtitle = subtitle)
+    }else{
+      ggp$plot <- ggp$plot + labs(subtitle = "LP - Test")
+    }
 
     return(ggp)
 
@@ -6425,6 +7070,14 @@ getTestKM <- function(model, X_test, Y_test, cutoff, type = "LP", ori_data = TRU
                                               BREAKTIME = BREAKTIME,
                                               cn_variables = cn,
                                               name_data = NULL, title = paste0(title," - ",cn))[[cn]]
+    }
+
+    for(b in names(lst_ggp)){
+      if(!is.null(subtitle)){
+        lst_ggp[[b]]$plot <- lst_ggp[[b]]$plot + labs(subtitle = subtitle)
+      }else{
+        lst_ggp[[b]]$plot <- lst_ggp[[b]]$plot + labs(subtitle = "Components - Test")
+      }
     }
 
     return(lst_ggp)
@@ -6479,6 +7132,16 @@ getTestKM <- function(model, X_test, Y_test, cutoff, type = "LP", ori_data = TRU
         }
       }
 
+      for(b in names(lst_ggp)){
+        for(v in names(lst_ggp[[b]])){
+          if(!is.null(subtitle)){
+            lst_ggp[[b]][[v]]$plot <- lst_ggp[[b]][[v]]$plot + labs(subtitle = subtitle)
+          }else{
+            lst_ggp[[b]][[v]]$plot <- lst_ggp[[b]][[v]]$plot + labs(subtitle = "Variable - Test")
+          }
+        }
+      }
+
       return(lst_ggp)
 
     }else if(attr(model, "model") %in% c(pkg.env$multiblock_mixomics_methods) && isa(X_test, "list")){
@@ -6520,6 +7183,17 @@ getTestKM <- function(model, X_test, Y_test, cutoff, type = "LP", ori_data = TRU
           }
         }
       }
+
+      for(b in names(lst_ggp)){
+        for(v in names(lst_ggp[[b]])){
+          if(!is.null(subtitle)){
+            lst_ggp[[b]][[v]]$plot <- lst_ggp[[b]][[v]]$plot + labs(subtitle = subtitle)
+          }else{
+            lst_ggp[[b]][[v]]$plot <- lst_ggp[[b]][[v]]$plot + labs(subtitle = "Variable - Test")
+          }
+        }
+      }
+
       return(lst_ggp)
     }
 
@@ -6588,6 +7262,14 @@ getTestKM <- function(model, X_test, Y_test, cutoff, type = "LP", ori_data = TRU
 
     }
 
+    for(b in names(lst_ggp)){
+      if(!is.null(subtitle)){
+        lst_ggp[[b]]$plot <- lst_ggp[[b]]$plot + labs(subtitle = subtitle)
+      }else{
+        lst_ggp[[b]]$plot <- lst_ggp[[b]]$plot + labs(subtitle = "Variable - Test")
+      }
+    }
+
     return(lst_ggp)
 
   }
@@ -6598,19 +7280,23 @@ getTestKM <- function(model, X_test, Y_test, cutoff, type = "LP", ori_data = TRU
 # PREDICTION - MULTIPLE PATIENTS #
 #### ### ### ### ### ### ### ### #
 
-#' plot_LP.multipleObservations.list
+#' plot_multipleObservations.LP.list
 #'
-#' @description Run the function "plot_LP.multipleObservations" for a list of models. More information
-#' in "?plot_LP.multipleObservations".
+#' @description Run the function "plot_multipleObservations.LP" for a list of models. More information
+#' in "?plot_multipleObservations.LP".
 #'
 #' @param lst_models List of Coxmos models.
-#' @param new_observations Numeric matrix or data.frame. New explanatory variables (raw data). Qualitative
+#' @param observations Numeric matrix or data.frame. New explanatory variables (raw data). Qualitative
 #' variables must be transform into binary variables.
 #' @param error.bar Logical. Show error bar (default: FALSE).
 #' @param onlySig Logical. Compute plot using only significant components (default: TRUE).
 #' @param alpha Numeric. Numerical values are regarded as significant if they fall below the
 #' threshold (default: 0.05).
 #' @param zero.rm Logical. Remove variables equal to 0 (default: TRUE).
+#' @param txt.x.angle Numeric. Angle of X text (default: 0).
+#' @param title Character. Plot title (default: NULL).
+#' @param subtitle Character. Plot subtitle (default: NULL).
+#' @param legend.position Character. Legend position. Must be one of the following: "top", "bottom", "right" or "left (default: "bottom").
 #' @param auto.limits Logical. If "auto.limits" = TRUE, limits are detected automatically (default: TRUE).
 #' @param top Numeric. Show "top" first variables. If top = NULL, all variables are shown (default: NULL).
 #'
@@ -6639,29 +7325,31 @@ getTestKM <- function(model, X_test, Y_test, cutoff, type = "LP", ori_data = TRU
 #' splsdrcox.model <- splsdrcox_penalty(X_train, Y_train, n.comp = 1, penalty = 0.5, x.center = TRUE,
 #' x.scale = TRUE)
 #' lst_models = list("sPLSICOX" = splsicox.model, "sPLSDRCOX" = splsdrcox.model)
-#' plot_LP.multipleObservations.list(lst_models = lst_models, X_test[1:5,])
+#' plot_multipleObservations.LP.list(lst_models = lst_models, X_test[1:5,])
 
-plot_LP.multipleObservations.list <- function(lst_models, new_observations, error.bar = FALSE, onlySig = TRUE,
-                                          alpha = 0.05, zero.rm = TRUE,
+plot_multipleObservations.LP.list <- function(lst_models, observations, error.bar = FALSE, onlySig = TRUE,
+                                          alpha = 0.05, zero.rm = TRUE, txt.x.angle = 0, title = NULL, subtitle = NULL,
+                                          legend.position = "bottom",
                                           auto.limits = TRUE, top = NULL){
 
   #check names in lst_models
   lst_models <- checkModelNames(lst_models)
 
-  lst_plots <- purrr::map(lst_models, ~plot_LP.multipleObservations(model = ., new_observations = new_observations,
+  lst_plots <- purrr::map(lst_models, ~plot_multipleObservations.LP(model = ., observations = observations,
                                                                     error.bar = error.bar, onlySig = onlySig,
                                                                     alpha = alpha, zero.rm = zero.rm,
+                                                                    txt.x.angle = txt.x.angle, legend.position = legend.position,
                                                                     auto.limits = auto.limits, top = top))
 
   return(lst_plots)
 }
 
-#' plot_LP.multipleObservations
+#' plot_multipleObservations.LP
 #'
 #' @description Visualizes the linear predictors for multiple patients based on a given Coxmos model.
 #'
 #' @details
-#' The function `plot_LP.multipleObservations` is designed to visualize the linear predictors for multiple
+#' The function `plot_multipleObservations.LP` is designed to visualize the linear predictors for multiple
 #' patients based on the provided Coxmos model. The function takes into account various parameters to
 #' customize the visualization, such as the significance level, error bars, and the number of top
 #' variables to display.
@@ -6672,13 +7360,17 @@ plot_LP.multipleObservations.list <- function(lst_models, new_observations, erro
 #' produce the desired plots.
 #'
 #' @param model Coxmos model.
-#' @param new_observations Numeric matrix or data.frame. New explanatory variables (raw data). Qualitative
+#' @param observations Numeric matrix or data.frame. New explanatory variables (raw data). Qualitative
 #' variables must be transform into binary variables.
 #' @param error.bar Logical. Show error bar (default: FALSE).
 #' @param onlySig Logical. Compute plot using only significant components (default: TRUE).
 #' @param alpha Numeric. Numerical values are regarded as significant if they fall below the
 #' threshold (default: 0.05).
 #' @param zero.rm Logical. Remove variables equal to 0 (default: TRUE).
+#' @param txt.x.angle Numeric. Angle of X text (default: 0).
+#' @param title Character. Plot title (default: NULL).
+#' @param subtitle Character. Plot subtitle (default: NULL).
+#' @param legend.position Character. Legend position. Must be one of the following: "top", "bottom", "right" or "left (default: "bottom").
 #' @param auto.limits Logical. If "auto.limits" = TRUE, limits are detected automatically (default: TRUE).
 #' @param top Numeric. Show "top" first variables. If top = NULL, all variables are shown (default: NULL).
 #'
@@ -6700,10 +7392,11 @@ plot_LP.multipleObservations.list <- function(lst_models, new_observations, erro
 #' Y_test <- Y_proteomic[-index_train,]
 #' splsicox.model <- splsicox(X_train, Y_train, n.comp = 2, penalty = 0.5, x.center = TRUE,
 #' x.scale = TRUE)
-#' plot_LP.multipleObservations(model = splsicox.model, new_observations = X_test[1:5,])
+#' plot_multipleObservations.LP(model = splsicox.model, observations = X_test[1:5,])
 
-plot_LP.multipleObservations <- function(model, new_observations, error.bar = FALSE, onlySig = TRUE, alpha = 0.05,
-                                     zero.rm = TRUE,
+plot_multipleObservations.LP <- function(model, observations, error.bar = FALSE, onlySig = TRUE, alpha = 0.05,
+                                     zero.rm = TRUE, txt.x.angle = 0, title = NULL, subtitle = NULL,
+                                     legend.position = "bottom",
                                      auto.limits = TRUE, top = NULL){
 
   if(!isa(model,pkg.env$model_class)){
@@ -6714,30 +7407,37 @@ plot_LP.multipleObservations <- function(model, new_observations, error.bar = FA
 
   if(attr(model, "model") %in% pkg.env$pls_methods){
     plot_cox.comparePatients(model = model,
-                             new_data = new_observations,
+                             new_data = observations,
                              error.bar = error.bar,
                              onlySig = onlySig, alpha = alpha,
-                             zero.rm = zero.rm, top = top,
+                             zero.rm = zero.rm, txt.x.angle = txt.x.angle,
+                             title = title, subtitle = subtitle,
+                             legend.position = legend.position, top = top,
                              auto.limits = auto.limits)
   }else if(attr(model, "model") %in% pkg.env$multiblock_methods){
     plot_MB.cox.comparePatients(model = model,
-                                new_data = new_observations,
+                                new_data = observations,
                                 error.bar = error.bar,
                                 onlySig = onlySig, alpha = alpha,
-                                zero.rm = zero.rm, top = top,
+                                zero.rm = zero.rm, txt.x.angle = txt.x.angle,
+                                title = title, subtitle = subtitle,
+                                legend.position = legend.position, top = top,
                                 auto.limits = auto.limits)
   }else{ #classical methods
     plot_classicalcox.comparePatients(model = model,
-                                      new_data = new_observations,
+                                      new_data = observations,
                                       error.bar = error.bar,
                                       onlySig = onlySig, alpha = alpha,
-                                      zero.rm = zero.rm, top = top,
+                                      zero.rm = zero.rm, txt.x.angle = txt.x.angle,
+                                      title = title, subtitle = subtitle,
+                                      legend.position = legend.position, top = top,
                                       auto.limits = auto.limits)
   }
 }
 
 plot_classicalcox.comparePatients <- function(model, new_data, error.bar = FALSE, onlySig = TRUE,
-                                              alpha = 0.05, zero.rm = TRUE,
+                                              alpha = 0.05, zero.rm = TRUE, txt.x.angle = 0, title = NULL, subtitle = NULL,
+                                              legend.position = "bottom",
                                               auto.limits = TRUE, top = NULL){
 
   # norm and fix test data
@@ -6761,7 +7461,9 @@ plot_classicalcox.comparePatients <- function(model, new_data, error.bar = FALSE
     }
   }
 
-  #norm patient
+  # Norm. patient & select model variables
+  new_data <- new_data[,colnames(new_data) %in% colnames(model$X$data), drop=FALSE]
+
   if(!is.null(model$X$x.mean) & !is.null(model$X$x.sd)){
     norm_patient <- scale(new_data, center = model$X$x.mean, scale = model$X$x.sd)
   }else if(!is.null(model$X$x.mean)){
@@ -6847,24 +7549,43 @@ plot_classicalcox.comparePatients <- function(model, new_data, error.bar = FALSE
     ggp2 <- ggp2 + scale_y_continuous(n.breaks = 10, limits = c(-1*auto.limits, auto.limits))
   }
 
-  if(length(unique(lp.new_pat_variable$var))>15){
-    ggp <- ggp + theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
-    ggp2 <- ggp2 + theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
-  }
-
   res_all.plot <- ggp
   res_lp.plot <- ggp2 + xlab(label = "")
 
   ggp <- ggp + guides(fill = "none")
   ggp2 <- ggp2 + ylab(label = "") + xlab(label = "")
 
-  pp <- ggpubr::ggarrange(ggp, ggp2, ncol = 2, widths = c(0.8, 0.2), align = "h")
+  ggp <- ggp + theme(axis.text.x = element_text(angle = txt.x.angle, vjust = 0.5, hjust=1))
+  ggp2 <- ggp2 + theme(axis.text.x = element_text(angle = txt.x.angle, vjust = 0.5, hjust=1))
+  res_all.plot <- res_all.plot + theme(axis.text.x = element_text(angle = txt.x.angle, vjust = 0.5, hjust=1))
+
+  if(is.null(title)){
+    title = "Pseudo-LP per Observations"
+  }
+  if(is.null(subtitle)){
+    subtitle = attr(model, "model")
+  }
+
+  ggp <- ggp + labs(y = "LP", title = title, subtitle = subtitle)
+  ggp2 <- ggp2 + labs(fill = "Observations")
+
+  res_all.plot <- res_all.plot + labs(y = "LP", fill = "Observations", title = title, subtitle = subtitle)
+
+  res_lp.plot <- res_lp.plot + labs(y = "LP", fill = "Observations", title = title, subtitle = subtitle)
+
+  # pp <- ggpubr::ggarrange(ggp, ggp2, ncol = 2, widths = c(0.8, 0.2), align = "h",
+  #                         common.legend = TRUE, legend = legend.position)
+
+  pp <- ggp + ggp2 +
+    plot_layout(ncol = 2, widths = c(0.8, 0.2), guides = "collect") &
+    theme(legend.position = legend.position)
 
   return(list(plot = pp, var.plot = res_all.plot, lp.plot = res_lp.plot, lp = lp.pats, lp.var = lp.new_pat_variable, norm_patients = norm_patient, patients = new_data))
 }
 
 plot_cox.comparePatients <- function(model, new_data, error.bar = FALSE, onlySig = TRUE, alpha = 0.05,
-                                     zero.rm = TRUE,
+                                     zero.rm = TRUE, txt.x.angle = 0, title = NULL, subtitle = NULL,
+                                     legend.position = "bottom",
                                      auto.limits = TRUE, top = NULL){
 
   # norm and fix test data
@@ -6896,7 +7617,9 @@ plot_cox.comparePatients <- function(model, new_data, error.bar = FALSE, onlySig
     }
   }
 
-  #norm patient
+  # Norm. patient & select model variables
+  new_data <- new_data[,colnames(new_data) %in% colnames(model$X$data), drop=FALSE]
+
   if(!is.null(model$X$x.mean) & !is.null(model$X$x.sd)){
     norm_patient <- scale(new_data, center = model$X$x.mean, scale = model$X$x.sd)
   }else if(!is.null(model$X$x.mean)){
@@ -6978,24 +7701,43 @@ plot_cox.comparePatients <- function(model, new_data, error.bar = FALSE, onlySig
     ggp2 <- ggp2 + scale_y_continuous(n.breaks = 10, limits = c(-1*auto.limits, auto.limits))
   }
 
-  if(length(unique(lp.new_pat_variable$var))>15){
-    ggp <- ggp + theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
-    ggp2 <- ggp2 + theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
-  }
-
   res_all.plot <- ggp
   res_lp.plot <- ggp2 + xlab(label = "")
 
   ggp <- ggp + guides(fill = "none")
   ggp2 <- ggp2 + ylab(label = "") + xlab(label = "")
 
-  pp <- ggpubr::ggarrange(ggp, ggp2, ncol = 2, widths = c(0.8, 0.2), align = "h")
+  ggp <- ggp + theme(axis.text.x = element_text(angle = txt.x.angle, vjust = 0.5, hjust=1))
+  ggp2 <- ggp2 + theme(axis.text.x = element_text(angle = txt.x.angle, vjust = 0.5, hjust=1))
+  res_all.plot <- res_all.plot + theme(axis.text.x = element_text(angle = txt.x.angle, vjust = 0.5, hjust=1))
+
+  if(is.null(title)){
+    title = "Pseudo-LP per Observations"
+  }
+  if(is.null(subtitle)){
+    subtitle = attr(model, "model")
+  }
+
+  ggp <- ggp + labs(y = "LP", title = title, subtitle = subtitle)
+  ggp2 <- ggp2 + labs(fill = "Observations")
+
+  res_all.plot <- res_all.plot + labs(y = "LP", fill = "Observations", title = title, subtitle = subtitle)
+
+  res_lp.plot <- res_lp.plot + labs(y = "LP", fill = "Observations", title = title, subtitle = subtitle)
+
+  # pp <- ggpubr::ggarrange(ggp, ggp2, ncol = 2, widths = c(0.8, 0.2), align = "h",
+  #                         common.legend = TRUE, legend = legend.position)
+
+  pp <- ggp + ggp2 +
+    plot_layout(ncol = 2, widths = c(0.8, 0.2), guides = "collect") &
+    theme(legend.position = legend.position)
 
   return(list(plot = pp, var.plot = res_all.plot, lp.plot = res_lp.plot, lp = lp.pats, lp.var = lp.new_pat_variable, norm_patients = norm_patient, patients = new_data))
 }
 
 plot_MB.cox.comparePatients <- function(model, new_data, error.bar = FALSE, onlySig = TRUE, alpha = 0.05,
-                                        zero.rm = TRUE,
+                                        zero.rm = TRUE, txt.x.angle = 0, title = NULL, subtitle = NULL,
+                                        legend.position = "bottom",
                                         auto.limits = TRUE, top = NULL){
 
   # norm and fix test data
@@ -7036,7 +7778,9 @@ plot_MB.cox.comparePatients <- function(model, new_data, error.bar = FALSE, only
       }
     }
 
-    #norm patient
+    # Norm. patient & select model variables
+    new_data[[b]] <- new_data[[b]][,colnames(new_data[[b]]) %in% colnames(model$X$data[[b]]), drop=FALSE]
+
     if(!is.null(model$X$x.mean[[b]]) & !is.null(model$X$x.sd[[b]])){
       norm_patient <- scale(new_data[[b]][,names(model$X$x.mean[[b]])], center = model$X$x.mean[[b]], scale = model$X$x.sd[[b]])
     }else if(!is.null(model$X$x.mean[[b]])){
@@ -7115,18 +7859,36 @@ plot_MB.cox.comparePatients <- function(model, new_data, error.bar = FALSE, only
       ggp2 <- ggp2 + scale_y_continuous(n.breaks = 10, limits = c(-1*auto.limits, auto.limits))
     }
 
-    if(length(unique(lp.new_pat_variable$var))>15){
-      ggp <- ggp + theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
-      ggp2 <- ggp2 + theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
-    }
-
     res_all.plot <- ggp
     res_lp.plot <- ggp2 + xlab(label = "")
 
     ggp <- ggp + guides(fill = "none")
     ggp2 <- ggp2 + ylab(label = "") + xlab(label = "")
 
-    pp <- ggpubr::ggarrange(ggp, ggp2, ncol = 2, widths = c(0.8, 0.2), align = "h")
+    ggp <- ggp + theme(axis.text.x = element_text(angle = txt.x.angle, vjust = 0.5, hjust=1))
+    ggp2 <- ggp2 + theme(axis.text.x = element_text(angle = txt.x.angle, vjust = 0.5, hjust=1))
+    res_all.plot <- res_all.plot + theme(axis.text.x = element_text(angle = txt.x.angle, vjust = 0.5, hjust=1))
+
+    if(is.null(title)){
+      title = "Pseudo-LP per Observations"
+    }
+    if(is.null(subtitle)){
+      subtitle = attr(model, "model")
+    }
+
+    ggp <- ggp + labs(y = "LP", title = title, subtitle = subtitle)
+    ggp2 <- ggp2 + labs(fill = "Observations")
+
+    res_all.plot <- res_all.plot + labs(y = "LP", fill = "Observations", title = title, subtitle = subtitle)
+
+    res_lp.plot <- res_lp.plot + labs(y = "LP", fill = "Observations", title = title, subtitle = subtitle)
+
+    # pp <- ggpubr::ggarrange(ggp, ggp2, ncol = 2, widths = c(0.8, 0.2), align = "h",
+    #                         common.legend = TRUE, legend = legend.position)
+
+    pp <- ggp + ggp2 +
+      plot_layout(ncol = 2, widths = c(0.8, 0.2), guides = "collect") &
+      theme(legend.position = legend.position)
 
     lst_plot[[b]] <- pp
     lst_var.plot[[b]] <- res_all.plot

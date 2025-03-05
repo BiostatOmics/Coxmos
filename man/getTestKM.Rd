@@ -13,7 +13,8 @@ getTestKM(
   ori_data = TRUE,
   BREAKTIME = NULL,
   n.breaks = 20,
-  title = NULL
+  title = NULL,
+  subtitle = NULL
 )
 }
 \arguments{
@@ -43,6 +44,8 @@ If BREAKTIME = NULL, "n.breaks" is used (default: NULL).}
 compute (default: 20).}
 
 \item{title}{Character. Kaplan-Meier plot title (default: NULL).}
+
+\item{subtitle}{Character. Kaplan-Meier plot subtitle (default: NULL).}
 }
 \value{
 Depending on the specified \code{type} parameter, the function returns:

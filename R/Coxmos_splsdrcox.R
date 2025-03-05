@@ -113,7 +113,7 @@
 #'
 #' \code{B.hat}: sPLS beta matrix
 #'
-#' \code{R2}: sPLS R2
+#' \code{R2}: sPLS acumulate R2
 #'
 #' \code{SCR}: sPLS SCR
 #'
@@ -614,7 +614,7 @@ splsdrcox_penalty <- function (X, Y,
 #' @description This function performs cross-validated sparse partial least squares DRCox (sPLS-DRCOX).
 #' The function returns the optimal number of components and the optimal sparsity penalty value based
 #' on cross-validation. The performance could be based on multiple metrics as Area Under the Curve
-#' (AUC), Brier Score or C-Index. Furthermore, the user could establish more than one metric
+#' (AUC), I. Brier Score or C-Index. Furthermore, the user could establish more than one metric
 #' simultaneously.
 #'
 #' @details
@@ -639,7 +639,7 @@ splsdrcox_penalty <- function (X, Y,
 #' useful for in-depth analysis and comparisons.
 #'
 #' The output provides comprehensive insights, including performance metrics for each fold, run, and
-#' hyperparameter combination. Visualization plots like AIC, C-Index, Brier Score, and AUC plots
+#' hyperparameter combination. Visualization plots like AIC, C-Index, I. Brier Score, and AUC plots
 #' further aid in understanding the model's performance across different configurations.
 #'
 #' @param X Numeric matrix or data.frame. Explanatory variables. Qualitative variables must be
@@ -675,9 +675,9 @@ splsdrcox_penalty <- function (X, Y,
 #' @param alpha Numeric. Numerical values are regarded as significant if they fall below the
 #' threshold (default: 0.05).
 #' @param w_AIC Numeric. Weight for AIC evaluator. All weights must sum 1 (default: 0).
-#' @param w_c.index Numeric. Weight for C-Index evaluator. All weights must sum 1 (default: 0).
+#' @param w_C.Index Numeric. Weight for C-Index evaluator. All weights must sum 1 (default: 0).
 #' @param w_AUC Numeric. Weight for AUC evaluator. All weights must sum 1 (default: 1).
-#' @param w_BRIER Numeric. Weight for BRIER SCORE evaluator. All weights must sum 1 (default: 0).
+#' @param w_I.BRIER Numeric. Weight for BRIER SCORE evaluator. All weights must sum 1 (default: 0).
 #' @param times Numeric vector. Time points where the AUC will be evaluated. If NULL, a maximum of
 #' 'max_time_points' points will be selected equally distributed (default: NULL).
 #' @param max_time_points Numeric. Maximum number of time points to use for evaluating the model
@@ -726,8 +726,8 @@ splsdrcox_penalty <- function (X, Y,
 #' \code{opt.nvar}: Optimal number of variables selected by the best_model.
 #'
 #' \code{plot_AIC}: AIC plot by each hyper-parameter.
-#' \code{plot_c_index}: C-Index plot by each hyper-parameter.
-#' \code{plot_BRIER}: Brier Score plot by each hyper-parameter.
+#' \code{plot_C.Index}: C-Index plot by each hyper-parameter.
+#' \code{plot_I.BRIER}: Integrative Brier Score plot by each hyper-parameter.
 #' \code{plot_AUC}: AUC plot by each hyper-parameter.
 #'
 #' \code{class}: Cross-Validated model class.
@@ -760,7 +760,7 @@ cv.splsdrcox_penalty <- function (X, Y,
                           remove_near_zero_variance = TRUE, remove_zero_variance = TRUE, toKeep.zv = NULL,
                           remove_variance_at_fold_level = FALSE,
                           remove_non_significant_models = FALSE, remove_non_significant = FALSE, alpha = 0.05,
-                          w_AIC = 0, w_c.index = 0, w_AUC = 1, w_BRIER = 0, times = NULL,
+                          w_AIC = 0, w_C.Index = 0, w_AUC = 1, w_I.BRIER = 0, times = NULL,
                           max_time_points = 15,
                           MIN_AUC_INCREASE = 0.01, MIN_AUC = 0.8, MIN_COMP_TO_CHECK = 3,
                           pred.attr = "mean", pred.method = "cenROC", fast_mode = FALSE,
@@ -787,7 +787,7 @@ cv.splsdrcox_penalty <- function (X, Y,
   check_min0_less1_variables(params_with_limits)
 
   params_with_limits <- list("MIN_AUC_INCREASE" = MIN_AUC_INCREASE, "MIN_AUC" = MIN_AUC, "alpha" = alpha,
-                             "w_AIC" = w_AIC, "w_c.index" = w_c.index, "w_AUC" = w_AUC, "w_BRIER" = w_BRIER)
+                             "w_AIC" = w_AIC, "w_C.Index" = w_C.Index, "w_AUC" = w_AUC, "w_I.BRIER" = w_I.BRIER)
   check_min0_max1_variables(params_with_limits)
 
   numeric_params <- list("max.ncomp" = max.ncomp,
@@ -831,7 +831,7 @@ cv.splsdrcox_penalty <- function (X, Y,
   X <- lst_check$X
   Y <- lst_check$Y
 
-  check.cv.weights(c(w_AIC, w_c.index, w_BRIER, w_AUC))
+  check.cv.weights(c(w_AIC, w_C.Index, w_I.BRIER, w_AUC))
 
   # if(!pred.method %in% c("risksetROC", "survivalROC", "cenROC", "nsROC", "smoothROCtime_C", "smoothROCtime_I")){
   #   stop_quietly(paste0("pred.method must be one of the following: ", paste0(c("risksetROC", "survivalROC", "cenROC", "nsROC", "smoothROCtime_C", "smoothROCtime_I"), collapse = ", ")))
@@ -917,9 +917,9 @@ cv.splsdrcox_penalty <- function (X, Y,
     t2 <- Sys.time()
     time <- difftime(t2,t1,units = "mins")
     if(return_models){
-      return(cv.splsdrcox_penalty_class(list(best_model_info = NULL, df_results_folds = NULL, df_results_runs = NULL, df_results_comps = NULL, lst_models = comp_model_lst, pred.method = NULL, opt.comp = NULL, opt.penalty = NULL, plot_AIC = NULL, plot_c_index = NULL, plot_BRIER = NULL, plot_AUC = NULL, class = pkg.env$cv.splsdrcox_penalty, lst_train_indexes = lst_train_indexes, lst_test_indexes = lst_test_indexes, time = time)))
+      return(cv.splsdrcox_penalty_class(list(best_model_info = NULL, df_results_folds = NULL, df_results_runs = NULL, df_results_comps = NULL, lst_models = comp_model_lst, pred.method = NULL, opt.comp = NULL, opt.penalty = NULL, plot_AIC = NULL, plot_C.Index = NULL, plot_I.BRIER = NULL, plot_AUC = NULL, class = pkg.env$cv.splsdrcox_penalty, lst_train_indexes = lst_train_indexes, lst_test_indexes = lst_test_indexes, time = time)))
     }else{
-      return(cv.splsdrcox_penalty_class(list(best_model_info = NULL, df_results_folds = NULL, df_results_runs = NULL, df_results_comps = NULL, lst_models = NULL, pred.method = NULL, opt.comp = NULL, opt.penalty = NULL, plot_AIC = NULL, plot_c_index = NULL, plot_BRIER = NULL, plot_AUC = NULL, class = pkg.env$cv.splsdrcox_penalty, lst_train_indexes = lst_train_indexes, lst_test_indexes = lst_test_indexes, time = time)))
+      return(cv.splsdrcox_penalty_class(list(best_model_info = NULL, df_results_folds = NULL, df_results_runs = NULL, df_results_comps = NULL, lst_models = NULL, pred.method = NULL, opt.comp = NULL, opt.penalty = NULL, plot_AIC = NULL, plot_C.Index = NULL, plot_I.BRIER = NULL, plot_AUC = NULL, class = pkg.env$cv.splsdrcox_penalty, lst_train_indexes = lst_train_indexes, lst_test_indexes = lst_test_indexes, time = time)))
     }
   }
 
@@ -937,9 +937,9 @@ cv.splsdrcox_penalty <- function (X, Y,
     t2 <- Sys.time()
     time <- difftime(t2,t1,units = "mins")
     if(return_models){
-      return(cv.splsdrcox_penalty_class(list(best_model_info = NULL, df_results_folds = NULL, df_results_runs = NULL, df_results_comps = NULL, lst_models = comp_model_lst, pred.method = NULL, opt.comp = NULL, opt.penalty = NULL, plot_AIC = NULL, plot_c_index = NULL, plot_BRIER = NULL, plot_AUC = NULL, class = pkg.env$cv.splsdrcox_penalty, lst_train_indexes = lst_train_indexes, lst_test_indexes = lst_test_indexes, time = time)))
+      return(cv.splsdrcox_penalty_class(list(best_model_info = NULL, df_results_folds = NULL, df_results_runs = NULL, df_results_comps = NULL, lst_models = comp_model_lst, pred.method = NULL, opt.comp = NULL, opt.penalty = NULL, plot_AIC = NULL, plot_C.Index = NULL, plot_I.BRIER = NULL, plot_AUC = NULL, class = pkg.env$cv.splsdrcox_penalty, lst_train_indexes = lst_train_indexes, lst_test_indexes = lst_test_indexes, time = time)))
     }else{
-      return(cv.splsdrcox_penalty_class(list(best_model_info = NULL, df_results_folds = NULL, df_results_runs = NULL, df_results_comps = NULL, lst_models = NULL, pred.method = NULL, opt.comp = NULL, opt.penalty = NULL, plot_AIC = NULL, plot_c_index = NULL, plot_BRIER = NULL, plot_AUC = NULL, class = pkg.env$cv.splsdrcox_penalty, lst_train_indexes = lst_train_indexes, lst_test_indexes = lst_test_indexes, time = time)))
+      return(cv.splsdrcox_penalty_class(list(best_model_info = NULL, df_results_folds = NULL, df_results_runs = NULL, df_results_comps = NULL, lst_models = NULL, pred.method = NULL, opt.comp = NULL, opt.penalty = NULL, plot_AIC = NULL, plot_C.Index = NULL, plot_I.BRIER = NULL, plot_AUC = NULL, class = pkg.env$cv.splsdrcox_penalty, lst_train_indexes = lst_train_indexes, lst_test_indexes = lst_test_indexes, time = time)))
     }
   }
 
@@ -969,7 +969,7 @@ cv.splsdrcox_penalty <- function (X, Y,
                                             pred.method = pred.method, pred.attr = pred.attr,
                                             max.ncomp = max.ncomp, penalty.list = penalty.list, n_run = n_run, k_folds = k_folds,
                                             MIN_AUC_INCREASE = MIN_AUC_INCREASE, MIN_AUC = MIN_AUC, MIN_COMP_TO_CHECK = MIN_COMP_TO_CHECK,
-                                            w_BRIER = w_BRIER, method.train = pkg.env$splsdrcox_penalty, PARALLEL = FALSE, verbose = verbose)
+                                            w_I.BRIER = w_I.BRIER, method.train = pkg.env$splsdrcox_penalty, PARALLEL = FALSE, verbose = verbose)
 
     df_results_evals_comp <- lst_df$df_results_evals_comp
     df_results_evals_run <- lst_df$df_results_evals_run
@@ -1027,8 +1027,8 @@ cv.splsdrcox_penalty <- function (X, Y,
   # BEST MODEL #
   #### ### ### #
 
-  df_results_evals_comp <- cv.getScoreFromWeight(df_results_evals_comp, w_AIC, w_c.index, w_BRIER, w_AUC,
-                                                 colname_AIC = "AIC", colname_c_index = "c_index", colname_AUC = "AUC", colname_BRIER = "BRIER")
+  df_results_evals_comp <- cv.getScoreFromWeight(df_results_evals_comp, w_AIC, w_C.Index, w_I.BRIER, w_AUC,
+                                                 colname_AIC = "AIC", colname_c_index = "C.Index", colname_AUC = "AUC", colname_BRIER = "IBS")
 
   if(optimal_comp_flag){
     best_model_info <- df_results_evals_comp[df_results_evals_comp[,"n.comps"]==optimal_comp_index & df_results_evals_comp[,"penalty"]==optimal_eta,, drop = FALSE][1,]
@@ -1041,13 +1041,15 @@ cv.splsdrcox_penalty <- function (X, Y,
   #### ###
   # PLOT #
   #### ###
-  lst_EVAL_PLOTS <- get_EVAL_PLOTS(fast_mode = fast_mode, best_model_info = best_model_info, w_AUC = w_AUC, w_BRIER = w_BRIER, max.ncomp = max.ncomp, penalty.list = penalty.list,
+  class = pkg.env$splsdrcox_penalty
+  lst_EVAL_PLOTS <- get_EVAL_PLOTS(fast_mode = fast_mode, best_model_info = best_model_info, w_AUC = w_AUC, w_I.BRIER = w_I.BRIER, max.ncomp = max.ncomp, penalty.list = penalty.list,
                                    df_results_evals_fold = df_results_evals_fold, df_results_evals_run = df_results_evals_run, df_results_evals_comp = df_results_evals_comp,
-                                   colname_AIC = "AIC", colname_c_index = "c_index", colname_AUC = "AUC", colname_BRIER = "BRIER", x.text = "Component")
+                                   colname_AIC = "AIC", colname_c_index = "C.Index", colname_AUC = "AUC", colname_BRIER = "IBS", x.text = "Component",
+                                   class = class)
 
   ggp_AUC <- lst_EVAL_PLOTS$ggp_AUC
-  ggp_BRIER <- lst_EVAL_PLOTS$ggp_BRIER
-  ggp_c_index <- lst_EVAL_PLOTS$ggp_c_index
+  ggp_IBS <- lst_EVAL_PLOTS$ggp_IBS
+  ggp_C.Index <- lst_EVAL_PLOTS$ggp_C.Index
   ggp_AIC <- lst_EVAL_PLOTS$ggp_AIC
 
   df_results_evals_comp <- lst_EVAL_PLOTS$df_results_evals_comp
@@ -1067,9 +1069,9 @@ cv.splsdrcox_penalty <- function (X, Y,
 
   # invisible(gc())
   if(return_models){
-    return(cv.splsdrcox_penalty_class(list(best_model_info = best_model_info, df_results_folds = df_results_evals_fold, df_results_runs = df_results_evals_run, df_results_comps = df_results_evals_comp, lst_models = comp_model_lst, pred.method = pred.method, opt.comp = best_model_info$n.comps, opt.penalty = best_model_info$penalty, plot_AIC = ggp_AIC, plot_c_index = ggp_c_index, plot_BRIER = ggp_BRIER, plot_AUC = ggp_AUC, class= pkg.env$cv.splsdrcox_penalty, lst_train_indexes = lst_train_indexes, lst_test_indexes = lst_test_indexes, time = time)))
+    return(cv.splsdrcox_penalty_class(list(best_model_info = best_model_info, df_results_folds = df_results_evals_fold, df_results_runs = df_results_evals_run, df_results_comps = df_results_evals_comp, lst_models = comp_model_lst, pred.method = pred.method, opt.comp = best_model_info$n.comps, opt.penalty = best_model_info$penalty, plot_AIC = ggp_AIC, plot_C.Index = ggp_C.Index, plot_I.BRIER = ggp_IBS, plot_AUC = ggp_AUC, class = pkg.env$cv.splsdrcox_penalty, lst_train_indexes = lst_train_indexes, lst_test_indexes = lst_test_indexes, time = time)))
   }else{
-    return(cv.splsdrcox_penalty_class(list(best_model_info = best_model_info, df_results_folds = df_results_evals_fold, df_results_runs = df_results_evals_run, df_results_comps = df_results_evals_comp, lst_models = NULL, pred.method = pred.method, opt.comp = best_model_info$n.comps, opt.penalty = best_model_info$penalty, plot_AIC = ggp_AIC, plot_c_index = ggp_c_index, plot_BRIER = ggp_BRIER, plot_AUC = ggp_AUC, class = pkg.env$cv.splsdrcox_penalty, lst_train_indexes = lst_train_indexes, lst_test_indexes = lst_test_indexes, time = time)))
+    return(cv.splsdrcox_penalty_class(list(best_model_info = best_model_info, df_results_folds = df_results_evals_fold, df_results_runs = df_results_evals_run, df_results_comps = df_results_evals_comp, lst_models = NULL, pred.method = pred.method, opt.comp = best_model_info$n.comps, opt.penalty = best_model_info$penalty, plot_AIC = ggp_AIC, plot_C.Index = ggp_C.Index, plot_I.BRIER = ggp_IBS, plot_AUC = ggp_AUC, class = pkg.env$cv.splsdrcox_penalty, lst_train_indexes = lst_train_indexes, lst_test_indexes = lst_test_indexes, time = time)))
   }
 }
 

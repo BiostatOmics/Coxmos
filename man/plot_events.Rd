@@ -8,8 +8,10 @@ plot_events(
   Y,
   max.breaks = 20,
   roundTo = 0.1,
-  categories = c("Censored", "Death"),
+  categories = c("Censored", "Event"),
   y.text = "Number of observations",
+  decimals = 5,
+  txt.x.angle = 0,
   verbose = FALSE
 )
 }
@@ -28,15 +30,26 @@ non-censored observations (default: c("Censored","Death")).}
 
 \item{y.text}{Character. Y axis title (default: "Number of observations").}
 
+\item{decimals}{Numeric. Number of decimals to use in round times. Must be a value greater or
+equal zero (default = 5).}
+
+\item{txt.x.angle}{Numeric. Angle of the text for the x-axis labels (default: 0).}
+
 \item{verbose}{Logical. If verbose = TRUE, extra messages could be displayed (default: FALSE).}
 }
 \value{
-A list of two elements.
-\code{plot}: Barplot.
-\code{df}: Data.frame used for the plotting.
+A list of 8 elements.
+\code{plot}: Ggplot object for ploting distribution of events per group.
+\code{plot_percent}: Ggplot object for ploting \% of distribution of events per total number of observations.
+\code{plot_percent_class}: Ggplot object for ploting \% of distribution of events relative to group.
+\code{plot_percent_time}: Ggplot object for ploting \% of distribution of events relative to break-time.
+\code{df}: Data.frame used for the plotting corresponding plot.
+\code{df_percent}: Data.frame used for the plotting corresponding plot.
+\code{dd_percent_cat}: Data.frame used for the plotting corresponding plot.
+\code{dd_percent_time}: Data.frame used for the plotting corresponding plot.
 }
 \description{
-Generates a bar plot visualizing the distribution of events over time, categorizing
+Generates multiple bar plots to visualize the distribution of events over time, categorizing
 observations as either censored or non-censored.
 }
 \details{
@@ -59,7 +72,7 @@ distinction between the two categories.
 data("X_proteomic")
 data("Y_proteomic")
 Y_train <- Y_proteomic
-plot_events(Y_train, categories = c("Censored","Death"))
+plot_events(Y_train, categories = c("Censored","Event"))
 }
 \author{
 Pedro Salguero Garcia. Maintainer: pedsalga@upv.edu.es
