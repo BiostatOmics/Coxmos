@@ -37,7 +37,7 @@
 #' @param Y Numeric matrix or data.frame. Response variables. Object must have two columns named as
 #' "time" and "event". For event column, accepted values are: 0/1 or FALSE/TRUE for censored and event
 #' observations.
-#' @param n.comp Numeric. Number of latent components to compute for the (s)PLS model (default: 10).
+#' @param n.comp Numeric. Number of latent components to compute for the (s)PLS model (default: 4).
 #' @param penalty Numeric. Penalty for sPLS-DRCOX. If penalty = 0 no penalty is applied, when
 #' penalty = 1 maximum penalty (no variables are selected) based on 'plsRcox' penalty. Equal or greater
 #' than 1 cannot be selected (default: 0.5).
@@ -672,8 +672,6 @@ splsdrcox_penalty <- function (X, Y,
 #' @param remove_non_significant Logical. If remove_non_significant = TRUE, non-significant
 #' variables/components in final cox model will be removed until all variables are significant by
 #' forward selection (default: FALSE).
-#' @param alpha Numeric. Numerical values are regarded as significant if they fall below the
-#' threshold (default: 0.05).
 #' @param w_AIC Numeric. Weight for AIC evaluator. All weights must sum 1 (default: 0).
 #' @param w_C.Index Numeric. Weight for C-Index evaluator. All weights must sum 1 (default: 0).
 #' @param w_AUC Numeric. Weight for AUC evaluator. All weights must sum 1 (default: 1).

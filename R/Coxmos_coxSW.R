@@ -37,7 +37,8 @@
 #' "time" and "event". For event column, accepted values are: 0/1 or FALSE/TRUE for censored and
 #' event observations.
 #' @param max.variables Numeric. Maximum number of variables you want to keep in the cox model. If
-#' MIN_EPV is not meet, the value will be change automatically (default: 20).
+#' NULL, the number of columns of X matrix is selected. When MIN_EPV is not meet, the value will be
+#' change automatically (default: NULL).
 #' @param BACKWARDS Logical. If BACKWARDS = TRUE, backward strategy is performed (default: TRUE).
 #' @param alpha_ENT Numeric. Maximum P-Value threshold for an ANOVA test when comparing a more complex model to a simpler model that includes a new variable. If the p-value is less than or equal to this threshold, the new variable is considered significantly important and will be added to the model (default: 0.10).
 #' @param alpha_OUT Numeric. Minimum P-Value threshold for an ANOVA test when comparing a simpler model to a more complex model that excludes an existing variable. If the p-value is greater than or equal to this threshold, the existing variable is considered not significantly important and will be removed from the model (default: 0.15).
@@ -123,7 +124,7 @@
 #' coxSW(X, Y, x.center = TRUE, x.scale = TRUE)
 
 coxSW <- function(X, Y,
-                  max.variables = 20, BACKWARDS = TRUE,
+                  max.variables = NULL, BACKWARDS = TRUE,
                   alpha_ENT = 0.1, alpha_OUT = 0.15, toKeep.sw = NULL,
                   initialModel = NULL,
                   x.center = TRUE, x.scale = FALSE,
@@ -143,8 +144,11 @@ coxSW <- function(X, Y,
   params_with_limits <- list("alpha_ENT" = alpha_ENT, "alpha_OUT" = alpha_OUT, "alpha" = alpha)
   check_min0_max1_variables(params_with_limits)
 
-  numeric_params <- list("max.variables" = max.variables,
-                  "MIN_EPV" = MIN_EPV)
+  if(!is.null(max.variables)){
+    numeric_params$max.variables <- max.variables
+  }
+
+  numeric_params <- list("MIN_EPV" = MIN_EPV)
   check_class(numeric_params, class = "numeric")
 
   logical_params <- list("x.center" = x.center, "x.scale" = x.scale,
@@ -195,6 +199,10 @@ coxSW <- function(X, Y,
   variablesDeleted_cvar <- lst_dnzc$variablesDeleted
 
   #### MAX PREDICTORS
+  if(is.null(max.variables)){
+    max.variables <- ncol(X)
+  }
+
   max.variables <- check.ncomp(X, max.variables, verbose = verbose)
   max.variables <- check.maxPredictors(X, Y, MIN_EPV, max.variables, verbose = verbose)
 
@@ -245,7 +253,7 @@ coxSW <- function(X, Y,
     model <- cox(X = Xh[,names(model$coefficients), drop = FALSE], Y = Yh,
                  x.center = x.center, x.scale = x.scale,
                  alpha = alpha, MIN_EPV = MIN_EPV,
-                 remove_near_zero_variance = F, remove_zero_variance = F, remove_non_significant = F,
+                 remove_near_zero_variance = FALSE, remove_zero_variance = FALSE, remove_non_significant = FALSE,
                  returnData = returnData, verbose = verbose)
   }
 

@@ -627,7 +627,7 @@ plot_evaluation <- function(eval_results, evaluation = "AUC", pred.attr = "mean"
   lst_plots <- comboplot.performance2.0(df = eval_results$df,
                                         x.var = ifelse(evaluation=="AUC", "time", "brier_time"),
                                         y.var = evaluation,
-                                        y.lab = ifelse(evaluation=="AUC", "AUC", "IBS"),
+                                        y.lab = ifelse(evaluation=="AUC", "AUC", "Brier Score"),
                                         x.color = "method",
                                         legend_title = legend_title,
                                         y.limit = c(y.min, 1), pred.attr = pred.attr,
@@ -666,7 +666,7 @@ plot_evaluation <- function(eval_results, evaluation = "AUC", pred.attr = "mean"
                                 x.alpha = NULL,
                                 alpha.lab = NULL,
                                 x.lab = "Method",
-                                y.lab = ifelse(evaluation=="AUC", "AUC", "I. Brier Score"),
+                                y.lab = ifelse(evaluation=="AUC", "AUC", "Brier Score"),
                                 fill.lab = NULL,
                                 title = paste0("Method Performance"),
                                 y.limit = NULL,
@@ -1835,7 +1835,7 @@ plot_VAR_eval <- function(lst_BV, EVAL_METHOD = "AUC", dot_size = 3){
 #' @param roundTo Numeric. Value to round time. If roundTo = 0.1, the results will be rounded to the
 #' tenths (default: 0.1).
 #' @param categories Character vector. Vector of length two to name both categories for censored and
-#' non-censored observations (default: c("Censored","Death")).
+#' non-censored observations (default: c("Censored","Event")).
 #' @param y.text Character. Y axis title (default: "Number of observations").
 #' @param decimals Numeric. Number of decimals to use in round times. Must be a value greater or
 #' equal zero (default = 5).
@@ -2161,7 +2161,7 @@ plot_divergent.biplot <- function(X, Y, NAMEVAR1, NAMEVAR2, BREAKTIME, x.text = 
 # PLS PLOTS - Coxmos MODELS #
 #### ### ### ### ### ### ###
 
-#' plot_PLS_Coxmos
+#' plot_sPLS_Coxmos
 #'
 #' @description
 #' Visualizes the Coxmos models based on partial least squares (PLS) or Multi-block PLS approaches.
@@ -2209,10 +2209,10 @@ plot_divergent.biplot <- function(X, Y, NAMEVAR1, NAMEVAR2, BREAKTIME, x.text = 
 #' @param colorReverse Logical. Reverse palette colors (default: FALSE).
 #' @param text.size Numeric. Text size (default: 2).
 #' @param overlaps Numeric. Number of overlaps to show when plotting loading names. Recommended to be the same as top parameter (default: 10).
+#' @param ellipses Logical. If "ellipses" = TRUE, then ellipses are created for factor coloring (default: TRUE).
 #'
 #' @return A list of two elements.
 #' \code{plot}: Score, Loading or Biplot graph in 'ggplot2' format.
-#' \code{outliers}: Data.frame of outliers detected in the plot.
 #'
 #' @author Pedro Salguero Garcia. Maintainer: pedsalga@upv.edu.es
 #'
@@ -2224,11 +2224,11 @@ plot_divergent.biplot <- function(X, Y, NAMEVAR1, NAMEVAR2, BREAKTIME, x.text = 
 #' X <- X_proteomic[,1:50]
 #' Y <- Y_proteomic
 #' splsicox.model <- splsicox(X, Y, n.comp = 2, penalty = 0.5, x.center = TRUE, x.scale = TRUE)
-#' plot_PLS_Coxmos(splsicox.model, comp = c(1,2), mode = "scores")
+#' plot_sPLS_Coxmos(splsicox.model, comp = c(1,2), mode = "scores")
 
-plot_PLS_Coxmos <- function(model, comp = c(1,2), mode = "scores", factor = NULL, legend_title = NULL,
+plot_sPLS_Coxmos <- function(model, comp = c(1,2), mode = "scores", factor = NULL, legend_title = NULL,
                             top = NULL, only_top = FALSE, radius = NULL, names = TRUE, colorReverse = FALSE,
-                            text.size = 2, overlaps = 10){
+                            text.size = 2, overlaps = 10, ellipses = TRUE){
 
   if(!isa(model,pkg.env$model_class)){
     warning("Model must be an object of class Coxmos.")
@@ -2245,7 +2245,7 @@ plot_PLS_Coxmos <- function(model, comp = c(1,2), mode = "scores", factor = NULL
                          top = top, only_top = only_top,
                          radius = radius, names = names,
                          colorReverse = colorReverse, text.size = text.size,
-                         overlaps = overlaps)
+                         overlaps = overlaps, ellipses = ellipses)
 
   }else if(attr(model, "model") %in% pkg.env$multiblock_methods){
     plot_Coxmos.MB.PLS.model(model = model,
@@ -2256,7 +2256,7 @@ plot_PLS_Coxmos <- function(model, comp = c(1,2), mode = "scores", factor = NULL
                             top = top, only_top = only_top,
                             radius = radius, names = names,
                             colorReverse = colorReverse, text.size = text.size,
-                            overlaps = overlaps)
+                            overlaps = overlaps, ellipses = ellipses)
   }else{
     stop("Model must be a PLS Coxmos model.")
   }
@@ -2402,10 +2402,12 @@ plot_pls_1comp <- function(matrix, mode = "loadings", factor_col = NULL, n_top =
 #' @param colorReverse Logical. Reverse palette colors (default: FALSE).
 #' @param text.size Numeric. Text size (default: 2).
 #' @param overlaps Numeric. Number of overlaps to show when plotting loading names (default: 10).
+#' @param ellipses Logical. If "ellipses" = TRUE, then ellipses are created for factor coloring (default: TRUE).
 
 plot_Coxmos.PLS.model <- function(model, comp = c(1,2), mode = "scores", factor = NULL,
                                   legend_title = NULL, top = NULL, only_top = FALSE, radius = NULL,
-                                  names = TRUE, colorReverse = FALSE, text.size = 2, overlaps = 10){
+                                  names = TRUE, colorReverse = FALSE, text.size = 2, overlaps = 10,
+                                  ellipses = TRUE){
 
   MAX_POINTS = 1000
   MAX_LOADINGS = 15
@@ -2463,14 +2465,15 @@ plot_Coxmos.PLS.model <- function(model, comp = c(1,2), mode = "scores", factor 
         r2_1 <- round(aux.model$R2[[comp[1]]], 4)
         r2 <- round(sum(unlist(aux.model$R2)), 4)
         ggp <- ggp + ggtitle(label = bquote(.(txt.expression) ~R^2 == .(r2))) +
-            ylab(label = paste0("comp_",as.character(1), " (", as.character(r2_1*100), " %)"))
+            ylab(label = paste0("Comp. ",as.character(1), " (", as.character(r2_1*100), " %)"))
       }else{
           txt.expression <- paste0("Scores (",attr(aux.model, "model"),")")
           ggp <- ggp + ggtitle(label = bquote(.(txt.expression))) +
-            ylab(label = paste0("comp_",as.character(1)))
+            ylab(label = paste0("Comp. ",as.character(1)))
       }
 
-      return(list(plot = ggp, outliers = NULL))
+      return(ggp)
+      # return(list(plot = ggp, outliers = NULL))
 
     }else{
       df <- as.data.frame(aux.model$X$scores)
@@ -2486,7 +2489,10 @@ plot_Coxmos.PLS.model <- function(model, comp = c(1,2), mode = "scores", factor 
     }
 
     ggp <- ggp + labs(color = legend_title) + theme(legend.position="bottom") + coord_fixed(ratio=1)
-    ggp <- ggp + stat_ellipse(aes(x = df[,comp[1]], y = df[,comp[2]], fill = factor), geom = "polygon", alpha = 0.1, show.legend = FALSE)
+
+    if(ellipses){
+      ggp <- ggp + stat_ellipse(aes(x = df[,comp[1]], y = df[,comp[2]], fill = factor), geom = "polygon", alpha = 0.1, show.legend = FALSE)
+    }
 
     if("R2" %in% names(model)){
       txt.expression <- paste0("Scores (",attr(aux.model, "model"),") - ")
@@ -2498,13 +2504,13 @@ plot_Coxmos.PLS.model <- function(model, comp = c(1,2), mode = "scores", factor 
       r2 <- round(model$R2[length(model$R2)][[1]], 4)
 
       ggp <- ggp + ggtitle(label = bquote(.(txt.expression) ~R^2 == .(r2))) +
-        xlab(label = paste0("comp_",as.character(comp[1]), " (", as.character(r2_1*100), " %)")) +
-        ylab(label = paste0("comp_",as.character(comp[2]), " (", as.character(r2_2*100), " %)"))
+        xlab(label = paste0("Comp. ",as.character(comp[1]), " (", as.character(r2_1*100), " %)")) +
+        ylab(label = paste0("Comp. ",as.character(comp[2]), " (", as.character(r2_2*100), " %)"))
     }else{
       txt.expression <- paste0("Scores (",attr(aux.model, "model"),")")
       ggp <- ggp + ggtitle(label = bquote(.(txt.expression))) +
-        xlab(label = paste0("comp_",as.character(comp[1]))) +
-        ylab(label = paste0("comp_",as.character(comp[2])))
+        xlab(label = paste0("Comp. ",as.character(comp[1]))) +
+        ylab(label = paste0("Comp. ",as.character(comp[2])))
     }
 
     if(requireNamespace("RColorConesa", quietly = TRUE)){
@@ -2533,14 +2539,15 @@ plot_Coxmos.PLS.model <- function(model, comp = c(1,2), mode = "scores", factor 
         r2_1 <- round(aux.model$R2[[comp[1]]], 4)
         r2 <- round(sum(unlist(aux.model$R2)), 4)
         ggp <- ggp + ggtitle(label = bquote(.(txt.expression) ~R^2 == .(r2))) +
-          ylab(label = paste0("comp_",as.character(1), " (", as.character(r2_1*100), " %)"))
+          ylab(label = paste0("Comp. ",as.character(1), " (", as.character(r2_1*100), " %)"))
       }else{
         txt.expression <- paste0("Loadings (",attr(aux.model, "model"),")")
         ggp <- ggp + ggtitle(label = bquote(.(txt.expression))) +
-          ylab(label = paste0("comp_",as.character(1)))
+          ylab(label = paste0("Comp. ",as.character(1)))
       }
 
-      return(list(plot = ggp, outliers = NULL))
+      return(ggp)
+      # return(list(plot = ggp, outliers = NULL))
 
     }else{
       df <- as.data.frame(aux.model$X$loadings)
@@ -2580,23 +2587,23 @@ plot_Coxmos.PLS.model <- function(model, comp = c(1,2), mode = "scores", factor 
 
       if(FLAG_1_COMP){
         ggp <- ggp + ggtitle(label = bquote(.(txt.expression) ~R^2 == .(r2))) +
-          xlab(label = paste0("comp_",as.character(1), " (", as.character(r2_1*100), " %)")) +
-          ylab(label = paste0("comp_",as.character(1), " (", as.character(r2_2*100), " %)"))
+          xlab(label = paste0("Comp. ",as.character(1), " (", as.character(r2_1*100), " %)")) +
+          ylab(label = paste0("Comp. ",as.character(1), " (", as.character(r2_2*100), " %)"))
       }else{
         ggp <- ggp + ggtitle(label = bquote(.(txt.expression) ~R^2 == .(r2))) +
-          xlab(label = paste0("comp_",as.character(comp[1]), " (", as.character(r2_1*100), " %)")) +
-          ylab(label = paste0("comp_",as.character(comp[2]), " (", as.character(r2_2*100), " %)"))
+          xlab(label = paste0("Comp. ",as.character(comp[1]), " (", as.character(r2_1*100), " %)")) +
+          ylab(label = paste0("Comp. ",as.character(comp[2]), " (", as.character(r2_2*100), " %)"))
       }
     }else{
       txt.expression <- paste0("Loadings (",attr(aux.model, "model"),")")
       if(FLAG_1_COMP){
         ggp <- ggp + ggtitle(label = bquote(.(txt.expression))) +
-          xlab(label = paste0("comp_",as.character(1))) +
-          ylab(label = paste0("comp_",as.character(1)))
+          xlab(label = paste0("Comp. ",as.character(1))) +
+          ylab(label = paste0("Comp. ",as.character(1)))
       }else{
         ggp <- ggp + ggtitle(label = bquote(.(txt.expression))) +
-          xlab(label = paste0("comp_",as.character(comp[1]))) +
-          ylab(label = paste0("comp_",as.character(comp[2])))
+          xlab(label = paste0("Comp. ",as.character(comp[1]))) +
+          ylab(label = paste0("Comp. ",as.character(comp[2])))
       }
     }
 
@@ -2641,15 +2648,15 @@ plot_Coxmos.PLS.model <- function(model, comp = c(1,2), mode = "scores", factor 
         r2_1 <- round(aux.model$R2[[comp[1]]], 4)
         r2 <- round(sum(unlist(aux.model$R2)), 4)
         # ggp_loadings <- ggp_loadings + ggtitle(label = bquote(.(txt.expression) ~R^2 == .(r2))) +
-        #   ylab(label = paste0("comp_",as.character(1), " (", as.character(r2_1*100), " %)"))
+        #   ylab(label = paste0("Comp. ",as.character(1), " (", as.character(r2_1*100), " %)"))
         ggp_scores <- ggp_scores + ggtitle(label = bquote(.(txt.expression) ~R^2 == .(r2))) +
-          ylab(label = paste0("comp_",as.character(1), " (", as.character(r2_1*100), " %)"))
+          ylab(label = paste0("Comp. ",as.character(1), " (", as.character(r2_1*100), " %)"))
       }else{
         txt.expression <- paste0("Loadings (",attr(aux.model, "model"),")")
         # ggp_loadings <- ggp_loadings + ggtitle(label = bquote(.(txt.expression))) +
-        #   ylab(label = paste0("comp_",as.character(1)))
+        #   ylab(label = paste0("Comp. ",as.character(1)))
         ggp_scores <- ggp_scores + ggtitle(label = bquote(.(txt.expression))) +
-          ylab(label = paste0("comp_",as.character(1)))
+          ylab(label = paste0("Comp. ",as.character(1)))
       }
 
       # pp <- ggpubr::ggarrange(ggp_scores, ggp_loadings, ncol = 2, widths = c(0.5, 0.5), align = "h")
@@ -2657,7 +2664,8 @@ plot_Coxmos.PLS.model <- function(model, comp = c(1,2), mode = "scores", factor 
       pp <- ggp_scores + ggp_loadings +
         plot_layout(ncol = 2, widths = c(0.5, 0.5), guides = "collect")
 
-      return(list(plot = pp, outliers = NULL))
+      return(pp)
+      # return(list(plot = pp, outliers = NULL))
 
     }else{
       df <- as.data.frame(aux.model$X$scores)
@@ -2668,7 +2676,7 @@ plot_Coxmos.PLS.model <- function(model, comp = c(1,2), mode = "scores", factor 
     }
 
     #scale scores to -1,1
-    df <- norm01(df[,comp])*2-1
+    df[,comp] <- norm01(df[,comp])*2-1
     ggp <- ggplot(as.data.frame(df))
 
     if(nrow(df) > MAX_POINTS){
@@ -2678,8 +2686,10 @@ plot_Coxmos.PLS.model <- function(model, comp = c(1,2), mode = "scores", factor 
     }
 
     ggp <- ggp + labs(color = legend_title) + theme(legend.position="bottom") + coord_fixed(ratio=1)
-    ggp <- ggp + stat_ellipse(aes(x = df[,comp[1]], y = df[,comp[2]], fill = factor), geom = "polygon", alpha = 0.1, show.legend = FALSE)
 
+    if(ellipses){
+      ggp <- ggp + stat_ellipse(aes(x = df[,comp[1]], y = df[,comp[2]], fill = factor), geom = "polygon", alpha = 0.1, show.legend = FALSE)
+    }
     if("R2" %in% names(model)){
       txt.expression <- paste0("Biplot (",attr(aux.model, "model"),") - ")
 
@@ -2692,23 +2702,23 @@ plot_Coxmos.PLS.model <- function(model, comp = c(1,2), mode = "scores", factor 
 
       if(FLAG_1_COMP){
         ggp <- ggp + ggtitle(label = bquote(.(txt.expression) ~R^2 == .(r2))) +
-          xlab(label = paste0("comp_",as.character(1), " (", as.character(r2_1*100), " %)")) +
-          ylab(label = paste0("comp_",as.character(1), " (", as.character(r2_2*100), " %)"))
+          xlab(label = paste0("Comp. ",as.character(1), " (", as.character(r2_1*100), " %)")) +
+          ylab(label = paste0("Comp. ",as.character(1), " (", as.character(r2_2*100), " %)"))
       }else{
         ggp <- ggp + ggtitle(label = bquote(.(txt.expression) ~R^2 == .(r2))) +
-          xlab(label = paste0("comp_",as.character(comp[1]), " (", as.character(r2_1*100), " %)")) +
-          ylab(label = paste0("comp_",as.character(comp[2]), " (", as.character(r2_2*100), " %)"))
+          xlab(label = paste0("Comp. ",as.character(comp[1]), " (", as.character(r2_1*100), " %)")) +
+          ylab(label = paste0("Comp. ",as.character(comp[2]), " (", as.character(r2_2*100), " %)"))
       }
     }else{
       txt.expression <- paste0("Biplot (",attr(aux.model, "model"),")")
       if(FLAG_1_COMP){
         ggp <- ggp + ggtitle(label = bquote(.(txt.expression))) +
-          xlab(label = paste0("comp_",as.character(1))) +
-          ylab(label = paste0("comp_",as.character(1)))
+          xlab(label = paste0("Comp. ",as.character(1))) +
+          ylab(label = paste0("Comp. ",as.character(1)))
       }else{
         ggp <- ggp + ggtitle(label = bquote(.(txt.expression))) +
-          xlab(label = paste0("comp_",as.character(comp[1]))) +
-          ylab(label = paste0("comp_",as.character(comp[2])))
+          xlab(label = paste0("Comp. ",as.character(comp[1]))) +
+          ylab(label = paste0("Comp. ",as.character(comp[2])))
       }
     }
 
@@ -2773,7 +2783,8 @@ plot_Coxmos.PLS.model <- function(model, comp = c(1,2), mode = "scores", factor 
     ggp <- ggp + guides(color=guide_legend(nrow = ceiling(length(levels(factor))/3), byrow = TRUE))
   }
 
-  return(list(plot = ggp, outliers = rownames(subdata_loading)))
+  return(ggp)
+  # return(list(plot = ggp, outliers = rownames(subdata_loading)))
 }
 
 #' plot_Coxmos.MB.PLS.model
@@ -2823,10 +2834,12 @@ plot_Coxmos.PLS.model <- function(model, comp = c(1,2), mode = "scores", factor 
 #' @param colorReverse Logical. Reverse palette colors (default: FALSE).
 #' @param text.size Numeric. Text size (default: 2).
 #' @param overlaps Numeric. Number of overlaps to show when plotting loading names (default: 10).
+#' @param ellipses Logical. If "ellipses" = TRUE, then ellipses are created for factor coloring (default: TRUE).
 
 plot_Coxmos.MB.PLS.model <- function(model, comp = c(1,2), mode = "scores", factor = NULL,
                                      legend_title = NULL, top = NULL, only_top = FALSE, radius = NULL,
-                                     names = TRUE, colorReverse = FALSE, text.size = 2, overlaps = 10){
+                                     names = TRUE, colorReverse = FALSE, text.size = 2, overlaps = 10,
+                                     ellipses = TRUE){
 
   MAX_POINTS = 1000
   MAX_LOADINGS = 15
@@ -2896,14 +2909,16 @@ plot_Coxmos.MB.PLS.model <- function(model, comp = c(1,2), mode = "scores", fact
               r2_1 <- round(aux.model$R2[[comp[1]]], 4)
               r2 <- round(sum(unlist(aux.model$R2)), 4)
               ggp <- ggp + ggtitle(label = bquote(.(txt.expression) ~R^2 == .(r2))) +
-                ylab(label = paste0("comp_",as.character(1), " (", as.character(r2_1*100), " %)"))
+                ylab(label = paste0("Comp. ",as.character(1), " (", as.character(r2_1*100), " %)"))
             }else{
               txt.expression <- paste0("Scores (",attr(aux.model, "model"),")")
               ggp <- ggp + ggtitle(label = bquote(.(txt.expression))) +
-                ylab(label = paste0("comp_",as.character(1)))
+                ylab(label = paste0("Comp. ",as.character(1)))
             }
 
-            return(list(plot = ggp, outliers = NULL))
+            return(ggp)
+            # return(list(plot = ggp, outliers = NULL))
+
           }else{
             df <- as.data.frame(aux.model$list_spls_models[[block]]$X$scores)
           }
@@ -2924,14 +2939,15 @@ plot_Coxmos.MB.PLS.model <- function(model, comp = c(1,2), mode = "scores", fact
               r2_1 <- round(aux.model$R2[[comp[1]]], 4)
               r2 <- round(sum(unlist(aux.model$R2)), 4)
               ggp <- ggp + ggtitle(label = bquote(.(txt.expression) ~R^2 == .(r2))) +
-                ylab(label = paste0("comp_",as.character(1), " (", as.character(r2_1*100), " %)"))
+                ylab(label = paste0("Comp. ",as.character(1), " (", as.character(r2_1*100), " %)"))
             }else{
               txt.expression <- paste0("Scores (",attr(aux.model, "model"),")")
               ggp <- ggp + ggtitle(label = bquote(.(txt.expression))) +
-                ylab(label = paste0("comp_",as.character(1)))
+                ylab(label = paste0("Comp. ",as.character(1)))
             }
 
-            return(list(plot = ggp, outliers = NULL))
+            return(ggp)
+            # return(list(plot = ggp, outliers = NULL))
 
           }else{
             df <- as.data.frame(aux.model$X$scores[[block]])
@@ -2948,7 +2964,10 @@ plot_Coxmos.MB.PLS.model <- function(model, comp = c(1,2), mode = "scores", fact
         }
 
         ggp <- ggp + labs(color = legend_title) + theme(legend.position="bottom") + coord_fixed(ratio=1)
-        ggp <- ggp + stat_ellipse(aes(x = df[,comp[1]], y = df[,comp[2]], fill = factor), geom = "polygon", alpha = 0.1, show.legend = FALSE)
+
+        if(ellipses){
+          ggp <- ggp + stat_ellipse(aes(x = df[,comp[1]], y = df[,comp[2]], fill = factor), geom = "polygon", alpha = 0.1, show.legend = FALSE)
+        }
 
         if("R2" %in% names(model)){
           txt.expression <- paste0("Scores (",attr(aux.model, "model"),") - ", block, " - ")
@@ -2962,12 +2981,12 @@ plot_Coxmos.MB.PLS.model <- function(model, comp = c(1,2), mode = "scores", fact
 
           if(FLAG_1_COMP){
           ggp <- ggp + ggtitle(label = bquote(.(txt.expression) ~R^2 == .(r2))) +
-            xlab(label = paste0("comp_",as.character(1), " (", as.character(r2_1*100), " %)")) +
-            ylab(label = paste0("comp_",as.character(1), " (", as.character(r2_2*100), " %)"))
+            xlab(label = paste0("Comp. ",as.character(1), " (", as.character(r2_1*100), " %)")) +
+            ylab(label = paste0("Comp. ",as.character(1), " (", as.character(r2_2*100), " %)"))
           }else{
             ggp <- ggp + ggtitle(label = bquote(.(txt.expression) ~R^2 == .(r2))) +
-              xlab(label = paste0("comp_",as.character(comp[1]), " (", as.character(r2_1*100), " %)")) +
-              ylab(label = paste0("comp_",as.character(comp[2]), " (", as.character(r2_2*100), " %)"))
+              xlab(label = paste0("Comp. ",as.character(comp[1]), " (", as.character(r2_1*100), " %)")) +
+              ylab(label = paste0("Comp. ",as.character(comp[2]), " (", as.character(r2_2*100), " %)"))
           }
 
         }else{
@@ -2975,12 +2994,12 @@ plot_Coxmos.MB.PLS.model <- function(model, comp = c(1,2), mode = "scores", fact
 
           if(FLAG_1_COMP){
             ggp <- ggp + ggtitle(label = bquote(.(txt.expression))) +
-              xlab(label = paste0("comp_",as.character(1))) +
-              ylab(label = paste0("comp_",as.character(1)))
+              xlab(label = paste0("Comp. ",as.character(1))) +
+              ylab(label = paste0("Comp. ",as.character(1)))
           }else{
             ggp <- ggp + ggtitle(label = bquote(.(txt.expression))) +
-              xlab(label = paste0("comp_",as.character(comp[1]))) +
-              ylab(label = paste0("comp_",as.character(comp[2])))
+              xlab(label = paste0("Comp. ",as.character(comp[1]))) +
+              ylab(label = paste0("Comp. ",as.character(comp[2])))
           }
 
         }
@@ -3012,14 +3031,16 @@ plot_Coxmos.MB.PLS.model <- function(model, comp = c(1,2), mode = "scores", fact
               r2_1 <- round(aux.model$R2[[comp[1]]], 4)
               r2 <- round(sum(unlist(aux.model$R2)), 4)
               ggp <- ggp + ggtitle(label = bquote(.(txt.expression) ~R^2 == .(r2))) +
-                ylab(label = paste0("comp_",as.character(1), " (", as.character(r2_1*100), " %)"))
+                ylab(label = paste0("Comp. ",as.character(1), " (", as.character(r2_1*100), " %)"))
             }else{
               txt.expression <- paste0("Loadings (",attr(aux.model, "model"),")")
               ggp <- ggp + ggtitle(label = bquote(.(txt.expression))) +
-                ylab(label = paste0("comp_",as.character(1)))
+                ylab(label = paste0("Comp. ",as.character(1)))
             }
 
-            return(list(plot = ggp, outliers = NULL))
+            return(ggp)
+            # return(list(plot = ggp, outliers = NULL))
+
           }else{
             df <- as.data.frame(aux.model$list_spls_models[[block]]$X$loadings)
           }
@@ -3039,14 +3060,15 @@ plot_Coxmos.MB.PLS.model <- function(model, comp = c(1,2), mode = "scores", fact
               r2_1 <- round(aux.model$R2[[comp[1]]], 4)
               r2 <- round(sum(unlist(aux.model$R2)), 4)
               ggp <- ggp + ggtitle(label = bquote(.(txt.expression) ~R^2 == .(r2))) +
-                ylab(label = paste0("comp_",as.character(1), " (", as.character(r2_1*100), " %)"))
+                ylab(label = paste0("Comp. ",as.character(1), " (", as.character(r2_1*100), " %)"))
             }else{
               txt.expression <- paste0("Loadings (",attr(aux.model, "model"),")")
               ggp <- ggp + ggtitle(label = bquote(.(txt.expression))) +
-                ylab(label = paste0("comp_",as.character(1)))
+                ylab(label = paste0("Comp. ",as.character(1)))
             }
 
-            return(list(plot = ggp, outliers = NULL))
+            return(ggp)
+            # return(list(plot = ggp, outliers = NULL))
 
           }else{
             df <- as.data.frame(aux.model$X$loadings[[block]])
@@ -3090,23 +3112,23 @@ plot_Coxmos.MB.PLS.model <- function(model, comp = c(1,2), mode = "scores", fact
 
           if(FLAG_1_COMP){
             ggp <- ggp + ggtitle(label = bquote(.(txt.expression) ~R^2 == .(r2))) +
-              xlab(label = paste0("comp_",as.character(1), " (", as.character(r2_1*100), " %)")) +
-              ylab(label = paste0("comp_",as.character(1), " (", as.character(r2_2*100), " %)"))
+              xlab(label = paste0("Comp. ",as.character(1), " (", as.character(r2_1*100), " %)")) +
+              ylab(label = paste0("Comp. ",as.character(1), " (", as.character(r2_2*100), " %)"))
           }else{
             ggp <- ggp + ggtitle(label = bquote(.(txt.expression) ~R^2 == .(r2))) +
-              xlab(label = paste0("comp_",as.character(comp[1]), " (", as.character(r2_1*100), " %)")) +
-              ylab(label = paste0("comp_",as.character(comp[2]), " (", as.character(r2_2*100), " %)"))
+              xlab(label = paste0("Comp. ",as.character(comp[1]), " (", as.character(r2_1*100), " %)")) +
+              ylab(label = paste0("Comp. ",as.character(comp[2]), " (", as.character(r2_2*100), " %)"))
           }
         }else{
           txt.expression <- paste0("Loadings (",attr(aux.model, "model"),") - ", block)
           if(FLAG_1_COMP){
             ggp <- ggp + ggtitle(label = bquote(.(txt.expression))) +
-              xlab(label = paste0("comp_",as.character(1))) +
-              ylab(label = paste0("comp_",as.character(1)))
+              xlab(label = paste0("Comp. ",as.character(1))) +
+              ylab(label = paste0("Comp. ",as.character(1)))
           }else{
             ggp <- ggp + ggtitle(label = bquote(.(txt.expression))) +
-              xlab(label = paste0("comp_",as.character(comp[1]))) +
-              ylab(label = paste0("comp_",as.character(comp[2])))
+              xlab(label = paste0("Comp. ",as.character(comp[1]))) +
+              ylab(label = paste0("Comp. ",as.character(comp[2])))
           }
         }
 
@@ -3153,15 +3175,15 @@ plot_Coxmos.MB.PLS.model <- function(model, comp = c(1,2), mode = "scores", fact
               r2_1 <- round(aux.model$R2[[comp[1]]], 4)
               r2 <- round(sum(unlist(aux.model$R2)), 4)
               # ggp_loadings <- ggp_loadings + ggtitle(label = bquote(.(txt.expression) ~R^2 == .(r2))) +
-              #   ylab(label = paste0("comp_",as.character(1), " (", as.character(r2_1*100), " %)"))
+              #   ylab(label = paste0("Comp. ",as.character(1), " (", as.character(r2_1*100), " %)"))
               ggp_scores <- ggp_scores + ggtitle(label = bquote(.(txt.expression) ~R^2 == .(r2))) +
-                ylab(label = paste0("comp_",as.character(1), " (", as.character(r2_1*100), " %)"))
+                ylab(label = paste0("Comp. ",as.character(1), " (", as.character(r2_1*100), " %)"))
             }else{
               txt.expression <- paste0("Loadings (",attr(aux.model, "model"),")")
               # ggp_loadings <- ggp_loadings + ggtitle(label = bquote(.(txt.expression))) +
-              #   ylab(label = paste0("comp_",as.character(1)))
+              #   ylab(label = paste0("Comp. ",as.character(1)))
               ggp_scores <- ggp_scores + ggtitle(label = bquote(.(txt.expression))) +
-                ylab(label = paste0("comp_",as.character(1)))
+                ylab(label = paste0("Comp. ",as.character(1)))
             }
 
             # pp <- ggpubr::ggarrange(ggp_scores, ggp_loadings, ncol = 2, widths = c(0.5, 0.5), align = "h")
@@ -3169,7 +3191,9 @@ plot_Coxmos.MB.PLS.model <- function(model, comp = c(1,2), mode = "scores", fact
             pp <- ggp_scores + ggp_loadings +
               plot_layout(ncol = 2, widths = c(0.5, 0.5), guides = "collect")
 
-            return(list(plot = pp, outliers = NULL))
+            return(pp)
+            # return(list(plot = pp, outliers = NULL))
+
           }else{
             df <- as.data.frame(aux.model$list_spls_models[[block]]$X$scores)
 
@@ -3208,15 +3232,15 @@ plot_Coxmos.MB.PLS.model <- function(model, comp = c(1,2), mode = "scores", fact
               r2_1 <- round(aux.model$R2[[comp[1]]], 4)
               r2 <- round(sum(unlist(aux.model$R2)), 4)
               # ggp_loadings <- ggp_loadings + ggtitle(label = bquote(.(txt.expression) ~R^2 == .(r2))) +
-              #   ylab(label = paste0("comp_",as.character(1), " (", as.character(r2_1*100), " %)"))
+              #   ylab(label = paste0("Comp. ",as.character(1), " (", as.character(r2_1*100), " %)"))
               ggp_scores <- ggp_scores + ggtitle(label = bquote(.(txt.expression) ~R^2 == .(r2))) +
-                ylab(label = paste0("comp_",as.character(1), " (", as.character(r2_1*100), " %)"))
+                ylab(label = paste0("Comp. ",as.character(1), " (", as.character(r2_1*100), " %)"))
             }else{
               txt.expression <- paste0("Loadings (",attr(aux.model, "model"),")")
               # ggp_loadings <- ggp_loadings + ggtitle(label = bquote(.(txt.expression))) +
-              #   ylab(label = paste0("comp_",as.character(1)))
+              #   ylab(label = paste0("Comp. ",as.character(1)))
               ggp_scores <- ggp_scores + ggtitle(label = bquote(.(txt.expression))) +
-                ylab(label = paste0("comp_",as.character(1)))
+                ylab(label = paste0("Comp. ",as.character(1)))
             }
 
             # pp <- ggpubr::ggarrange(ggp_scores, ggp_loadings, ncol = 2, widths = c(0.5, 0.5), align = "h")
@@ -3224,7 +3248,8 @@ plot_Coxmos.MB.PLS.model <- function(model, comp = c(1,2), mode = "scores", fact
             pp <- ggp_scores + ggp_loadings +
               plot_layout(ncol = 2, widths = c(0.5, 0.5), guides = "collect")
 
-            return(list(plot = pp, outliers = NULL))
+            return(pp)
+            # return(list(plot = pp, outliers = NULL))
 
           }else{
             df <- as.data.frame(aux.model$X$scores[[block]])
@@ -3255,7 +3280,10 @@ plot_Coxmos.MB.PLS.model <- function(model, comp = c(1,2), mode = "scores", fact
         }
 
         ggp <- ggp + labs(color = legend_title) + theme(legend.position="bottom") + coord_fixed(ratio=1)
-        ggp <- ggp + stat_ellipse(aes(x = df[,comp[1]], y = df[,comp[2]], fill = factor), geom = "polygon", alpha = 0.1, show.legend = FALSE)
+
+        if(ellipses){
+          ggp <- ggp + stat_ellipse(aes(x = df[,comp[1]], y = df[,comp[2]], fill = factor), geom = "polygon", alpha = 0.1, show.legend = FALSE)
+        }
 
         if("R2" %in% names(model)){
           txt.expression <- paste0("Biplot (",attr(aux.model, "model"),") - ", block, " - ")
@@ -3268,23 +3296,23 @@ plot_Coxmos.MB.PLS.model <- function(model, comp = c(1,2), mode = "scores", fact
 
           if(FLAG_1_COMP){
             ggp <- ggp + ggtitle(label = bquote(.(txt.expression) ~R^2 == .(r2))) +
-              xlab(label = paste0("comp_",as.character(1), " (", as.character(r2_1*100), " %)")) +
-              ylab(label = paste0("comp_",as.character(1), " (", as.character(r2_2*100), " %)"))
+              xlab(label = paste0("Comp. ",as.character(1), " (", as.character(r2_1*100), " %)")) +
+              ylab(label = paste0("Comp. ",as.character(1), " (", as.character(r2_2*100), " %)"))
           }else{
             ggp <- ggp + ggtitle(label = bquote(.(txt.expression) ~R^2 == .(r2))) +
-              xlab(label = paste0("comp_",as.character(comp[1]), " (", as.character(r2_1*100), " %)")) +
-              ylab(label = paste0("comp_",as.character(comp[2]), " (", as.character(r2_2*100), " %)"))
+              xlab(label = paste0("Comp. ",as.character(comp[1]), " (", as.character(r2_1*100), " %)")) +
+              ylab(label = paste0("Comp. ",as.character(comp[2]), " (", as.character(r2_2*100), " %)"))
           }
         }else{
           txt.expression <- paste0("Biplot (",attr(aux.model, "model"),") - ", block)
           if(FLAG_1_COMP){
             ggp <- ggp + ggtitle(label = bquote(.(txt.expression))) +
-              xlab(label = paste0("comp_",as.character(1))) +
-              ylab(label = paste0("comp_",as.character(1)))
+              xlab(label = paste0("Comp. ",as.character(1))) +
+              ylab(label = paste0("Comp. ",as.character(1)))
           }else{
             ggp <- ggp + ggtitle(label = bquote(.(txt.expression))) +
-              xlab(label = paste0("comp_",as.character(comp[1]))) +
-              ylab(label = paste0("comp_",as.character(comp[2])))
+              xlab(label = paste0("Comp. ",as.character(comp[1]))) +
+              ylab(label = paste0("Comp. ",as.character(comp[2])))
           }
         }
 
@@ -3354,7 +3382,8 @@ plot_Coxmos.MB.PLS.model <- function(model, comp = c(1,2), mode = "scores", fact
 
   }
 
-  return(list(plot_block = lst_ggp))
+  return(lst_ggp)
+  # return(list(plot_block = lst_ggp))
 }
 
 #### ### ### ### ### ##
@@ -4209,12 +4238,15 @@ plot_pseudobeta <- function(model, error.bar = TRUE, onlySig = FALSE, alpha = 0.
   if(attr(model, "model") %in% pkg.env$pls_methods){
 
     if(attr(model, "model") %in% pkg.env$splsicox){
-      message("For sPLS-ICOX model, pseudobetas are an approximation as predictions work with a defaction process.")
+      message("For sPLS-ICOX model, pseudobetas are an approximation as predictions are obtained through a deflation process.")
     }
 
     if(onlySig & is.null(selected_variables)){
       rn <- rownames(df.aux)[df.aux$`Pr(>|z|)` <= alpha]
       coefficients <- as.matrix(model$survival_model$fit$coefficients)[rn,,drop = FALSE]
+
+      if(length(coefficients)==0){stop("No coefficients selected.")}
+
       sd <- df.aux[rn,"se(coef)",drop = FALSE]
       W.star <- model$X$W.star[,rn,drop = FALSE]
     }else if(!is.null(selected_variables)){
@@ -4222,6 +4254,9 @@ plot_pseudobeta <- function(model, error.bar = TRUE, onlySig = FALSE, alpha = 0.
       if(any(selected_variables %in% rn)){
         rn <- selected_variables
         coefficients <- as.matrix(model$survival_model$fit$coefficients)[rn,,drop = FALSE]
+
+        if(length(coefficients)==0){stop("No coefficients selected.")}
+
         sd <- df.aux[rn,"se(coef)",drop = FALSE]
         W.star <- model$X$W.star[,rn,drop = FALSE]
       }else{
@@ -4276,13 +4311,16 @@ plot_pseudobeta <- function(model, error.bar = TRUE, onlySig = FALSE, alpha = 0.
   }else if(attr(model, "model") %in% pkg.env$multiblock_methods){
 
     if(attr(model, "model") %in% c(pkg.env$sb.splsicox, pkg.env$isb.splsicox)){
-      message("For iSB.sPLS-ICOX and SB.sPLS-ICOX model, pseudobetas are an approximation as predictions work with a defaction process.")
+      message("For iSB.sPLS-ICOX and SB.sPLS-ICOX model, pseudobetas are an approximation as predictions are obtained through a deflation process.")
     }
 
     # onlySig
     if(onlySig & is.null(selected_variables)){
       rn <- rownames(df.aux)[df.aux$`Pr(>|z|)` <= alpha]
       coefficients <- as.matrix(model$survival_model$fit$coefficients)[rn,,drop = FALSE]
+
+      if(length(coefficients)==0){stop("No coefficients selected.")}
+
       sd <- df.aux[rn,"se(coef)",drop = FALSE]
 
       omics <- unique(unlist(lapply(rn, function(x){strsplit(x, "_")[[1]][[3]]})))
@@ -4306,6 +4344,9 @@ plot_pseudobeta <- function(model, error.bar = TRUE, onlySig = FALSE, alpha = 0.
       if(any(selected_variables %in% rn)){
         rn <- selected_variables
         coefficients <- as.matrix(model$survival_model$fit$coefficients)[rn,,drop = FALSE]
+
+        if(length(coefficients)==0){stop("No coefficients selected.")}
+
         sd <- df.aux[rn,"se(coef)",drop = FALSE]
 
         omics <- unique(unlist(lapply(rn, function(x){strsplit(x, "_")[[1]][[3]]})))
@@ -4329,6 +4370,9 @@ plot_pseudobeta <- function(model, error.bar = TRUE, onlySig = FALSE, alpha = 0.
     # otherwise
     }else{
       coefficients <- as.matrix(model$survival_model$fit$coefficients)
+
+      if(length(coefficients)==0){stop("No coefficients selected.")}
+
       sd <- df.aux[,"se(coef)",drop = FALSE]
       W.star <- list()
       if(attr(model, "model") %in% c(pkg.env$singleblock_methods)){
@@ -4397,8 +4441,10 @@ plot_pseudobeta <- function(model, error.bar = TRUE, onlySig = FALSE, alpha = 0.
     sd.min_MB <- do.call(rbind, sd.min)
     sd.max_MB <- do.call(rbind, sd.max)
 
-    rownames(sd.min_MB) <- rownames(vector_MB)
-    rownames(sd.max_MB) <- rownames(vector_MB)
+    if(!is.null(sd.min_MB)){
+      rownames(sd.min_MB) <- rownames(vector_MB)
+      rownames(sd.max_MB) <- rownames(vector_MB)
+    }
 
     full_MB_plot <- coxweightplot.fromVector.Coxmos(model = model, vector = vector_MB,
                                                     sd.min = sd.min_MB, sd.max = sd.max_MB, auto.limits = auto.limits,

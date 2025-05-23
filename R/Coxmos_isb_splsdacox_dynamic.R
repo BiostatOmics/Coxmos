@@ -385,7 +385,7 @@ isb.splsdacox <- function(X, Y,
 
 cv.isb.splsdacox <- function(X, Y,
                                      max.ncomp = 8, vector = NULL,
-                                     MIN_NVAR = 10, MAX_NVAR = NULL, n.cut_points = 5,
+                                     MIN_NVAR = 1, MAX_NVAR = NULL, n.cut_points = 5,
                                      MIN_AUC_INCREASE = 0.01,
                                      EVAL_METHOD = "AUC",
                                      n_run = 3, k_folds = 10,

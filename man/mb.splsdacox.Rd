@@ -19,7 +19,7 @@ mb.splsdacox(
   remove_near_zero_variance = TRUE,
   remove_zero_variance = TRUE,
   toKeep.zv = NULL,
-  remove_non_significant = TRUE,
+  remove_non_significant = FALSE,
   alpha = 0.05,
   MIN_AUC_INCREASE = 0.01,
   pred.method = "cenROC",
@@ -39,7 +39,7 @@ transform into binary variables.}
 "time" and "event". For event column, accepted values are: 0/1 or FALSE/TRUE for censored and event
 observations.}
 
-\item{n.comp}{Numeric. Number of latent components to compute for the (s)PLS model (default: 10).}
+\item{n.comp}{Numeric. Number of latent components to compute for the (s)PLS model (default: 4).}
 
 \item{vector}{Numeric vector or list. Used for computing best number of variables. As many values as
 components have to be provided. If vector = NULL, an automatic detection is perform (default: NULL). If
@@ -50,10 +50,10 @@ values between 0 and 1. Each value indicates the strength of the relationship to
 two blocks; a value of 0 indicates no relationship, 1 is the maximum value. If NULL, auto-design is computed (default: NULL).}
 
 \item{MIN_NVAR}{Numeric. Minimum range size for computing cut points to select the best number of
-variables to use (default: 10).}
+variables to use (default: 1).}
 
 \item{MAX_NVAR}{Numeric. Maximum range size for computing cut points to select the best number of
-variables to use (default: 1000).}
+variables to use (default: NULL).}
 
 \item{n.cut_points}{Numeric. Number of cut points for searching the optimal number of variables.
 If only two cut points are selected, minimum and maximum size are used. For MB approaches as many

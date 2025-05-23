@@ -28,7 +28,7 @@
 #' @param Y Numeric matrix or data.frame. Response variables. Object must have two columns named as
 #' "time" and "event". For event column, accepted values are: 0/1 or FALSE/TRUE for censored and event
 #' observations.
-#' @param n.comp Numeric. Number of latent components to compute for the (s)PLS model (default: 10).
+#' @param n.comp Numeric. Number of latent components to compute for the (s)PLS model (default: 4).
 #' @param vector Numeric vector or list. Used for computing best number of variables. As many values as
 #' components have to be provided. If vector = NULL, an automatic detection is perform (default: NULL). If
 #' vector is a list, must be named as the names of X param followed by the number of variables to select.
@@ -36,9 +36,9 @@
 #' values between 0 and 1. Each value indicates the strength of the relationship to be modeled between
 #' two blocks; a value of 0 indicates no relationship, 1 is the maximum value. If NULL, auto-design is computed (default: NULL).
 #' @param MIN_NVAR Numeric. Minimum range size for computing cut points to select the best number of
-#' variables to use (default: 10).
+#' variables to use (default: 1).
 #' @param MAX_NVAR Numeric. Maximum range size for computing cut points to select the best number of
-#' variables to use (default: 1000).
+#' variables to use (default: NULL).
 #' @param n.cut_points Numeric. Number of cut points for searching the optimal number of variables.
 #' If only two cut points are selected, minimum and maximum size are used. For MB approaches as many
 #' as n.cut_points^n.blocks models will be computed as minimum (default: 5).
@@ -159,7 +159,7 @@ mb.splsdacox <- function (X, Y,
                           MIN_NVAR = 1, MAX_NVAR = NULL, n.cut_points = 5, EVAL_METHOD = "AUC",
                           x.center = TRUE, x.scale = FALSE,
                           remove_near_zero_variance = TRUE, remove_zero_variance = TRUE, toKeep.zv = NULL,
-                          remove_non_significant = TRUE, alpha = 0.05,
+                          remove_non_significant = FALSE, alpha = 0.05,
                           MIN_AUC_INCREASE = 0.01, pred.method = "cenROC", max.iter = 200,
                           times = NULL, max_time_points = 15,
                           MIN_EPV = 5, returnData = TRUE, verbose = FALSE){
@@ -626,9 +626,9 @@ mb.splsdacox <- function (X, Y,
 #' values between 0 and 1. Each value indicates the strength of the relationship to be modeled between
 #' two blocks; a value of 0 indicates no relationship, 1 is the maximum value. If NULL, auto-design is computed (default: NULL).
 #' @param MIN_NVAR Numeric. Minimum range size for computing cut points to select the best number of
-#' variables to use (default: 10).
+#' variables to use (default: 1).
 #' @param MAX_NVAR Numeric. Maximum range size for computing cut points to select the best number of
-#' variables to use (default: 1000).
+#' variables to use (default: NULL).
 #' @param n.cut_points Numeric. Number of cut points for searching the optimal number of variables.
 #' If only two cut points are selected, minimum and maximum size are used (default: 5).
 #' @param EVAL_METHOD Character. The selected metric will be use to compute the best
@@ -741,7 +741,7 @@ mb.splsdacox <- function (X, Y,
 
 cv.mb.splsdacox <- function(X, Y,
                             max.ncomp = 8, vector = NULL, design = NULL,
-                            MIN_NVAR = 10, MAX_NVAR = NULL, n.cut_points = 5, EVAL_METHOD = "AUC",
+                            MIN_NVAR = 1, MAX_NVAR = NULL, n.cut_points = 5, EVAL_METHOD = "AUC",
                             n_run = 3, k_folds = 10,
                             x.center = TRUE, x.scale = FALSE,
                             remove_near_zero_variance = TRUE, remove_zero_variance = TRUE, toKeep.zv = NULL,

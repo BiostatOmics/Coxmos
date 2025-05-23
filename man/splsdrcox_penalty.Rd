@@ -46,7 +46,7 @@ transform into binary variables.}
 "time" and "event". For event column, accepted values are: 0/1 or FALSE/TRUE for censored and event
 observations.}
 
-\item{n.comp}{Numeric. Number of latent components to compute for the (s)PLS model (default: 10).}
+\item{n.comp}{Numeric. Number of latent components to compute for the (s)PLS model (default: 4).}
 
 \item{penalty}{Numeric. Penalty for sPLS-DRCOX. If penalty = 0 no penalty is applied, when
 penalty = 1 maximum penalty (no variables are selected) based on 'plsRcox' penalty. Equal or greater

@@ -16,7 +16,8 @@ plot_Coxmos.PLS.model(
   names = TRUE,
   colorReverse = FALSE,
   text.size = 2,
-  overlaps = 10
+  overlaps = 10,
+  ellipses = TRUE
 )
 }
 \arguments{
@@ -48,6 +49,8 @@ radius size (default: TRUE).}
 \item{text.size}{Numeric. Text size (default: 2).}
 
 \item{overlaps}{Numeric. Number of overlaps to show when plotting loading names (default: 10).}
+
+\item{ellipses}{Logical. If "ellipses" = TRUE, then ellipses are created for factor coloring (default: TRUE).}
 }
 \description{
 Visualizes the Coxmos model using partial least squares (PLS) approach. This function offers

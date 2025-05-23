@@ -45,7 +45,7 @@
 #' @param Y Numeric matrix or data.frame. Response variables. Object must have two columns named as
 #' "time" and "event". For event column, accepted values are: 0/1 or FALSE/TRUE for censored and
 #' event observations.
-#' @param n.comp Numeric. Number of latent components to compute for the (s)PLS model (default: 10).
+#' @param n.comp Numeric. Number of latent components to compute for the (s)PLS model (default: 4).
 #' @param penalty Numeric. Penalty for sPLS-DRCOX. If penalty = 0 no penalty is applied, when
 #' penalty = 1 maximum penalty (no variables are selected) based on 'plsRcox' penalty. Equal or greater
 #' than 1 cannot be selected (default: 0.5).

@@ -8,7 +8,7 @@ splsicox(
   X,
   Y,
   n.comp = 4,
-  penalty = 0,
+  penalty = 0.5,
   x.center = TRUE,
   x.scale = FALSE,
   remove_near_zero_variance = TRUE,
@@ -29,11 +29,11 @@ transform into binary variables.}
 "time" and "event". For event column, accepted values are: 0/1 or FALSE/TRUE for censored and
 event observations.}
 
-\item{n.comp}{Numeric. Number of latent components to compute for the (s)PLS model (default: 10).}
+\item{n.comp}{Numeric. Number of latent components to compute for the (s)PLS model (default: 4).}
 
 \item{penalty}{Numeric. Penalty for variable selection for the individual cox models. Variables
 with a lower P-Value than 1 - "penalty" in the individual cox analysis will be keep for the
-sPLS-ICOX approach (default: 0).}
+sPLS-ICOX approach (default: 0.5).}
 
 \item{x.center}{Logical. If x.center = TRUE, X matrix is centered to zero means (default: TRUE).}
 

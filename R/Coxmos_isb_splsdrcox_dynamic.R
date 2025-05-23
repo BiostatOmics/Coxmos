@@ -322,9 +322,9 @@ isb.splsdrcox <- function(X, Y,
 #' @param vector Numeric vector. Used for computing best number of variables. As many values as
 #' components have to be provided. If vector = NULL, an automatic detection is perform (default: NULL).
 #' @param MIN_NVAR Numeric. Minimum range size for computing cut points to select the best number of
-#' variables to use (default: 10).
+#' variables to use (default: 1).
 #' @param MAX_NVAR Numeric. Maximum range size for computing cut points to select the best number of
-#' variables to use (default: 1000).
+#' variables to use (default: NULL).
 #' @param n.cut_points Numeric. Number of cut points for searching the optimal number of variables.
 #' If only two cut points are selected, minimum and maximum size are used. For MB approaches as many
 #' as n.cut_points^n.blocks models will be computed as minimum (default: 5).
@@ -423,7 +423,7 @@ isb.splsdrcox <- function(X, Y,
 
 cv.isb.splsdrcox <- function(X, Y,
                              max.ncomp = 8, vector = NULL,
-                             MIN_NVAR = 10, MAX_NVAR = NULL, n.cut_points = 5,
+                             MIN_NVAR = 1, MAX_NVAR = NULL, n.cut_points = 5,
                              MIN_AUC_INCREASE = 0.01,
                              EVAL_METHOD = "AUC",
                              n_run = 3, k_folds = 10,

@@ -9,7 +9,7 @@ sb.splsdacox(
   Y,
   n.comp = 4,
   vector = NULL,
-  MIN_NVAR = 10,
+  MIN_NVAR = 1,
   MAX_NVAR = NULL,
   n.cut_points = 5,
   MIN_AUC_INCREASE = 0.01,
@@ -38,16 +38,16 @@ transform into binary variables.}
 "time" and "event". For event column, accepted values are: 0/1 or FALSE/TRUE for censored and
 event observations.}
 
-\item{n.comp}{Numeric. Number of latent components to compute for the (s)PLS model (default: 10).}
+\item{n.comp}{Numeric. Number of latent components to compute for the (s)PLS model (default: 4).}
 
 \item{vector}{Numeric vector. Used for computing best number of variables. As many values as
 components have to be provided. If vector = NULL, an automatic detection is perform (default: NULL).}
 
 \item{MIN_NVAR}{Numeric. Minimum range size for computing cut points to select the best number of
-variables to use (default: 10).}
+variables to use (default: 1).}
 
 \item{MAX_NVAR}{Numeric. Maximum range size for computing cut points to select the best number of
-variables to use (default: 1000).}
+variables to use (default: NULL).}
 
 \item{n.cut_points}{Numeric. Number of cut points for searching the optimal number of variables.
 If only two cut points are selected, minimum and maximum size are used. For MB approaches as many

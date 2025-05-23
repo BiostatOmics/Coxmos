@@ -9,7 +9,7 @@ cv.sb.splsdrcox(
   Y,
   max.ncomp = 8,
   vector = NULL,
-  MIN_NVAR = 10,
+  MIN_NVAR = 1,
   MAX_NVAR = NULL,
   n.cut_points = 5,
   MIN_AUC_INCREASE = 0.01,
@@ -60,10 +60,10 @@ event observations.}
 components have to be provided. If vector = NULL, an automatic detection is perform (default: NULL).}
 
 \item{MIN_NVAR}{Numeric. Minimum range size for computing cut points to select the best number of
-variables to use (default: 10).}
+variables to use (default: 1).}
 
 \item{MAX_NVAR}{Numeric. Maximum range size for computing cut points to select the best number of
-variables to use (default: 1000).}
+variables to use (default: NULL).}
 
 \item{n.cut_points}{Numeric. Number of cut points for searching the optimal number of variables.
 If only two cut points are selected, minimum and maximum size are used. For MB approaches as many

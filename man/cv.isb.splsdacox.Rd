@@ -9,7 +9,7 @@ cv.isb.splsdacox(
   Y,
   max.ncomp = 8,
   vector = NULL,
-  MIN_NVAR = 10,
+  MIN_NVAR = 1,
   MAX_NVAR = NULL,
   n.cut_points = 5,
   MIN_AUC_INCREASE = 0.01,

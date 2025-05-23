@@ -533,7 +533,7 @@ coxEN <- function(X, Y,
 #' event observations.
 #' @param EN.alpha.list Numeric vector. Elastic net mixing parameter values to test in cross
 #' validation. EN.alpha = 1 is the lasso penalty, and EN.alpha = 0 the ridge penalty
-#' (default: seq(0,1,0.1)).
+#' (default: seq(0,1,0.2)).
 #' @param max.variables Numeric. Maximum number of variables you want to keep in the cox model. If
 #' NULL, the number of columns of X matrix is selected. When MIN_EPV is not meet, the value will be
 #' change automatically (default: NULL).
@@ -638,7 +638,7 @@ coxEN <- function(X, Y,
 #' x.center = TRUE, x.scale = TRUE)
 
 cv.coxEN <- function(X, Y,
-                     EN.alpha.list = seq(0,1,0.1),
+                     EN.alpha.list = seq(0,1,0.2),
                      max.variables = NULL,
                      n_run = 3, k_folds = 10,
                      x.center = TRUE, x.scale = FALSE,

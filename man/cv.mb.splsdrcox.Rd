@@ -10,7 +10,7 @@ cv.mb.splsdrcox(
   max.ncomp = 8,
   vector = NULL,
   design = NULL,
-  MIN_NVAR = 10,
+  MIN_NVAR = 1,
   MAX_NVAR = NULL,
   n.cut_points = 5,
   EVAL_METHOD = "AUC",
@@ -66,10 +66,10 @@ values between 0 and 1. Each value indicates the strength of the relationship to
 two blocks; a value of 0 indicates no relationship, 1 is the maximum value. If NULL, auto-design is computed (default: NULL).}
 
 \item{MIN_NVAR}{Numeric. Minimum range size for computing cut points to select the best number of
-variables to use (default: 10).}
+variables to use (default: 1).}
 
 \item{MAX_NVAR}{Numeric. Maximum range size for computing cut points to select the best number of
-variables to use (default: 1000).}
+variables to use (default: NULL).}
 
 \item{n.cut_points}{Numeric. Number of cut points for searching the optimal number of variables.
 If only two cut points are selected, minimum and maximum size are used. For MB approaches as many

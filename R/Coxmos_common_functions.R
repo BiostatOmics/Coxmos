@@ -1,4 +1,4 @@
-#' @importFrom caret nearZeroVar createFolds
+#' @importFrom caret nearZeroVar createFolds createDataPartition
 #' @importFrom cowplot plot_grid
 #' @import furrr
 #' @importFrom future availableCores plan
@@ -8,6 +8,7 @@
 #' @import glmnet
 #' @importFrom grDevices colours
 #' @importFrom MASS ginv
+#' @importFrom methods formalArgs
 #' @import progress
 #' @importFrom mixOmics spls plsda block.spls block.splsda tune.spls
 #' @import purrr
@@ -141,6 +142,112 @@ assign(x = 'IBS', value = c("Integrative Brier Score"), pkg.env)
 
 #assign(x = 'IllegalChars', value = c("`", "*"), pkg.env)
 assign(x = 'IllegalChars', value = c("`"), pkg.env)
+
+#' getTrainTest
+#' @description
+#' Splits input data (X and Y) into training and test sets for survival analysis, ensuring balanced
+#' event distributions. Supports single or multiple splits (repeats) for cross-validation and multiblock
+#' data in X parameter.
+#'
+#' @details
+#' This function uses caret::createDataPartition() to partition the data while preserving the proportion
+#' of events (e.g., deaths) in both training and test sets. It is designed for survival data where Y
+#' must contain an event column (binary: 1=event, 0=censored).
+#'
+#' @param X Numeric matrix, data.frame or list of matrices or data.frames. Predictor variables (features).
+#' Rows are samples, columns are variables.
+#' @param Y Numeric matrix or data.frame. Response variables. Object must have two columns named as
+#' "time" and "event". For event column, accepted values are: 0/1 or FALSE/TRUE for censored and
+#' event observations.
+#' @param p Numeric (0 < p < 1). Proportion of samples to allocate to the training set (default: 0.8).
+#' @param times Integer. Number of splits to perform repeated partitioning (default: 1).
+#' @param seed Integer. Random seed for reproducibility (default: 123).
+#'
+#' @return
+#' - If times = 1: A list with:
+#' - X_train: Training features.
+#' - Y_train: Training survival data.
+#' - X_test: Test features.
+#' - Y_test: Test survival data.
+#' - If times > 1: A named list of length times, each element containing the above structure.
+#'
+#' @author Pedro Salguero Garcia. Maintainer: pedsalga@upv.edu.es
+#'
+#' @export
+#'
+#' @examples
+#' # Single split (80% training, 20% test)
+#' data(X_proteomic, Y_proteomic)
+#' lst <- getTrainTest(X_proteomic, Y_proteomic, p = 0.8)
+#'
+#' # Repeated splits (3x)
+#' lst_repeats <- getTrainTest(X_proteomic, Y_proteomic, p = 0.7, times = 3)
+#'
+#' @seealso \code{\link[caret]{createDataPartition}}
+
+getTrainTest <- function(X, Y, p = 0.8, times = 1, seed = 123){
+
+  set.seed(seed)
+  checkY.colnames(Y)
+
+  index_train <- caret::createDataPartition(Y$event,
+                                            p = p,
+                                            list = FALSE,
+                                            times = times)
+
+  if(times>1){
+    lst_times <- list()
+    for(i in 1:times){
+
+      index_train_aux <- index_train[,i]
+
+      if(all(class(X) %in% "list")){
+        X_train <- list()
+        X_test <- list()
+        for(omic in names(X)){
+          X_train[[omic]] <- as.data.frame(X[[omic]][index_train_aux,,drop=F])
+          X_test[[omic]] <- as.data.frame(X[[omic]][-index_train_aux,,drop=F])
+        }
+      }else{
+        X_train <- as.data.frame(X[index_train_aux,,drop=F])
+        X_test <- as.data.frame(X[-index_train_aux,,drop=F])
+      }
+
+      Y_train <- as.data.frame(Y[index_train_aux,,drop=F])
+      Y_test <- as.data.frame(Y[-index_train_aux,,drop=F])
+
+      lst_times[[i]] <- list(X_train = X_train,
+                             Y_train = Y_train,
+                             X_test = X_test,
+                             Y_test = Y_test)
+    }
+
+    names(lst_times) <- paste0("list_", 1:times)
+    return(lst_times)
+
+  }else{
+
+    if(all(class(X) %in% "list")){
+      X_train <- list()
+      X_test <- list()
+      for(omic in names(X)){
+        X_train[[omic]] <- as.data.frame(X[[omic]][index_train,,drop=F])
+        X_test[[omic]] <- as.data.frame(X[[omic]][-index_train,,drop=F])
+      }
+    }else{
+      X_train <- as.data.frame(X[index_train,,drop=F])
+      X_test <- as.data.frame(X[-index_train,,drop=F])
+    }
+
+    Y_train <- as.data.frame(Y[index_train,,drop=F])
+    Y_test <- as.data.frame(Y[-index_train,,drop=F])
+
+    return(list(X_train = X_train,
+                Y_train = Y_train,
+                X_test = X_test,
+                Y_test = Y_test))
+  }
+}
 
 #' factorToBinary
 #' @description Transforms factor variables within a matrix or data frame into binary dummy variables,
@@ -4101,7 +4208,7 @@ get_Coxmos_models2.0 <- function(method = "sPLS-ICOX",
                                  lst_X_train, lst_Y_train, vector = NULL, design = NULL,
                                  max.ncomp, penalty.list = NULL, EN.alpha.list = NULL, max.variables = 50,
                                  n_run, k_folds,
-                                 MIN_NVAR = 10, MAX_NVAR = NULL, MIN_AUC_INCREASE = 0.01,
+                                 MIN_NVAR = 1, MAX_NVAR = NULL, MIN_AUC_INCREASE = 0.01,
                                  n.cut_points = 5, EVAL_METHOD = "AUC",
                                  x.center, x.scale,
                                  y.center, y.scale,
@@ -5715,7 +5822,7 @@ cox.prediction <- function(model, new_data, time = NULL, type = "lp", method = "
 }
 
 getBestVector2 <- function(Xh, DR_coxph = NULL, Yh, n.comp, max.iter, vector, MIN_AUC_INCREASE,
-                          MIN_NVAR = 10, MAX_NVAR = NULL, cut_points = 5, EVAL_METHOD = "AUC",
+                          MIN_NVAR = 1, MAX_NVAR = NULL, cut_points = 5, EVAL_METHOD = "AUC",
                           EVAL_EVALUATOR = "cenROC", PARALLEL = FALSE, mode = "spls", times = NULL,
                           max_time_points = 15, verbose = FALSE){
 
@@ -5960,7 +6067,7 @@ getBestVector2 <- function(Xh, DR_coxph = NULL, Yh, n.comp, max.iter, vector, MI
 }
 
 getBestVector <- function(Xh, DR_coxph = NULL, Yh, n.comp, max.iter, vector, MIN_AUC_INCREASE,
-                          MIN_NVAR = 10, MAX_NVAR = NULL, cut_points = 5, EVAL_METHOD = "AUC",
+                          MIN_NVAR = 1, MAX_NVAR = NULL, cut_points = 5, EVAL_METHOD = "AUC",
                           EVAL_EVALUATOR = "cenROC", PARALLEL = FALSE, mode = "spls", times = NULL,
                           max_time_points = 15, verbose = FALSE){
 

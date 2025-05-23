@@ -37,10 +37,10 @@
 #' @param Y Numeric matrix or data.frame. Response variables. Object must have two columns named as
 #' "time" and "event". For event column, accepted values are: 0/1 or FALSE/TRUE for censored and
 #' event observations.
-#' @param n.comp Numeric. Number of latent components to compute for the (s)PLS model (default: 10).
+#' @param n.comp Numeric. Number of latent components to compute for the (s)PLS model (default: 4).
 #' @param penalty Numeric. Penalty for variable selection for the individual cox models. Variables
 #' with a lower P-Value than 1 - "penalty" in the individual cox analysis will be keep for the
-#' sPLS-ICOX approach (default: 0).
+#' sPLS-ICOX approach (default: 0.5).
 #' @param x.center Logical. If x.center = TRUE, X matrix is centered to zero means (default: TRUE).
 #' @param x.scale Logical. If x.scale = TRUE, X matrix is scaled to unit variances (default: FALSE).
 #' @param remove_near_zero_variance Logical. If remove_near_zero_variance = TRUE, near zero variance
@@ -127,7 +127,7 @@
 #' splsicox(X, Y, n.comp = 2, penalty = 0.5, x.center = TRUE, x.scale = TRUE)
 
 splsicox <- function(X, Y,
-                     n.comp = 4, penalty = 0,
+                     n.comp = 4, penalty = 0.5,
                      x.center = TRUE, x.scale = FALSE,
                      remove_near_zero_variance = TRUE, remove_zero_variance = FALSE, toKeep.zv = NULL,
                      remove_non_significant = FALSE, alpha = 0.05,

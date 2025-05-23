@@ -26,7 +26,7 @@ event observations.}
 tenths (default: 0.1).}
 
 \item{categories}{Character vector. Vector of length two to name both categories for censored and
-non-censored observations (default: c("Censored","Death")).}
+non-censored observations (default: c("Censored","Event")).}
 
 \item{y.text}{Character. Y axis title (default: "Number of observations").}
 

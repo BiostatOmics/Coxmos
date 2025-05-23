@@ -7,7 +7,7 @@
 coxSW(
   X,
   Y,
-  max.variables = 20,
+  max.variables = NULL,
   BACKWARDS = TRUE,
   alpha_ENT = 0.1,
   alpha_OUT = 0.15,
@@ -34,7 +34,8 @@ transform into binary variables.}
 event observations.}
 
 \item{max.variables}{Numeric. Maximum number of variables you want to keep in the cox model. If
-MIN_EPV is not meet, the value will be change automatically (default: 20).}
+NULL, the number of columns of X matrix is selected. When MIN_EPV is not meet, the value will be
+change automatically (default: NULL).}
 
 \item{BACKWARDS}{Logical. If BACKWARDS = TRUE, backward strategy is performed (default: TRUE).}
 

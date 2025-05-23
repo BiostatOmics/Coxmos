@@ -1,3 +1,21 @@
+# CRAN Submission Comments (2025-XX-XX)
+This resubmission incorporates the following adjustments:
+
+- New 'coxmos()' and 'cv.coxmos()' functions.
+- New 'getTrainTest()' function for splitting data into train and test for single-omic and multi-omic X data.
+- Updated 'coxSW()'. Now the max.variables parameter admits NULL values and it is the default value.
+- Updated default values for all dynamic functions MIN_NVAR = 1 and MAX_NVAR = NULL.
+- Updated EN.alpha.list default value.
+- Updated 'plot_PLS_Coxmos()' function name to 'plot_sPLS_Coxmos()'. 
+- Fixed 'plot_Coxmos.PLS.model()' and 'plot_Coxmos.MB.PLS.modelFurthermore()'. Outlier result was delete as not proportionate outlier information.
+- Fixed 'plot_events()' description.
+- Fixed 'plot_sPLS_Coxmos()' for biplot mode when selecting custom components.
+- Fixed 'plot_evaluation()' for IBS evaluation. Now Y axes show "Brier Score" instead "IBS".
+- Fixed 'plot_multipleObservations.LP()' for MB approaches.
+- Updated 'plot_sPLS_Coxmos()' to add the ellipses parameter, allowing the user to show or hide the ellipses when coloring by factor.
+- Miscellaneous changes in MB.sPLS default parameters.
+- Miscellaneous changes in sPLS plot axis.
+
 # CRAN Submission Comments (2025-03-05)
 This resubmission incorporates the following adjustments:
 

@@ -45,13 +45,13 @@
 #' @param Y Numeric matrix or data.frame. Response variables. Object must have two columns named as
 #' "time" and "event". For event column, accepted values are: 0/1 or FALSE/TRUE for censored and
 #' event observations.
-#' @param n.comp Numeric. Number of latent components to compute for the (s)PLS model (default: 10).
+#' @param n.comp Numeric. Number of latent components to compute for the (s)PLS model (default: 4).
 #' @param vector Numeric vector. Used for computing best number of variables. As many values as
 #' components have to be provided. If vector = NULL, an automatic detection is perform (default: NULL).
 #' @param MIN_NVAR Numeric. Minimum range size for computing cut points to select the best number of
-#' variables to use (default: 10).
+#' variables to use (default: 1).
 #' @param MAX_NVAR Numeric. Maximum range size for computing cut points to select the best number of
-#' variables to use (default: 1000).
+#' variables to use (default: NULL).
 #' @param n.cut_points Numeric. Number of cut points for searching the optimal number of variables.
 #' If only two cut points are selected, minimum and maximum size are used. For MB approaches as many
 #' as n.cut_points^n.blocks models will be computed as minimum (default: 5).
@@ -161,15 +161,15 @@
 #' sb.splsdacox(X_train, Y_train, n.comp = 2, vector = vector, x.center = TRUE, x.scale = TRUE)
 
 sb.splsdacox <- function(X, Y,
-                                  n.comp = 4, vector = NULL,
-                                  MIN_NVAR = 10, MAX_NVAR = NULL, n.cut_points = 5,
-                                  MIN_AUC_INCREASE = 0.01,
-                                  x.center = TRUE, x.scale = FALSE,
-                                  remove_near_zero_variance = TRUE, remove_zero_variance = TRUE, toKeep.zv = NULL,
-                                  remove_non_significant = FALSE, alpha = 0.05,
-                                  EVAL_METHOD = "AUC", pred.method = "cenROC", max.iter = 200,
-                                  times = NULL, max_time_points = 15,
-                                  MIN_EPV = 5, returnData = TRUE, verbose = FALSE){
+                        n.comp = 4, vector = NULL,
+                        MIN_NVAR = 1, MAX_NVAR = NULL, n.cut_points = 5,
+                        MIN_AUC_INCREASE = 0.01,
+                        x.center = TRUE, x.scale = FALSE,
+                        remove_near_zero_variance = TRUE, remove_zero_variance = TRUE, toKeep.zv = NULL,
+                        remove_non_significant = FALSE, alpha = 0.05,
+                        EVAL_METHOD = "AUC", pred.method = "cenROC", max.iter = 200,
+                        times = NULL, max_time_points = 15,
+                        MIN_EPV = 5, returnData = TRUE, verbose = FALSE){
   # tol Numeric. Tolerance for solving: solve(t(P) %*% W) (default: 1e-15).
   tol = 1e-10
 
@@ -433,9 +433,9 @@ sb.splsdacox <- function(X, Y,
 #' @param vector Numeric vector. Used for computing best number of variables. As many values as
 #' components have to be provided. If vector = NULL, an automatic detection is perform (default: NULL).
 #' @param MIN_NVAR Numeric. Minimum range size for computing cut points to select the best number of
-#' variables to use (default: 10).
+#' variables to use (default: 1).
 #' @param MAX_NVAR Numeric. Maximum range size for computing cut points to select the best number of
-#' variables to use (default: 1000).
+#' variables to use (default: NULL).
 #' @param n.cut_points Numeric. Number of cut points for searching the optimal number of variables.
 #' If only two cut points are selected, minimum and maximum size are used. For MB approaches as many
 #' as n.cut_points^n.blocks models will be computed as minimum (default: 5).
@@ -549,22 +549,22 @@ sb.splsdacox <- function(X, Y,
 #' vector = vector, n_run = 1, k_folds = 3, x.center = TRUE, x.scale = TRUE)
 
 cv.sb.splsdacox <- function(X, Y,
-                                    max.ncomp = 8, vector = NULL,
-                                    MIN_NVAR = 10, MAX_NVAR = NULL, n.cut_points = 5,
-                                    MIN_AUC_INCREASE = 0.01,
-                                    EVAL_METHOD = "AUC",
-                                    n_run = 3, k_folds = 10,
-                                    x.center = TRUE, x.scale = FALSE,
-                                    remove_near_zero_variance = TRUE, remove_zero_variance = TRUE, toKeep.zv = NULL,
-                                    remove_variance_at_fold_level = FALSE,
-                                    remove_non_significant_models = FALSE, remove_non_significant = FALSE, alpha = 0.05,
-                                    w_AIC = 0, w_C.Index = 0, w_AUC = 1, w_I.BRIER = 0, times = NULL,
-                                    max_time_points = 15,
-                                    MIN_AUC = 0.8, MIN_COMP_TO_CHECK = 3,
-                                    pred.attr = "mean", pred.method = "cenROC", fast_mode = FALSE,
-                                    max.iter = 200,
-                                    MIN_EPV = 5, return_models = FALSE, returnData = FALSE,
-                                    PARALLEL = FALSE, verbose = FALSE, seed = 123){
+                            max.ncomp = 8, vector = NULL,
+                            MIN_NVAR = 1, MAX_NVAR = NULL, n.cut_points = 5,
+                            MIN_AUC_INCREASE = 0.01,
+                            EVAL_METHOD = "AUC",
+                            n_run = 3, k_folds = 10,
+                            x.center = TRUE, x.scale = FALSE,
+                            remove_near_zero_variance = TRUE, remove_zero_variance = TRUE, toKeep.zv = NULL,
+                            remove_variance_at_fold_level = FALSE,
+                            remove_non_significant_models = FALSE, remove_non_significant = FALSE, alpha = 0.05,
+                            w_AIC = 0, w_C.Index = 0, w_AUC = 1, w_I.BRIER = 0, times = NULL,
+                            max_time_points = 15,
+                            MIN_AUC = 0.8, MIN_COMP_TO_CHECK = 3,
+                            pred.attr = "mean", pred.method = "cenROC", fast_mode = FALSE,
+                            max.iter = 200,
+                            MIN_EPV = 5, return_models = FALSE, returnData = FALSE,
+                            PARALLEL = FALSE, verbose = FALSE, seed = 123){
   # tol Numeric. Tolerance for solving: solve(t(P) %*% W) (default: 1e-15).
   tol = 1e-10
 
