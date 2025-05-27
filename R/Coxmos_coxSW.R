@@ -144,11 +144,11 @@ coxSW <- function(X, Y,
   params_with_limits <- list("alpha_ENT" = alpha_ENT, "alpha_OUT" = alpha_OUT, "alpha" = alpha)
   check_min0_max1_variables(params_with_limits)
 
+  numeric_params <- list("MIN_EPV" = MIN_EPV)
   if(!is.null(max.variables)){
     numeric_params$max.variables <- max.variables
   }
 
-  numeric_params <- list("MIN_EPV" = MIN_EPV)
   check_class(numeric_params, class = "numeric")
 
   logical_params <- list("x.center" = x.center, "x.scale" = x.scale,
