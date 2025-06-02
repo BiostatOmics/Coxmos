@@ -228,11 +228,11 @@ mb.coxmos <- function(method = c("sb.splsicox", "sb.splsdrcox", "sb.splsdrcox_pe
 #' data("Y_multiomic")
 #' set.seed(123)
 #' X_train <- X_multiomic
-#' X_train$mirna <- X_train$mirna[1:50,1:50]
-#' X_train$proteomic <- X_train$proteomic[1:50,1:50]
-#' Y_train <- Y_multiomic[1:50,]
+#' X_train$mirna <- X_train$mirna[1:20,1:30]
+#' X_train$proteomic <- X_train$proteomic[1:20,1:30]
+#' Y_train <- Y_multiomic[1:20,]
 #' cv_mb <- cv.mb.coxmos(method = "sb.splsicox", X = X_train, Y = Y_train,
-#'                      max.ncomp = 2, n_run = 1, k_folds = 5)
+#'                      max.ncomp = 1, n_run = 1, k_folds = 2)
 cv.mb.coxmos <- function(method = c("sb.splsicox", "sb.splsdrcox", "sb.splsdrcox_penalty", "sb.splsdacox",
                                     "isb.splsicox", "isb.splsdrcox", "isb.splsdrcox_penalty", "isb.splsdacox",
                                     "mb.splsdrcox", "mb.splsdacox"),

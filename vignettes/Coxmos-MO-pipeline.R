@@ -460,4 +460,5 @@ LST_KM_TEST_VAR <- getTestKM(model = lst_models$`SB.sPLS-ICOX`,
 
 ## ---- fig.small=T, warning=F--------------------------------------------------
 LST_KM_TEST_VAR$mirna$hsa.minus.miR.minus.491.minus.3p
+LST_KM_TEST_VAR$proteomic$var_5080
 

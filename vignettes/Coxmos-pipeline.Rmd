@@ -715,6 +715,7 @@ ggp.simulated_beta$plot
 Kaplan-Meier (KM) curves are a fundamental tool in survival analysis. They estimate the probability of survival over time and allow visual comparison between different patient groups. When used in conjunction with a risk prediction model, such as the Cox model, KM curves help assess whether the predicted risk groups truly differ in their survival outcomes. Typically, the survival probability is plotted against time, and differences between curves indicate the effectiveness of the model in stratifying risk.
 
 In this context, the `getAutoKM()` and `getAutoKM.list()` functions provide an automated way to generate KM plots from \texttt{Coxmos} models. These functions can be used to analyze the survival curves based on:
+
 - The model’s linear predictor (type = `"LP"`),
 - Specific sPLS components (type = `"COMP"`), or
 - Original variables (type = `"VAR"`).

@@ -440,7 +440,7 @@ isb.splsdacox_model
 
 #### MB.sPLS-DRCOX
 
-To enhance the versatility and performance of our survival analysis methods, we have developed full multi-block survival model by combining the sPLS-DRCOX methodology with the multi-block sPLS functions from the *mixOmics* R package. This allows a full integration for omic by selecting the components to reach the same objective.
+To enhance the versatility and performance of our survival analysis methods, we have developed a full multi-block survival model by combining the sPLS-DRCOX methodology with the multi-block sPLS functions from the *mixOmics* R package.
 
 In the creation of these methods, we utilized an heuristic variable selection approach along with the *mixOmics* algorithms for hyperparameter selection. The penalty is determined based on a vector of the number of variables to test. Users have the flexibility to specify a specific value for selecting a fixed number of variables. Alternatively, by setting the value to `NULL`, the heuristic process automatically selects the optimal number of variables.
 
@@ -458,7 +458,7 @@ cv.mb.splsdrcox_res <- cv.mb.coxmos(method = "mb.splsdrcox",
 cv.mb.splsdrcox_res
 ```
 
-After getting the cross-validation, the full model could be obtain by passing the optimized number of components and the list of the number of variables per omic.
+After getting the cross-validation, the full model could be obtained by providing the optimized number of components and the list of the number of variables per omic.
 
 ```{r}
 mb.splsdrcox_model <- mb.coxmos(method = "mb.splsdrcox", 
@@ -768,6 +768,7 @@ ggp.simulated_beta$mb_plot$plot
 Kaplan-Meier (KM) curves are a fundamental tool in survival analysis. They estimate the probability of survival over time and allow visual comparison between different patient groups. When used in conjunction with a risk prediction model, such as the Cox model, KM curves help assess whether the predicted risk groups truly differ in their survival outcomes. Typically, the survival probability is plotted against time, and differences between curves indicate the effectiveness of the model in stratifying risk.
 
 In this context, the `getAutoKM()` and `getAutoKM.list()` functions provide an automated way to generate KM plots from \texttt{Coxmos} models. These functions can be used to analyze the survival curves based on:
+
 - The model’s linear predictor (type = `"LP"`),
 - Specific sPLS components (type = `"COMP"`), or
 - Original variables (type = `"VAR"`).
@@ -918,7 +919,7 @@ variable_auc_plot_test <- plot_evaluation(variable_auc_results_test, evaluation 
 variable_auc_plot_test$lst_plots$lineplot.mean
 ```
 
-In this example, component 2 outperforms the full linear predictor (LP) model, which may suggest potential overfitting. This occurs when the model captures patterns that are overly specific to the training data and fail to generalize to new observations.  
+In this example, component 2 achieves better performance than the full linear predictor (LP) model, which could indicate possible overfitting. However, it also exhibits a larger standard deviation.
 
 *Note: This vignette uses a toy dataset, and the results should not be interpreted in a biological context.*
 
@@ -1015,7 +1016,9 @@ LST_KM_TEST_VAR <- getTestKM(model = lst_models$`SB.sPLS-ICOX`,
 
 ```{r, fig.small=T, warning=F}
 LST_KM_TEST_VAR$mirna$hsa.minus.miR.minus.491.minus.3p
+LST_KM_TEST_VAR$proteomic$var_5080
 ```
 
-In this case, although the variable was significant in the training data, it shows similar behavior across both groups in the test data.
+In this case, although the variables were significant in the training data, they shows similar behavior across both groups in the test data.
 
+*Note: This vignette uses a toy dataset, and the results should not be interpreted in a biological context.*

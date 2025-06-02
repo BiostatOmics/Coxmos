@@ -98,9 +98,6 @@
 #' X_train <- X_proteomic[index_train,1:50]
 #' Y_train <- Y_proteomic[index_train,]
 #'
-#' # Cox standard model
-#' model_cox <- coxmos(method = "cox", X = X_train, Y = Y_train)
-#'
 #' # Elastic Net Cox
 #' model_en <- coxmos(method = "coxEN", X = X_train, Y = Y_train, EN.alpha = 0.7)
 
