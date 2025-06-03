@@ -1,4 +1,4 @@
-# CRAN Submission Comments (2025-XX-XX)
+# CRAN Submission Comments (2025-06-02)
 This resubmission incorporates the following adjustments:
 
 - New 'coxmos()' and 'cv.coxmos()' functions.
