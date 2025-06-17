@@ -411,19 +411,19 @@ isb.splsicox <- function(X, Y,
 #' n_run = 1, k_folds = 2, x.center = TRUE, x.scale = TRUE)
 
 cv.isb.splsicox <- function(X, Y,
-                                     max.ncomp = 8, penalty.list = seq(0,0.9,0.1),
-                                     n_run = 3, k_folds = 10,
-                                     x.center = TRUE, x.scale = FALSE,
-                                     remove_near_zero_variance = TRUE, remove_zero_variance = TRUE, toKeep.zv = NULL,
-                                     remove_variance_at_fold_level = FALSE,
-                                     remove_non_significant_models = FALSE, remove_non_significant = FALSE,
-                                     alpha = 0.05,
-                                     w_AIC = 0, w_C.Index = 0, w_AUC = 1, w_I.BRIER = 0, times = NULL,
-                                      max_time_points = 15,
-                                      MIN_AUC_INCREASE = 0.01, MIN_AUC = 0.8, MIN_COMP_TO_CHECK = 3,
-                                     pred.attr = "mean", pred.method = "cenROC", fast_mode = FALSE,
-                                     MIN_EPV = 5, return_models = FALSE, returnData = FALSE,
-                                     PARALLEL = FALSE, verbose = FALSE, seed = 123){
+                            max.ncomp = 8, penalty.list = seq(0,0.9,0.1),
+                            n_run = 3, k_folds = 10,
+                            x.center = TRUE, x.scale = FALSE,
+                            remove_near_zero_variance = TRUE, remove_zero_variance = TRUE, toKeep.zv = NULL,
+                            remove_variance_at_fold_level = FALSE,
+                            remove_non_significant_models = FALSE, remove_non_significant = FALSE,
+                            alpha = 0.05,
+                            w_AIC = 0, w_C.Index = 0, w_AUC = 1, w_I.BRIER = 0, times = NULL,
+                            max_time_points = 15,
+                            MIN_AUC_INCREASE = 0.01, MIN_AUC = 0.8, MIN_COMP_TO_CHECK = 3,
+                            pred.attr = "mean", pred.method = "cenROC", fast_mode = FALSE,
+                            MIN_EPV = 5, return_models = FALSE, returnData = FALSE,
+                            PARALLEL = FALSE, verbose = FALSE, seed = 123){
   # tol Numeric. Tolerance for solving: solve(t(P) %*% W) (default: 1e-15).
   tol = 1e-10
 

@@ -293,11 +293,13 @@ factorToBinary <- function(X, all = TRUE, sep = "_"){
   }
 
   binaryMatrix <- NULL
+  lst_cn2dummy <- NULL
   options(na.action='na.pass')
   for(cn in colnames(X)){
     variable <- X[, cn, drop = FALSE]
     colnames(variable) <- cn
     if(isa(variable[,cn], "factor")){
+      lst_cn2dummy <- c(lst_cn2dummy, cn)
       if(all){
         form <- as.formula(paste0("~ ", cn, " + 0"))
         binaryVariable <- model.matrix(form, data=variable)[,1:length(levels(variable[,1])), drop = FALSE]
@@ -321,8 +323,14 @@ factorToBinary <- function(X, all = TRUE, sep = "_"){
     }
   }
 
-  for(cn in colnames(binaryMatrix)){
-    binaryMatrix[,cn] <- as.numeric(binaryMatrix[,cn])
+  # transform into numeric those var to dummy
+  if(length(lst_cn2dummy)>0){
+    for(cn in lst_cn2dummy){
+      idx <- which(startsWith(colnames(binaryMatrix), paste0(cn, sep)))
+      for(i in idx){
+        binaryMatrix[,i] <- as.numeric(binaryMatrix[,i])
+      }
+    }
   }
 
   binaryMatrix <- as.data.frame(binaryMatrix)
@@ -3386,7 +3394,7 @@ get_COX_evaluation_BRIER_sPLS <- function(comp_model_lst,
 
             #classical/sPLS
             if(!isa(X_test, "list")){
-              newdata <- X_test[lst_X_test[[r]][[f]],]
+              newdata <- X_test[lst_X_test[[r]][[f]],,drop=F]
             }else{
               # SB/MO
               newdata <- lapply(X_test, function(x, ind){x[ind,]}, ind = lst_X_test[[r]][[f]])

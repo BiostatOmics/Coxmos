@@ -1,3 +1,9 @@
+# CRAN Submission Comments (2025-06-17)
+This resubmission incorporates the following adjustments:
+
+- Updated 'factorToBinary()' function to deal only with the variables transformed.
+- Fixed 'get_COX_evaluation_BRIER_sPLS()' function to deal with LOO cross-validation.
+
 # CRAN Submission Comments (2025-06-02)
 This resubmission incorporates the following adjustments:
 
