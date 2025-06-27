@@ -2,7 +2,7 @@ Package: Coxmos
 Title: Cox MultiBlock Survival
 Version: 1.1.4
 Authors@R: 
-    c(person("Pedro", "Salguero García", , "pedrosalguerog@gmail.com", role = c("aut", "cre", "rev"),
+    c(person("Pedro", "Salguero", , "pedsalga@upv.edu.es", role = c("aut", "cre", "rev"),
            comment = c(ORCID = "0000-0002-1879-3374")),
     person("Sonia", "Tarazona Campos", , "sotacam@eio.upv.es", role = c("ths")),
     person("Ana", "Conesa Cegarra", , "ana.conesa@csic.es", role = c("ths")),
@@ -11,7 +11,7 @@ Authors@R:
     person("Marta", "Sestelo", , "", role = c("ctb")),
     person("Artur", "Araújo", , "", role = c("ctb"))
     )
-Maintainer: Pedro Salguero García <pedrosalguerog@gmail.com>
+Maintainer: Pedro Salguero <pedsalga@upv.edu.es>
 Description: This software package provides Cox survival analysis for high-dimensional and multiblock datasets. 
              It encompasses a suite of functions dedicated from the classical Cox regression to newest analysis,
              including Cox proportional hazards model, Stepwise Cox regression, and Elastic-Net Cox regression, 
