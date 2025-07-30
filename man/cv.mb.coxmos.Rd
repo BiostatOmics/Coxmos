@@ -169,11 +169,11 @@ data("X_multiomic")
 data("Y_multiomic")
 set.seed(123)
 X_train <- X_multiomic
-X_train$mirna <- X_train$mirna[1:30,1:30]
-X_train$proteomic <- X_train$proteomic[1:30,1:30]
-Y_train <- Y_multiomic[1:30,]
+X_train$mirna <- X_train$mirna[1:20,1:30]
+X_train$proteomic <- X_train$proteomic[1:20,1:30]
+Y_train <- Y_multiomic[1:20,]
 cv_mb <- cv.mb.coxmos(method = "sb.splsicox", X = X_train, Y = Y_train,
-                     max.ncomp = 1, n_run = 1, k_folds = 3)
+                     max.ncomp = 1, n_run = 1, k_folds = 2)
 }
 \seealso{
 \code{\link{cv.sb.splsicox}} for Single-Block SPLS-ICOX cross-validation,

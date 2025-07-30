@@ -2210,6 +2210,7 @@ plot_divergent.biplot <- function(X, Y, NAMEVAR1, NAMEVAR2, BREAKTIME, x.text = 
 #' @param text.size Numeric. Text size (default: 2).
 #' @param overlaps Numeric. Number of overlaps to show when plotting loading names. Recommended to be the same as top parameter (default: 10).
 #' @param ellipses Logical. If "ellipses" = TRUE, then ellipses are created for factor coloring (default: TRUE).
+#' @param scale_loadings Logical. If "scale_loadings" is set to TRUE, then the loadings are also scaled to the `[-1,1]` range specifically for biplot visualization (default: FALSE).
 #'
 #' @return A list of two elements.
 #' \code{plot}: Score, Loading or Biplot graph in 'ggplot2' format.
@@ -2228,7 +2229,7 @@ plot_divergent.biplot <- function(X, Y, NAMEVAR1, NAMEVAR2, BREAKTIME, x.text = 
 
 plot_sPLS_Coxmos <- function(model, comp = c(1,2), mode = "scores", factor = NULL, legend_title = NULL,
                             top = NULL, only_top = FALSE, radius = NULL, names = TRUE, colorReverse = FALSE,
-                            text.size = 2, overlaps = 10, ellipses = TRUE){
+                            text.size = 2, overlaps = 10, ellipses = TRUE, scale_loadings = FALSE){
 
   if(!isa(model,pkg.env$model_class)){
     warning("Model must be an object of class Coxmos.")
@@ -2245,7 +2246,7 @@ plot_sPLS_Coxmos <- function(model, comp = c(1,2), mode = "scores", factor = NUL
                          top = top, only_top = only_top,
                          radius = radius, names = names,
                          colorReverse = colorReverse, text.size = text.size,
-                         overlaps = overlaps, ellipses = ellipses)
+                         overlaps = overlaps, ellipses = ellipses, scale_loadings = scale_loadings)
 
   }else if(attr(model, "model") %in% pkg.env$multiblock_methods){
     plot_Coxmos.MB.PLS.model(model = model,
@@ -2256,7 +2257,7 @@ plot_sPLS_Coxmos <- function(model, comp = c(1,2), mode = "scores", factor = NUL
                             top = top, only_top = only_top,
                             radius = radius, names = names,
                             colorReverse = colorReverse, text.size = text.size,
-                            overlaps = overlaps, ellipses = ellipses)
+                            overlaps = overlaps, ellipses = ellipses, scale_loadings = scale_loadings)
   }else{
     stop("Model must be a PLS Coxmos model.")
   }
@@ -2403,11 +2404,12 @@ plot_pls_1comp <- function(matrix, mode = "loadings", factor_col = NULL, n_top =
 #' @param text.size Numeric. Text size (default: 2).
 #' @param overlaps Numeric. Number of overlaps to show when plotting loading names (default: 10).
 #' @param ellipses Logical. If "ellipses" = TRUE, then ellipses are created for factor coloring (default: TRUE).
+#' @param scale_loadings Logical. If "scale_loadings" is set to TRUE, then the loadings are also scaled to the `[-1,1]` range specifically for biplot visualization (default: FALSE).
 
 plot_Coxmos.PLS.model <- function(model, comp = c(1,2), mode = "scores", factor = NULL,
                                   legend_title = NULL, top = NULL, only_top = FALSE, radius = NULL,
                                   names = TRUE, colorReverse = FALSE, text.size = 2, overlaps = 10,
-                                  ellipses = TRUE){
+                                  ellipses = TRUE, scale_loadings = FALSE){
 
   MAX_POINTS = 1000
   MAX_LOADINGS = 15
@@ -2673,6 +2675,8 @@ plot_Coxmos.PLS.model <- function(model, comp = c(1,2), mode = "scores", factor 
       df_loading <- as.data.frame(aux.model$X$loadings)
       max.loadings <- apply(abs(df_loading), 2, max)
       max.scores <- apply(abs(df), 2, max)
+
+      ratio_sco_loa <- colMeans(df) / colMeans(df_loading)
     }
 
     #scale scores to -1,1
@@ -2733,11 +2737,16 @@ plot_Coxmos.PLS.model <- function(model, comp = c(1,2), mode = "scores", factor 
     }else if(!is.null(top)){
       aux_loadings <- apply(df_loading,1,function(x){sqrt(crossprod(as.numeric(x[comp])))})
       aux_loadings <- aux_loadings[order(aux_loadings, decreasing = TRUE)]
-      subdata_loading <- df_loading[names(aux_loadings)[1:top],]
+      subdata_loading <- df_loading[names(aux_loadings)[1:top],comp,drop=F]
     }else if(!is.null(radius)){
       subdata_loading <- df_loading[apply(df_loading,1,function(x){sqrt(crossprod(as.numeric(x[comp])))>radius}),]
     }else{
       subdata_loading <- NULL
+    }
+
+    if(scale_loadings){
+      #scale loadings to -1,1
+      subdata_loading <- norm01(subdata_loading[,comp,drop=F])*2-1
     }
 
     #depending on DF instead of df_loadings - ARROWS
@@ -2835,11 +2844,12 @@ plot_Coxmos.PLS.model <- function(model, comp = c(1,2), mode = "scores", factor 
 #' @param text.size Numeric. Text size (default: 2).
 #' @param overlaps Numeric. Number of overlaps to show when plotting loading names (default: 10).
 #' @param ellipses Logical. If "ellipses" = TRUE, then ellipses are created for factor coloring (default: TRUE).
+#' @param scale_loadings Logical. If "scale_loadings" is set to TRUE, then the loadings are also scaled to the `[-1,1]` range specifically for biplot visualization (default: FALSE).
 
 plot_Coxmos.MB.PLS.model <- function(model, comp = c(1,2), mode = "scores", factor = NULL,
                                      legend_title = NULL, top = NULL, only_top = FALSE, radius = NULL,
                                      names = TRUE, colorReverse = FALSE, text.size = 2, overlaps = 10,
-                                     ellipses = TRUE){
+                                     ellipses = TRUE, scale_loadings = FALSE){
 
   MAX_POINTS = 1000
   MAX_LOADINGS = 15
@@ -3327,11 +3337,16 @@ plot_Coxmos.MB.PLS.model <- function(model, comp = c(1,2), mode = "scores", fact
         }else if(!is.null(top)){
           aux_loadings <- apply(df_loading,1,function(x){sqrt(crossprod(as.numeric(x[comp])))})
           aux_loadings <- aux_loadings[order(aux_loadings, decreasing = TRUE)]
-          subdata_loading <- df_loading[names(aux_loadings)[1:top],]
+          subdata_loading <- df_loading[names(aux_loadings)[1:top],comp,drop=F]
         }else if(!is.null(radius)){
           subdata_loading <- df_loading[apply(df_loading,1,function(x){sqrt(crossprod(as.numeric(x[comp])))>radius}),]
         }else{
           subdata_loading <- NULL
+        }
+
+        if(scale_loadings){
+          #scale loadings to -1,1
+          subdata_loading <- norm01(subdata_loading[,comp,drop=F])*2-1
         }
 
         #depending on DF instead of df_loadings - ARROWS
