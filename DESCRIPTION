@@ -1,11 +1,10 @@
 Package: Coxmos
 Title: Cox MultiBlock Survival
-Version: 1.1.4
+Version: 1.1.5
 Authors@R: 
     c(person("Pedro", "Salguero", , "pedsalga@upv.edu.es", role = c("aut", "cre", "rev"),
            comment = c(ORCID = "0000-0002-1879-3374")),
     person("Sonia", "Tarazona Campos", , "sotacam@eio.upv.es", role = c("ths")),
-    person("Ana", "Conesa Cegarra", , "ana.conesa@csic.es", role = c("ths")),
     person("Kassu", "Mehari Beyene", , "kasu.beyene@uclouvain.be", role = c("ctb")),
     person("Luis", "Meira Machado", , "", role = c("ctb")),
     person("Marta", "Sestelo", , "", role = c("ctb")),

@@ -1356,7 +1356,7 @@ removeNonSignificativeCox <- function(cox, alpha, cox_input, time.value = NULL, 
 
 getFAST_LP_AUC <- function(fast_mode, comp_index, eta_index = NULL, run, fold, X_test, Y_test,
                            lst_X_test, lst_Y_test, comp_model_lst, times = NULL, lst_linear.predictors,
-                           df_results_evals_AUC, pred.method, pred.attr, PARALLEL = FALSE, verbose = FALSE){
+                           df_results_evals_AUC, pred.method, pred.attr, PARALLEL = FALSE, n_cores = NULL, verbose = FALSE){
   lst_linear.predictors <- NULL
   Y_test_full <- NULL
   lst_resCOMPLETE_LP <- getCOMPLETE_LP(comp_index = comp_index, eta_index = eta_index, run = run, fold = fold,
@@ -1376,7 +1376,7 @@ getFAST_LP_AUC <- function(fast_mode, comp_index, eta_index = NULL, run, fold, X
   lst_resCOMPLETE_LP_AUC <- getCOMPLETE_LP_AUC(Y_test_full = Y_test_to_use,
                                                lst_linear.predictors = lst_linear.predictors, times = times,
                                                df_results_evals_AUC = df_results_evals_AUC,
-                                               pred.method, pred.attr, PARALLEL = PARALLEL, verbose = verbose)
+                                               pred.method, pred.attr, PARALLEL = PARALLEL, n_cores = n_cores, verbose = verbose)
 
   lst_AUC_values <- lst_resCOMPLETE_LP_AUC$lst_AUC_values
   df_results_evals_AUC <- lst_resCOMPLETE_LP_AUC$df_results_evals_AUC
@@ -1547,7 +1547,7 @@ getTimesVector <- function(Y, max_time_points = 15, ACCURACY = 0.001){
 }
 
 getCOMPLETE_LP_AUC <- function(Y_test_full, lst_linear.predictors, df_results_evals_AUC, times = NULL,
-                               pred.method, pred.attr, PARALLEL = FALSE, max_time_points = 15, verbose = FALSE){
+                               pred.method, pred.attr, PARALLEL = FALSE, n_cores = NULL, max_time_points = 15, verbose = FALSE){
   #times
 
   ACCURACY <- 0.001 #!!! think to a best mode to select the best accuracy for each possible time
@@ -1564,7 +1564,7 @@ getCOMPLETE_LP_AUC <- function(Y_test_full, lst_linear.predictors, df_results_ev
   t1 <- Sys.time()
   lst_AUC_values <- getAUC_from_LP_2.0(linear.predictors = lst_linear.predictors$fit,
                                        Y = Y_test_full, times = times, bestModel = NULL,
-                                       method = pred.method, eval = pred.attr, PARALLEL = PARALLEL, verbose = verbose)
+                                       method = pred.method, eval = pred.attr, PARALLEL = PARALLEL, n_cores = n_cores, verbose = verbose)
   t2 <- Sys.time()
   df_results_evals_AUC <- c(df_results_evals_AUC, lst_AUC_values$AUC)
 
@@ -3001,7 +3001,7 @@ get_COX_evaluation_BRIER <- function(comp_model_lst,
                                      max.ncomp, n_run, k_folds,
                                      w_I.BRIER,
                                      MIN_AUC_INCREASE, MIN_AUC, MIN_COMP_TO_CHECK,
-                                     method.train, PARALLEL = FALSE, verbose = FALSE){
+                                     method.train, PARALLEL = FALSE, n_cores = NULL, verbose = FALSE){
 
   if(length(max.ncomp)==1 & !method.train==pkg.env$coxEN){
     max.ncomp <- 1:max.ncomp
@@ -3244,7 +3244,7 @@ get_COX_evaluation_BRIER_sPLS <- function(comp_model_lst,
                                           max.ncomp, penalty.list, n_run, k_folds,
                                           w_I.BRIER,
                                           MIN_AUC_INCREASE, MIN_AUC, MIN_COMP_TO_CHECK, method.train,
-                                          PARALLEL = FALSE, verbose = FALSE){
+                                          PARALLEL = FALSE, n_cores = NULL, verbose = FALSE){
 
   if(length(max.ncomp)==1 & !method.train==pkg.env$coxEN){
     max.ncomp <- 1:max.ncomp
@@ -3525,7 +3525,7 @@ get_COX_evaluation_AUC <- function(comp_model_lst,
                                    max.ncomp, n_run, k_folds,
                                    w_AUC,
                                    MIN_AUC_INCREASE, MIN_AUC, MIN_COMP_TO_CHECK, method.train,
-                                   PARALLEL = FALSE, verbose = FALSE){
+                                   PARALLEL = FALSE, n_cores = NULL, verbose = FALSE){
 
   if(length(max.ncomp)==1 & !method.train==pkg.env$coxEN){
     max.ncomp <- 1:max.ncomp
@@ -3581,7 +3581,7 @@ get_COX_evaluation_AUC <- function(comp_model_lst,
                                             lst_X_test = lst_X_test, lst_Y_test = lst_Y_test, times = times,
                                             comp_model_lst = comp_model_lst, lst_linear.predictors = lst_linear.predictors,
                                             df_results_evals_AUC = df_results_evals_AUC,
-                                            pred.method = pred.method, pred.attr = pred.attr, PARALLEL = FALSE, verbose = verbose)
+                                            pred.method = pred.method, pred.attr = pred.attr, PARALLEL = FALSE, n_cores = NULL, verbose = verbose)
 
           lst_AUC_values <- lst_FAST_LP_AUC$lst_AUC_values
           df_results_evals_AUC <- lst_FAST_LP_AUC$df_results_evals_AUC
@@ -3651,7 +3651,7 @@ get_COX_evaluation_AUC <- function(comp_model_lst,
 
         lst_resCOMPLETE_LP_AUC <- getCOMPLETE_LP_AUC(Y_test_full = Y_test_full, lst_linear.predictors = lst_linear.predictors,
                                                      times = times, df_results_evals_AUC = df_results_evals_AUC,
-                                                     pred.method = pred.method, pred.attr = pred.attr, PARALLEL = PARALLEL, verbose = verbose)
+                                                     pred.method = pred.method, pred.attr = pred.attr, PARALLEL = PARALLEL, n_cores = n_cores, verbose = verbose)
         lst_AUC_values <- lst_resCOMPLETE_LP_AUC$lst_AUC_values
         df_results_evals_AUC <- lst_resCOMPLETE_LP_AUC$df_results_evals_AUC
 
@@ -3735,7 +3735,7 @@ get_COX_evaluation_AUC_sPLS <- function(comp_model_lst,
                                         max.ncomp, penalty.list, n_run, k_folds,
                                         w_AUC,
                                         MIN_AUC_INCREASE, MIN_AUC, MIN_COMP_TO_CHECK, method.train,
-                                        PARALLEL = FALSE, verbose = FALSE){
+                                        PARALLEL = FALSE, n_cores = NULL, verbose = FALSE){
   #### ### #
   ## NOTE ##
   #### ### #
@@ -3814,7 +3814,7 @@ get_COX_evaluation_AUC_sPLS <- function(comp_model_lst,
                                               lst_X_test = lst_X_test, lst_Y_test = lst_Y_test, times = times,
                                               comp_model_lst = comp_model_lst, lst_linear.predictors = lst_linear.predictors,
                                               df_results_evals_AUC = df_results_evals_AUC,
-                                              pred.method = pred.method, pred.attr = pred.attr, PARALLEL = PARALLEL, verbose = verbose)
+                                              pred.method = pred.method, pred.attr = pred.attr, PARALLEL = PARALLEL, n_cores = n_cores, verbose = verbose)
 
             lst_AUC_values <- lst_FAST_LP_AUC$lst_AUC_values
             df_results_evals_AUC <- lst_FAST_LP_AUC$df_results_evals_AUC
@@ -3908,7 +3908,7 @@ get_COX_evaluation_AUC_sPLS <- function(comp_model_lst,
           }
 
           lst_resCOMPLETE_LP_AUC <- getCOMPLETE_LP_AUC(Y_test_full = Y_test_full, lst_linear.predictors = lst_linear.predictors,
-                                                       times = times, df_results_evals_AUC = df_results_evals_AUC, pred.method = pred.method, pred.attr = pred.attr, PARALLEL = PARALLEL, verbose = verbose)
+                                                       times = times, df_results_evals_AUC = df_results_evals_AUC, pred.method = pred.method, pred.attr = pred.attr, PARALLEL = PARALLEL, n_cores = n_cores, verbose = verbose)
           lst_AUC_values <- lst_resCOMPLETE_LP_AUC$lst_AUC_values
           df_results_evals_AUC <- lst_resCOMPLETE_LP_AUC$df_results_evals_AUC
 
@@ -4226,7 +4226,7 @@ get_Coxmos_models2.0 <- function(method = "sPLS-ICOX",
                                  alpha = 0.05,
                                  max.iter = 200, times = NULL, pred.method = "cenROC", max_time_points = 15,
                                  returnData = FALSE,
-                                 total_models, MIN_EPV = 0, tol = 1e-10, PARALLEL = FALSE,
+                                 total_models, MIN_EPV = 0, tol = 1e-10, PARALLEL = FALSE, n_cores = NULL,
                                  verbose = FALSE){
 
   comp_model_lst <- list()
@@ -4290,8 +4290,17 @@ get_Coxmos_models2.0 <- function(method = "sPLS-ICOX",
     ## Sometimes, when you compute the model with the higher number of dimensions it fail and should be run with k-1 components.
     ## when you compute the model by iterations it is easy to do, but not in purrr functions.
 
+    if(!is.null(n_cores) && n_cores<=1){PARALLEL=FALSE}
     if(PARALLEL){
-      n_cores <- max(future::availableCores() - 1, 1)
+      if(is.null(n_cores)){
+        n_cores <- max(future::availableCores() - 1, 1)
+      }else{
+        n_cores <- min(n_cores, future::availableCores() - 1)
+      }
+
+      if(verbose){
+        cat(paste0("Using: ", n_cores, " cores for parallelization."))
+      }
 
       if(.Platform$OS.type == "unix") {
         future::plan("multicore", workers = min(length(lst_inputs), n_cores))
@@ -4643,8 +4652,17 @@ get_Coxmos_models2.0 <- function(method = "sPLS-ICOX",
 
     names(lst_inputs) <- lst_names
 
+    if(!is.null(n_cores) && n_cores<=1){PARALLEL=FALSE}
     if(PARALLEL){
-      n_cores <- max(future::availableCores() - 1, 1)
+      if(is.null(n_cores)){
+        n_cores <- max(future::availableCores() - 1, 1)
+      }else{
+        n_cores <- min(n_cores, future::availableCores() - 1)
+      }
+
+      if(verbose){
+        cat(paste0("Using: ", n_cores, " cores for parallelization."))
+      }
 
       if(.Platform$OS.type == "unix") {
         future::plan("multicore", workers = min(length(lst_inputs), n_cores))
@@ -4763,8 +4781,18 @@ get_Coxmos_models2.0 <- function(method = "sPLS-ICOX",
     ## [[max.comp]][[rep]][[fold]][[others_components_1:max.comp]]
 
     t1 <- Sys.time()
+
+    if(!is.null(n_cores) && n_cores<=1){PARALLEL=FALSE}
     if(PARALLEL){
-      n_cores <- max(future::availableCores() - 1, 1)
+      if(is.null(n_cores)){
+        n_cores <- max(future::availableCores() - 1, 1)
+      }else{
+        n_cores <- min(n_cores, future::availableCores() - 1)
+      }
+
+      if(verbose){
+        cat(paste0("Using: ", n_cores, " cores for parallelization."))
+      }
 
       if(.Platform$OS.type == "unix") {
         future::plan("multicore", workers = min(length(lst_inputs), n_cores))
@@ -5249,7 +5277,12 @@ checkTestTimesVSTrainTimes <- function(lst_models, Y_test){
 #' @param times Numeric vector. Time points where the AUC will be evaluated. If NULL, a maximum of
 #' 'max_time_points' points will be selected equally distributed (default: NULL).
 #' @param PARALLEL Logical. Run the cross validation with multicore option. As many cores as your
-#' total cores - 1 will be used. It could lead to higher RAM consumption (default: FALSE).
+#' total cores - 1 will be used. It could lead to higher RAM consumption. Only for "smoothROCtime_C",
+#' "smoothROCtime_I", "survivalROC" and "nsROC" evaluations (default: FALSE).
+#' @param n_cores Numeric. Number of cores to use for parallel processing. This parameter is only
+#' used if `PARALLEL` is `TRUE`. If `NULL`, it will use all available cores minus one. Otherwise,
+#' it will use the minimum between the value specified and the total number of cores - 1. The fewer
+#' cores used, the less RAM memory will be used.(default: NULL).
 #' @param max_time_points Numeric. Maximum number of time points to use for evaluating the model
 #' (default: 15).
 #' @param verbose Logical. If verbose = TRUE, extra messages could be displayed (default: FALSE).
@@ -5295,7 +5328,7 @@ checkTestTimesVSTrainTimes <- function(lst_models, Y_test){
 
 ## Eval all models by the pred.methods the user defined
 eval_Coxmos_models <- function(lst_models, X_test, Y_test, pred.method = "cenROC", pred.attr = "mean",
-                               times = NULL, PARALLEL = FALSE, max_time_points = 15, verbose = FALSE,
+                               times = NULL, PARALLEL = FALSE, n_cores = NULL, max_time_points = 15, verbose = FALSE,
                                progress_bar = TRUE){
 
   #check names in lst_models
@@ -5373,9 +5406,18 @@ eval_Coxmos_models <- function(lst_models, X_test, Y_test, pred.method = "cenROC
 
   lst_eval <- list()
   #For smoothROC parallel per method
+  if(!is.null(n_cores) && n_cores<=1){PARALLEL=FALSE}
   if(PARALLEL & pred.method %in% c(pkg.env$AUC_smoothROCtime_C, pkg.env$AUC_smoothROCtime_I, pkg.env$AUC_survivalROC, pkg.env$AUC_nsROC)){
 
-    n_cores <- max(future::availableCores() - 1, 1)
+    if(is.null(n_cores)){
+      n_cores <- max(future::availableCores() - 1, 1)
+    }else{
+      n_cores <- min(n_cores, future::availableCores() - 1)
+    }
+
+    if(verbose){
+      cat(paste0("Using: ", n_cores, " cores for parallelization."))
+    }
 
     if(.Platform$OS.type == "unix") {
       future::plan("multicore", workers = min(length(lst_models), n_cores))
@@ -5383,11 +5425,11 @@ eval_Coxmos_models <- function(lst_models, X_test, Y_test, pred.method = "cenROC
       future::plan("multisession", workers = min(length(lst_models), n_cores))
     }
 
-    lst_eval <- furrr::future_map(lst_models, ~evaluation_list_Coxmos(model = ., X_test = X_test, Y_test = Y_test, pred.method = pred.method, pred.attr = pred.attr, times = times, PARALLEL = FALSE, verbose = verbose, progress_bar = progress_bar))
+    lst_eval <- furrr::future_map(lst_models, ~evaluation_list_Coxmos(model = ., X_test = X_test, Y_test = Y_test, pred.method = pred.method, pred.attr = pred.attr, times = times, PARALLEL = FALSE, n_cores = NULL, verbose = verbose, progress_bar = progress_bar))
     future::plan("sequential")
   }else{
-    lst_eval <- purrr::map(lst_models, ~evaluation_list_Coxmos(model = ., X_test = X_test, Y_test = Y_test, pred.method = pred.method, pred.attr = pred.attr, times = times, PARALLEL = FALSE, verbose = verbose, progress_bar = progress_bar))
-    # lst_eval <- evaluation_list_Coxmos(model = lst_models$cox, X_test = X_test, Y_test = Y_test, pred.method = pred.method, pred.attr = pred.attr, times = times, PARALLEL = FALSE, verbose = verbose, progress_bar = progress_bar)
+    lst_eval <- purrr::map(lst_models, ~evaluation_list_Coxmos(model = ., X_test = X_test, Y_test = Y_test, pred.method = pred.method, pred.attr = pred.attr, times = times, PARALLEL = FALSE, n_cores = NULL, verbose = verbose, progress_bar = progress_bar))
+    # lst_eval <- evaluation_list_Coxmos(model = lst_models$cox, X_test = X_test, Y_test = Y_test, pred.method = pred.method, pred.attr = pred.attr, times = times, PARALLEL = FALSE, n_cores = NULL, verbose = verbose, progress_bar = progress_bar)
   }
 
   names(lst_eval) <- names(lst_models)
@@ -5485,7 +5527,7 @@ eval_Coxmos_models <- function(lst_models, X_test, Y_test, pred.method = "cenROC
 }
 
 evaluation_list_Coxmos <- function(model, X_test, Y_test, pred.method = "cenROC", pred.attr = "mean",
-                                   times = NULL, PARALLEL = FALSE, verbose = FALSE, progress_bar = FALSE){
+                                   times = NULL, PARALLEL = FALSE, n_cores = NULL, verbose = FALSE, progress_bar = FALSE){
 
   t3 <- Sys.time()
 
@@ -5529,7 +5571,7 @@ evaluation_list_Coxmos <- function(model, X_test, Y_test, pred.method = "cenROC"
   brier_score <- SURVCOMP_BRIER(model = model, X_test_mod = X_test_mod, Y_test = Y_test)
 
   lp <- getLinealPredictors(cox = cox, data = X_test_mod)
-  lst_AUC_values <- getAUC_from_LP_2.0(linear.predictors = lp, Y = Y_test, times = times, bestModel = NULL, eval = pred.attr, method = pred.method, PARALLEL = PARALLEL, verbose = verbose)
+  lst_AUC_values <- getAUC_from_LP_2.0(linear.predictors = lp, Y = Y_test, times = times, bestModel = NULL, eval = pred.attr, method = pred.method, PARALLEL = PARALLEL, n_cores = n_cores, verbose = verbose)
   #lst_AUC[[m]] <- lst_AUC_values
 
   t4 <- Sys.time()
@@ -5566,6 +5608,10 @@ evaluation_Coxmos_class = function(object, ...) {
 #' 'max_time_points' points will be selected equally distributed (default: NULL).
 #' @param PARALLEL Logical. Run the cross validation with multicore option. As many cores as your
 #' total cores - 1 will be used. It could lead to higher RAM consumption (default: FALSE).
+#' @param n_cores Numeric. Number of cores to use for parallel processing. This parameter is only
+#' used if `PARALLEL` is `TRUE`. If `NULL`, it will use all available cores minus one. Otherwise,
+#' it will use the minimum between the value specified and the total number of cores - 1. The fewer
+#' cores used, the less RAM memory will be used.(default: NULL).
 #' @param max_time_points Numeric. Maximum number of time points to use for evaluating the model
 #' (default: 15).
 #' @param verbose Logical. If verbose = TRUE, extra messages could be displayed (default: FALSE).
@@ -5601,7 +5647,7 @@ evaluation_Coxmos_class = function(object, ...) {
 eval_Coxmos_model_per_variable.list <- function(lst_models, X_test, Y_test,
                                                 pred.method = "cenROC", pred.attr = "mean",
                                                 times = NULL, max_time_points = 15,
-                                                PARALLEL = FALSE, verbose = FALSE){
+                                                PARALLEL = FALSE, n_cores = NULL, verbose = FALSE){
 
   #check names in lst_models
   lst_models <- checkModelNames(lst_models)
@@ -5609,7 +5655,7 @@ eval_Coxmos_model_per_variable.list <- function(lst_models, X_test, Y_test,
   lst_plots <- purrr::map(lst_models, ~eval_Coxmos_model_per_variable(model = ., X_test = X_test,
                                                                       Y_test = Y_test, pred.method = pred.method,
                                                                       pred.attr = pred.attr, times = times,
-                                                                      max_time_points = max_time_points, PARALLEL = PARALLEL,
+                                                                      max_time_points = max_time_points, PARALLEL = PARALLEL, n_cores = n_cores,
                                                                       verbose = verbose))
 
   return(lst_plots)
@@ -5655,6 +5701,10 @@ eval_Coxmos_model_per_variable.list <- function(lst_models, X_test, Y_test,
 #' 'max_time_points' points will be selected equally distributed (default: NULL).
 #' @param PARALLEL Logical. Run the cross validation with multicore option. As many cores as your
 #' total cores - 1 will be used. It could lead to higher RAM consumption (default: FALSE).
+#' @param n_cores Numeric. Number of cores to use for parallel processing. This parameter is only
+#' used if `PARALLEL` is `TRUE`. If `NULL`, it will use all available cores minus one. Otherwise,
+#' it will use the minimum between the value specified and the total number of cores - 1. The fewer
+#' cores used, the less RAM memory will be used.(default: NULL).
 #' @param max_time_points Numeric. Maximum number of time points to use for evaluating the model
 #' (default: 15).
 #' @param verbose Logical. If verbose = TRUE, extra messages could be displayed (default: FALSE).
@@ -5688,7 +5738,7 @@ eval_Coxmos_model_per_variable <- function(model,
                                           X_test, Y_test,
                                           pred.method = "cenROC", pred.attr = "mean",
                                           times = NULL, max_time_points = 15,
-                                          PARALLEL = FALSE, verbose = FALSE){
+                                          PARALLEL = FALSE, n_cores = NULL, verbose = FALSE){
 
   #### Check test times are less or equal than max train time:
   checkTestTimesVSTrainTimes(model, Y_test)
@@ -5702,8 +5752,8 @@ eval_Coxmos_model_per_variable <- function(model,
     times <- getTimesVector(model$Y$data, max_time_points)
   }
 
-  lp_vars <- purrr::map(.x = lp, ~getAUC_from_LP_2.0(linear.predictors = ., Y = Y_test, times = times, bestModel = NULL, eval = pred.attr, method = pred.method, PARALLEL = PARALLEL, verbose = verbose))
-  # lp_vars <- getAUC_from_LP_2.0(linear.predictors = lp$tissue_source_site_19, Y = Y_test, times = times, bestModel = NULL, eval = pred.attr, method = pred.method, PARALLEL = PARALLEL, verbose = verbose)
+  lp_vars <- purrr::map(.x = lp, ~getAUC_from_LP_2.0(linear.predictors = ., Y = Y_test, times = times, bestModel = NULL, eval = pred.attr, method = pred.method, PARALLEL = PARALLEL, n_cores = n_cores, verbose = verbose))
+  # lp_vars <- getAUC_from_LP_2.0(linear.predictors = lp$tissue_source_site_19, Y = Y_test, times = times, bestModel = NULL, eval = pred.attr, method = pred.method, PARALLEL = PARALLEL, n_cores = n_cores, verbose = verbose)
 
   df <- NULL
   for(vars in names(lp_vars)){
@@ -5831,7 +5881,7 @@ cox.prediction <- function(model, new_data, time = NULL, type = "lp", method = "
 
 getBestVector2 <- function(Xh, DR_coxph = NULL, Yh, n.comp, max.iter, vector, MIN_AUC_INCREASE,
                           MIN_NVAR = 1, MAX_NVAR = NULL, cut_points = 5, EVAL_METHOD = "AUC",
-                          EVAL_EVALUATOR = "cenROC", PARALLEL = FALSE, mode = "spls", times = NULL,
+                          EVAL_EVALUATOR = "cenROC", PARALLEL = FALSE, n_cores = NULL, mode = "spls", times = NULL,
                           max_time_points = 15, verbose = FALSE){
 
   if(!mode %in% c("spls", "splsda")){
@@ -6076,7 +6126,7 @@ getBestVector2 <- function(Xh, DR_coxph = NULL, Yh, n.comp, max.iter, vector, MI
 
 getBestVector <- function(Xh, DR_coxph = NULL, Yh, n.comp, max.iter, vector, MIN_AUC_INCREASE,
                           MIN_NVAR = 1, MAX_NVAR = NULL, cut_points = 5, EVAL_METHOD = "AUC",
-                          EVAL_EVALUATOR = "cenROC", PARALLEL = FALSE, mode = "spls", times = NULL,
+                          EVAL_EVALUATOR = "cenROC", PARALLEL = FALSE, n_cores = NULL, mode = "spls", times = NULL,
                           max_time_points = 15, verbose = FALSE){
 
   if(!mode %in% c("spls", "splsda")){
@@ -6385,7 +6435,7 @@ getCIndex_AUC_CoxModel_spls <- function(Xh, DR_coxph_ori, Yh, n.comp, keepX, sca
   }
 
   #C-index and AUC
-  lst_AUC_values <- getAUC_from_LP_2.0(linear.predictors = lp, Y = Yh, times = times, bestModel = NULL, eval = "mean", method = EVAL_EVALUATOR, PARALLEL = FALSE, verbose = verbose)
+  lst_AUC_values <- getAUC_from_LP_2.0(linear.predictors = lp, Y = Yh, times = times, bestModel = NULL, eval = "mean", method = EVAL_EVALUATOR, PARALLEL = FALSE, n_cores = NULL, verbose = verbose)
 
   #BRIER
   #lst_BRIER_values <- survAUC_BRIER_LP(lp = lp$fit, Y = Yh, lp_new = lp$fit, Y_test = Yh)
@@ -6446,7 +6496,7 @@ getCIndex_AUC_CoxModel_splsda <- function(Xh, Yh, n.comp, keepX, scale = FALSE, 
 
   #C-index and AUC
   lp <- getLinealPredictors(cox = cox_model$fit, data = d)
-  lst_AUC_values <- getAUC_from_LP_2.0(linear.predictors = lp, Y = Yh, times = times, bestModel = NULL, eval = "mean", method = EVAL_EVALUATOR, PARALLEL = FALSE, verbose = verbose)
+  lst_AUC_values <- getAUC_from_LP_2.0(linear.predictors = lp, Y = Yh, times = times, bestModel = NULL, eval = "mean", method = EVAL_EVALUATOR, PARALLEL = FALSE, n_cores = NULL, verbose = verbose)
 
   #BRIER
   #lst_BRIER_values <- survAUC_BRIER_LP(lp = lp$fit, Y = Yh, lp_new = lp$fit, Y_test = Yh)

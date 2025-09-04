@@ -379,6 +379,10 @@ isb.splsicox <- function(X, Y,
 #' @param returnData Logical. Return original and normalized X and Y matrices (default: TRUE).
 #' @param PARALLEL Logical. Run the cross validation with multicore option. As many cores as your
 #' total cores - 1 will be used. It could lead to higher RAM consumption (default: FALSE).
+#' @param n_cores Numeric. Number of cores to use for parallel processing. This parameter is only
+#' used if `PARALLEL` is `TRUE`. If `NULL`, it will use all available cores minus one. Otherwise,
+#' it will use the minimum between the value specified and the total number of cores - 1. The fewer
+#' cores used, the less RAM memory will be used.(default: NULL).
 #' @param verbose Logical. If verbose = TRUE, extra messages could be displayed (default: FALSE).
 #' @param seed Number. Seed value for performing runs/folds divisions (default: 123).
 #'
@@ -423,7 +427,7 @@ cv.isb.splsicox <- function(X, Y,
                             MIN_AUC_INCREASE = 0.01, MIN_AUC = 0.8, MIN_COMP_TO_CHECK = 3,
                             pred.attr = "mean", pred.method = "cenROC", fast_mode = FALSE,
                             MIN_EPV = 5, return_models = FALSE, returnData = FALSE,
-                            PARALLEL = FALSE, verbose = FALSE, seed = 123){
+                            PARALLEL = FALSE, n_cores = NULL, verbose = FALSE, seed = 123){
   # tol Numeric. Tolerance for solving: solve(t(P) %*% W) (default: 1e-15).
   tol = 1e-10
 
@@ -561,7 +565,7 @@ cv.isb.splsicox <- function(X, Y,
                                        remove_non_significant = remove_non_significant,
                                        fast_mode = fast_mode, return_models = return_models,
                                        MIN_EPV = MIN_EPV, verbose = verbose,
-                                       pred.attr = pred.attr, pred.method = pred.method, seed = seed, PARALLEL = PARALLEL, returnData = FALSE)
+                                       pred.attr = pred.attr, pred.method = pred.method, seed = seed, PARALLEL = PARALLEL, n_cores = n_cores, returnData = FALSE)
     t2 <- Sys.time()
     time <- difftime(t2,t1,units = "mins")
     if(verbose){

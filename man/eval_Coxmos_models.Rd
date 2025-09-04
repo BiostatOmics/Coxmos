@@ -12,6 +12,7 @@ eval_Coxmos_models(
   pred.attr = "mean",
   times = NULL,
   PARALLEL = FALSE,
+  n_cores = NULL,
   max_time_points = 15,
   verbose = FALSE,
   progress_bar = TRUE
@@ -38,7 +39,13 @@ Must be one of the following: "risksetROC", "survivalROC", "cenROC", "nsROC", "s
 'max_time_points' points will be selected equally distributed (default: NULL).}
 
 \item{PARALLEL}{Logical. Run the cross validation with multicore option. As many cores as your
-total cores - 1 will be used. It could lead to higher RAM consumption (default: FALSE).}
+total cores - 1 will be used. It could lead to higher RAM consumption. Only for "smoothROCtime_C",
+"smoothROCtime_I", "survivalROC" and "nsROC" evaluations (default: FALSE).}
+
+\item{n_cores}{Numeric. Number of cores to use for parallel processing. This parameter is only
+used if \code{PARALLEL} is \code{TRUE}. If \code{NULL}, it will use all available cores minus one. Otherwise,
+it will use the minimum between the value specified and the total number of cores - 1. The fewer
+cores used, the less RAM memory will be used.(default: NULL).}
 
 \item{max_time_points}{Numeric. Maximum number of time points to use for evaluating the model
 (default: 15).}

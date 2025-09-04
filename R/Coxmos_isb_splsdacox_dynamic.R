@@ -349,6 +349,10 @@ isb.splsdacox <- function(X, Y,
 #' @param return_models Logical. If TRUE, returns all models computed during cross-validation (default: FALSE).
 #' @param returnData Logical. If TRUE, returns original and normalized X and Y matrices (default: FALSE).
 #' @param PARALLEL Logical. If TRUE, runs cross-validation in parallel using multiple cores (default: FALSE).
+#' @param n_cores Numeric. Number of cores to use for parallel processing. This parameter is only
+#' used if `PARALLEL` is `TRUE`. If `NULL`, it will use all available cores minus one. Otherwise,
+#' it will use the minimum between the value specified and the total number of cores - 1. The fewer
+#' cores used, the less RAM memory will be used.(default: NULL).
 #' @param verbose Logical. If TRUE, extra messages are displayed during execution (default: FALSE).
 #' @param seed Numeric. Seed for reproducibility (default: 123).
 #'
@@ -400,7 +404,7 @@ cv.isb.splsdacox <- function(X, Y,
                                      pred.attr = "mean", pred.method = "cenROC", fast_mode = FALSE,
                                      max.iter = 200,
                                      MIN_EPV = 5, return_models = FALSE, returnData = FALSE,
-                                     PARALLEL = FALSE, verbose = FALSE, seed = 123){
+                                     PARALLEL = FALSE, n_cores = NULL, verbose = FALSE, seed = 123){
   # tol Numeric. Tolerance for solving: solve(t(P) %*% W) (default: 1e-15).
   tol = 1e-10
 
@@ -554,7 +558,7 @@ cv.isb.splsdacox <- function(X, Y,
                                                      remove_variance_at_fold_level = remove_variance_at_fold_level,
                                                      fast_mode = fast_mode, return_models = return_models,
                                                      MIN_EPV = MIN_EPV, verbose = verbose,
-                                                     pred.attr = pred.attr, pred.method = pred.method, seed = seed, PARALLEL = PARALLEL, returnData = FALSE)
+                                                     pred.attr = pred.attr, pred.method = pred.method, seed = seed, PARALLEL = PARALLEL, n_cores = n_cores, returnData = FALSE)
     t2 <- Sys.time()
     time <- difftime(t2,t1,units = "mins")
     if(verbose){

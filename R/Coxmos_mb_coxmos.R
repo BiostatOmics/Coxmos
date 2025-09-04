@@ -204,6 +204,10 @@ mb.coxmos <- function(method = c("sb.splsicox", "sb.splsdrcox", "sb.splsdrcox_pe
 #' @param return_models Logical. Return all models computed in cross validation (default: FALSE).
 #' @param returnData Logical. Return original and normalized X and Y matrices (default: TRUE).
 #' @param PARALLEL Logical. Run the cross validation with multicore option (default: FALSE).
+#' @param n_cores Numeric. Number of cores to use for parallel processing. This parameter is only
+#' used if `PARALLEL` is `TRUE`. If `NULL`, it will use all available cores minus one. Otherwise,
+#' it will use the minimum between the value specified and the total number of cores - 1. The fewer
+#' cores used, the less RAM memory will be used.(default: NULL).
 #' @param verbose Logical. If verbose = TRUE, extra messages could be displayed (default: FALSE).
 #' @param seed Number. Seed value for performing runs/folds divisions (default: 123).
 #'
@@ -272,7 +276,7 @@ cv.mb.coxmos <- function(method = c("sb.splsicox", "sb.splsdrcox", "sb.splsdrcox
                          MIN_EPV = 5,
                          return_models = FALSE,
                          returnData = FALSE,
-                         PARALLEL = FALSE,
+                         PARALLEL = FALSE, n_cores = NULL,
                          verbose = FALSE,
                          seed = 123) {
 

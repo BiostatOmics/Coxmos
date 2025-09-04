@@ -53,7 +53,7 @@ radius size (default: TRUE).}
 
 \item{ellipses}{Logical. If "ellipses" = TRUE, then ellipses are created for factor coloring (default: TRUE).}
 
-\item{scale_loadings}{Logical. If "scale_loadings" is set to TRUE, then the loadings are also scaled to the \link{-1,1} range specifically for biplot visualization (default: FALSE).}
+\item{scale_loadings}{Logical. If "scale_loadings" is set to TRUE, then the loadings are also scaled to the \verb{[-1,1]} range specifically for biplot visualization (default: FALSE).}
 }
 \description{
 Visualizes the Coxmos model using partial least squares (PLS) approach. This function offers

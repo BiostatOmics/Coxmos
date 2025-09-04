@@ -203,6 +203,10 @@ coxmos <- function(method = c("cox", "coxSW", "coxEN", "splsicox", "splsdrcox", 
 #' @param returnData Logical. Return original and normalized X and Y matrices (default: TRUE).
 #' @param PARALLEL Logical. Run the cross validation with multicore option. As many cores as your
 #' total cores - 1 will be used. It could lead to higher RAM consumption (default: FALSE).
+#' @param n_cores Numeric. Number of cores to use for parallel processing. This parameter is only
+#' used if `PARALLEL` is `TRUE`. If `NULL`, it will use all available cores minus one. Otherwise,
+#' it will use the minimum between the value specified and the total number of cores - 1. The fewer
+#' cores used, the less RAM memory will be used.(default: NULL).
 #' @param verbose Logical. If verbose = TRUE, extra messages could be displayed (default: FALSE).
 #' @param seed Number. Seed value for performing runs/folds divisions (default: 123).
 #'
@@ -261,7 +265,7 @@ cv.coxmos <- function(method = c("coxEN", "splsicox", "splsdrcox", "splsdrcox_pe
                       MIN_AUC_INCREASE = 0.01, MIN_AUC = 0.8, MIN_COMP_TO_CHECK = 3,
                       pred.attr = "mean", pred.method = "cenROC", fast_mode = FALSE,
                       MIN_EPV = 5, return_models = FALSE, returnData = FALSE,
-                      PARALLEL = FALSE, verbose = FALSE, seed = 123,
+                      PARALLEL = FALSE, n_cores = NULL, verbose = FALSE, seed = 123,
                       # Argumentos específicos de método
                       EN.alpha.list = seq(0,1,0.2), max.ncomp = 8, penalty.list = seq(0.1,0.9,0.2),
                       vector = NULL, MIN_NVAR = 1, MAX_NVAR = NULL, n.cut_points = 5,

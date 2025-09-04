@@ -223,7 +223,7 @@ splitData_Iterations_Folds_indexes <- function(Y, n_run, k_folds, seed = 123){
 }
 
 getAUC_from_LP_2.0 <- function(linear.predictors, Y, times, bestModel = NULL, method = "cenROC",
-                               eval = "median", PARALLEL = FALSE, verbose = FALSE){
+                               eval = "median", PARALLEL = FALSE, n_cores = NULL, verbose = FALSE){
 
   # if(!method %in% c("risksetROC", "survivalROC", "cenROC", "nsROC", "smoothROCtime_C", "smoothROCtime_I")){
   #   stop_quietly(paste0("Method must be one of the following: ", paste0(c("risksetROC", "survivalROC", "cenROC", "nsROC", "smoothROCtime_C", "smoothROCtime_I"), collapse = ", ")))
@@ -264,8 +264,20 @@ getAUC_from_LP_2.0 <- function(linear.predictors, Y, times, bestModel = NULL, me
   out = NULL
   if(method == pkg.env$AUC_risksetROC){
     times.aux <- times #times[times.vector]
+
+    if(!is.null(n_cores) && n_cores<=1){PARALLEL=FALSE}
     if(PARALLEL){
-      n_cores <- max(future::availableCores() - 1, 1)
+
+      if(is.null(n_cores)){
+        n_cores <- max(future::availableCores() - 1, 1)
+      }else{
+        n_cores <- min(n_cores, future::availableCores() - 1)
+      }
+
+      if(verbose){
+        cat(paste0("Using: ", n_cores, " cores for parallelization."))
+      }
+
       if(.Platform$OS.type == "unix") {
         future::plan("multicore", workers = min(length(times.aux), n_cores))
       }else{
@@ -294,8 +306,20 @@ getAUC_from_LP_2.0 <- function(linear.predictors, Y, times, bestModel = NULL, me
     times.aux <- times #times[times.vector]
     if(!all(times.vector==FALSE)){
       times_run <- times.aux[which(times.vector==TRUE)]
+
+      if(!is.null(n_cores) && n_cores<=1){PARALLEL=FALSE}
       if(PARALLEL){
-        n_cores <- max(future::availableCores() - 1, 1)
+
+        if(is.null(n_cores)){
+          n_cores <- max(future::availableCores() - 1, 1)
+        }else{
+          n_cores <- min(n_cores, future::availableCores() - 1)
+        }
+
+        if(verbose){
+          cat(paste0("Using: ", n_cores, " cores for parallelization."))
+        }
+
         if(.Platform$OS.type == "unix") {
           future::plan("multicore", workers = min(length(times.aux), n_cores))
         }else{
@@ -331,8 +355,20 @@ getAUC_from_LP_2.0 <- function(linear.predictors, Y, times, bestModel = NULL, me
     if(!all(times.vector==FALSE)){
       times_run <- times.aux[which(times.vector==TRUE)]
       #METHOD
+
+      if(!is.null(n_cores) && n_cores<=1){PARALLEL=FALSE}
       if(PARALLEL){
-        n_cores <- max(future::availableCores() - 1, 1)
+
+        if(is.null(n_cores)){
+          n_cores <- max(future::availableCores() - 1, 1)
+        }else{
+          n_cores <- min(n_cores, future::availableCores() - 1)
+        }
+
+        if(verbose){
+          cat(paste0("Using: ", n_cores, " cores for parallelization."))
+        }
+
         if(.Platform$OS.type == "unix") {
           future::plan("multicore", workers = min(length(times.aux), n_cores))
         }else{
@@ -367,8 +403,20 @@ getAUC_from_LP_2.0 <- function(linear.predictors, Y, times, bestModel = NULL, me
     if(!all(times.vector==FALSE)){
       times_run <- times.aux[which(times.vector==TRUE)]
       #METHOD
+
+      if(!is.null(n_cores) && n_cores<=1){PARALLEL=FALSE}
       if(PARALLEL){
-        n_cores <- max(future::availableCores() - 1, 1)
+
+        if(is.null(n_cores)){
+          n_cores <- max(future::availableCores() - 1, 1)
+        }else{
+          n_cores <- min(n_cores, future::availableCores() - 1)
+        }
+
+        if(verbose){
+          cat(paste0("Using: ", n_cores, " cores for parallelization."))
+        }
+
         if(.Platform$OS.type == "unix") {
           future::plan("multicore", workers = min(length(times.aux), n_cores))
         }else{

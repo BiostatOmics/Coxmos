@@ -502,7 +502,7 @@ getCIndex_AUC_CoxModel_block.spls <- function(Xh, DR_coxph_ori, Yh, n.comp, keep
   }
 
   #C-index and AUC
-  lst_AUC_values <- getAUC_from_LP_2.0(linear.predictors = lp, Y = Yh, times = times, bestModel = NULL, eval = "mean", method = EVAL_EVALUATOR, PARALLEL = FALSE, verbose = verbose)
+  lst_AUC_values <- getAUC_from_LP_2.0(linear.predictors = lp, Y = Yh, times = times, bestModel = NULL, eval = "mean", method = EVAL_EVALUATOR, PARALLEL = FALSE, n_cores = NULL, verbose = verbose)
 
   #BRIER
   #lst_BRIER_values <- survAUC_BRIER_LP(lp = lp$fit, Y = Yh, lp_new = lp$fit, Y_test = Yh)
@@ -552,7 +552,7 @@ getCIndex_AUC_CoxModel_block.splsda <- function(Xh, Yh, n.comp, keepX, scale = F
   lp <- getLinealPredictors(cox = cox_model$fit, data = d)
 
   #C-index and AUC
-  lst_AUC_values <- getAUC_from_LP_2.0(linear.predictors = lp, Y = Yh, times = times, bestModel = NULL, eval = "mean", method = EVAL_EVALUATOR, PARALLEL = FALSE, verbose = verbose)
+  lst_AUC_values <- getAUC_from_LP_2.0(linear.predictors = lp, Y = Yh, times = times, bestModel = NULL, eval = "mean", method = EVAL_EVALUATOR, PARALLEL = FALSE, n_cores = NULL, verbose = verbose)
 
   #BRIER
   #lst_BRIER_values <- survAUC_BRIER_LP(lp = lp$fit, Y = Yh, lp_new = lp$fit, Y_test = Yh)
@@ -568,7 +568,7 @@ getVarExpModel_block.spls <- function(Xh, DR_coxph_ori, n.comp, keepX, scale = F
 
 getBestVectorMB <- function(Xh, DR_coxph = NULL, Yh, n.comp, max.iter, vector, MIN_AUC_INCREASE,
                             MIN_NVAR = 1, MAX_NVAR = NULL, cut_points = 5, EVAL_METHOD = "AUC",
-                            EVAL_EVALUATOR = "cenROC", PARALLEL = FALSE, mode = "spls", times = NULL,
+                            EVAL_EVALUATOR = "cenROC", PARALLEL = FALSE, n_cores = NULL, mode = "spls", times = NULL,
                             max_time_points = 15, verbose = FALSE){
 
   if(!mode %in% c("spls", "splsda")){

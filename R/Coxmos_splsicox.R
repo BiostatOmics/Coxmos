@@ -676,6 +676,10 @@ splsicox <- function(X, Y,
 #' @param returnData Logical. Return original and normalized X and Y matrices (default: TRUE).
 #' @param PARALLEL Logical. Run the cross validation with multicore option. As many cores as your
 #' total cores - 1 will be used. It could lead to higher RAM consumption (default: FALSE).
+#' @param n_cores Numeric. Number of cores to use for parallel processing. This parameter is only
+#' used if `PARALLEL` is `TRUE`. If `NULL`, it will use all available cores minus one. Otherwise,
+#' it will use the minimum between the value specified and the total number of cores - 1. The fewer
+#' cores used, the less RAM memory will be used.(default: NULL).
 #' @param verbose Logical. If verbose = TRUE, extra messages could be displayed (default: FALSE).
 #' @param seed Number. Seed value for performing runs/folds divisions (default: 123).
 #'
@@ -742,7 +746,7 @@ cv.splsicox <- function (X, Y,
                         MIN_AUC_INCREASE = 0.05, MIN_AUC = 0.8, MIN_COMP_TO_CHECK = 3,
                         pred.attr = "mean", pred.method = "cenROC", fast_mode = FALSE,
                         MIN_EPV = 5, return_models = FALSE, returnData = FALSE,
-                        PARALLEL = FALSE, verbose = FALSE, seed = 123){
+                        PARALLEL = FALSE, n_cores = NULL, verbose = FALSE, seed = 123){
 
   # tol Numeric. Tolerance for solving: solve(t(P) %*% W) (default: 1e-15).
   tol = 1e-10
@@ -882,7 +886,7 @@ cv.splsicox <- function (X, Y,
                                    alpha = alpha, MIN_EPV = MIN_EPV,
                                    remove_non_significant = remove_non_significant, tol = tol, max.iter = NULL,
                                    returnData = returnData, total_models = total_models,
-                                   PARALLEL = PARALLEL, verbose = verbose)
+                                   PARALLEL = PARALLEL, n_cores = n_cores, verbose = verbose)
 
   comp_model_lst = lst_model$comp_model_lst
   info = lst_model$info
@@ -938,7 +942,7 @@ cv.splsicox <- function (X, Y,
       times <- getTimesVector(Y, max_time_points = max_time_points)
     }
 
-    #As we are measuring just one evaluator and one method - PARALLEL = FALSE
+    #As we are measuring just one evaluator and one method - PARALLEL = FALSE, n_cores = NULL
     lst_df <- get_COX_evaluation_BRIER_sPLS(comp_model_lst = comp_model_lst,
                                             fast_mode = fast_mode,
                                             X_test = X, Y_test = Y,
@@ -947,7 +951,7 @@ cv.splsicox <- function (X, Y,
                                             pred.method = pred.method, pred.attr = pred.attr,
                                             max.ncomp = max.ncomp, penalty.list = penalty.list, n_run = n_run, k_folds = k_folds,
                                             MIN_AUC_INCREASE = MIN_AUC_INCREASE, MIN_AUC = MIN_AUC, MIN_COMP_TO_CHECK = MIN_COMP_TO_CHECK,
-                                            w_I.BRIER = w_I.BRIER, method.train = pkg.env$splsicox, PARALLEL = FALSE, verbose = verbose)
+                                            w_I.BRIER = w_I.BRIER, method.train = pkg.env$splsicox, PARALLEL = FALSE, n_cores = NULL, verbose = verbose)
 
     df_results_evals_comp <- lst_df$df_results_evals_comp
     df_results_evals_run <- lst_df$df_results_evals_run
@@ -968,7 +972,7 @@ cv.splsicox <- function (X, Y,
       times <- getTimesVector(Y, max_time_points = max_time_points)
     }
 
-    #As we are measuring just one evaluator and one method - PARALLEL = FALSE
+    #As we are measuring just one evaluator and one method - PARALLEL = FALSE, n_cores = NULL
     lst_df <- get_COX_evaluation_AUC_sPLS(comp_model_lst = comp_model_lst,
                                           X_test = X, Y_test = Y,
                                           lst_X_test = lst_test_indexes, lst_Y_test = lst_test_indexes,
@@ -976,7 +980,7 @@ cv.splsicox <- function (X, Y,
                                           fast_mode = fast_mode, pred.method = pred.method, pred.attr = pred.attr,
                                           max.ncomp = max.ncomp, penalty.list = penalty.list, n_run = n_run, k_folds = k_folds,
                                           MIN_AUC_INCREASE = MIN_AUC_INCREASE, MIN_AUC = MIN_AUC, MIN_COMP_TO_CHECK = MIN_COMP_TO_CHECK,
-                                          w_AUC = w_AUC, method.train = pkg.env$splsicox, PARALLEL = FALSE, verbose = verbose)
+                                          w_AUC = w_AUC, method.train = pkg.env$splsicox, PARALLEL = FALSE, n_cores = NULL, verbose = verbose)
 
     if(is.null(df_results_evals_comp)){
       df_results_evals_comp <- lst_df$df_results_evals_comp

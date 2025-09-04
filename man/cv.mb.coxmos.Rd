@@ -46,6 +46,7 @@ cv.mb.coxmos(
   return_models = FALSE,
   returnData = FALSE,
   PARALLEL = FALSE,
+  n_cores = NULL,
   verbose = FALSE,
   seed = 123
 )
@@ -153,6 +154,11 @@ cox model (default: 5).}
 \item{returnData}{Logical. Return original and normalized X and Y matrices (default: TRUE).}
 
 \item{PARALLEL}{Logical. Run the cross validation with multicore option (default: FALSE).}
+
+\item{n_cores}{Numeric. Number of cores to use for parallel processing. This parameter is only
+used if \code{PARALLEL} is \code{TRUE}. If \code{NULL}, it will use all available cores minus one. Otherwise,
+it will use the minimum between the value specified and the total number of cores - 1. The fewer
+cores used, the less RAM memory will be used.(default: NULL).}
 
 \item{verbose}{Logical. If verbose = TRUE, extra messages could be displayed (default: FALSE).}
 
