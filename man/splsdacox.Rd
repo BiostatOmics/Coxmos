@@ -171,7 +171,7 @@ datasets.
 \details{
 The function begins by checking the input parameters for consistency and ensuring that the response
 variable Y has the required columns "time" and "event". It then preprocesses the data by centering
-and scaling (if specified), and removing variables with zero or near-zero variance. The function
+and scaling (if specified), and removing variables with zero or near-zero variability. The function
 also checks for multicollinearity in the data and addresses it if detected.
 
 The core of the function involves determining the optimal number of variables to retain in the model.

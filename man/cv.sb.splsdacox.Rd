@@ -221,7 +221,7 @@ discriminative ability, and calibration. The function then identifies the optima
 that yield the best performance based on the specified evaluation metrics.
 
 The function also offers flexibility in data preprocessing, such as centering and scaling of the
-explanatory variables, removal of near-zero variance variables, and more. Additionally, users can
+explanatory variables, removal of near-zero variability variables, and more. Additionally, users can
 specify the AUC evaluation algorithm method (\code{pred.method}) and control the verbosity of the
 output (\code{verbose}).
 

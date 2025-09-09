@@ -14,7 +14,7 @@
 #' @details
 #' The function begins by checking the input parameters for consistency and ensuring that the response
 #' variable Y has the required columns "time" and "event". It then preprocesses the data by centering
-#' and scaling (if specified), and removing variables with zero or near-zero variance. The function
+#' and scaling (if specified), and removing variables with zero or near-zero variability. The function
 #' also checks for multicollinearity in the data and addresses it if detected.
 #'
 #' The core of the function involves determining the optimal number of variables to retain in the model.
@@ -508,7 +508,7 @@ splsdacox <- function(X, Y,
 #' It then checks the validity of the input parameters, such as ensuring that the response variables
 #' have the appropriate column names ("time" and "event") and that the evaluation weights sum to 1.
 #'
-#' Data preprocessing steps include the potential removal of variables with zero or near-zero variance,
+#' Data preprocessing steps include the potential removal of variables with zero or near-zero variability,
 #' and the transformation of explanatory variables to ensure they are centered or scaled as specified.
 #' The function also provides an option to remove variables based on their coefficient of variation.
 #'

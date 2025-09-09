@@ -34,11 +34,11 @@ optimal components and variables for the sPLS Cox model.}
 
 \item{x.scale}{Logical. If TRUE, the X matrix is scaled to unit variance (default: FALSE).}
 
-\item{remove_near_zero_variance}{Logical. If TRUE, near-zero variance variables are removed (default: TRUE).}
+\item{remove_near_zero_variance}{Logical. If TRUE, near-zero variability variables are removed (default: TRUE).}
 
 \item{remove_zero_variance}{Logical. If TRUE, zero-variance variables are removed (default: TRUE).}
 
-\item{toKeep.zv}{Character vector. Names of variables in X to retain despite near-zero variance filtering (default: NULL).}
+\item{toKeep.zv}{Character vector. Names of variables in X to retain despite near-zero variability filtering (default: NULL).}
 
 \item{remove_non_significant}{Logical. If TRUE, non-significant variables/components in the final Cox model
 are removed through forward selection (default: FALSE).}
@@ -76,7 +76,7 @@ An object of class "Coxmos" and model "isb.splsdrcox", containing:
 \item \code{Y_input}: Original Y matrix (or NA if not returned).
 \item \code{alpha}: Significance threshold used.
 \item \code{nsv}: Variables removed due to non-significance.
-\item \code{nzv}: Variables removed due to near-zero variance.
+\item \code{nzv}: Variables removed due to near-zero variability.
 \item \code{nz_coeffvar}: Variables removed due to near-zero coefficient of variation.
 \item \code{class}: Model class.
 \item \code{time}: Time taken to run the analysis.

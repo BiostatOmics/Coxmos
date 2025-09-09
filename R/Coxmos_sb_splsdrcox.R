@@ -25,7 +25,7 @@
 #' the model. This allows for a balance between model complexity and interpretability.
 #'
 #' Data preprocessing options, such as centering and scaling of the explanatory variables and removal
-#' of near-zero variance variables, are also provided. These preprocessing steps ensure that the data
+#' of near-zero variability variables, are also provided. These preprocessing steps ensure that the data
 #' is in a suitable format for the sPLS model and can help improve the stability and performance of
 #' the analysis.
 #'
@@ -352,7 +352,7 @@ sb.splsdrcox_penalty <- function (X, Y,
 #' that yield the best performance based on the specified evaluation metrics.
 #'
 #' The function also offers flexibility in data preprocessing, such as centering and scaling of the
-#' explanatory variables, removal of near-zero variance variables, and more. Additionally, users can
+#' explanatory variables, removal of near-zero variability variables, and more. Additionally, users can
 #' specify the AUC evaluation algorithm method (`pred.method`) and control the verbosity of the
 #' output (`verbose`).
 #'

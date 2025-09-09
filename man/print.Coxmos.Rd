@@ -23,7 +23,7 @@ The \code{print.Coxmos} function serves as a diagnostic tool, offering a compreh
 of the Coxmos object's attributes. Depending on the nature of the Coxmos object—whether it's derived
 from a survival model or a cross-validated model—the function tailors its output accordingly. For
 survival models, it elucidates the method employed, any variables removed due to high correlation,
-zero or near-zero variance, or non-significance within the Cox model, and presents a summary of
+zero or near-zero variability, or non-significance within the Cox model, and presents a summary of
 the survival model itself. In the context of cross-validated models, the function delineates the
 cross-validation method utilized and, if ascertainable, details of the best model. For evaluation
 objects, it systematically enumerates the methods evaluated and provides a summary of metrics for

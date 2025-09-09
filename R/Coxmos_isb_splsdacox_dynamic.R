@@ -25,9 +25,9 @@
 #' optimal components and variables for the sPLS Cox model.
 #' @param x.center Logical. If TRUE, the X matrix is centered to zero means (default: TRUE).
 #' @param x.scale Logical. If TRUE, the X matrix is scaled to unit variance (default: FALSE).
-#' @param remove_near_zero_variance Logical. If TRUE, near-zero variance variables are removed (default: TRUE).
+#' @param remove_near_zero_variance Logical. If TRUE, near-zero variability variables are removed (default: TRUE).
 #' @param remove_zero_variance Logical. If TRUE, zero-variance variables are removed (default: TRUE).
-#' @param toKeep.zv Character vector. Names of variables in X to retain despite near-zero variance filtering (default: NULL).
+#' @param toKeep.zv Character vector. Names of variables in X to retain despite near-zero variability filtering (default: NULL).
 #' @param remove_non_significant Logical. If TRUE, non-significant variables/components in the final Cox model
 #' are removed through forward selection (default: FALSE).
 #' @param alpha Numeric. Significance threshold (default: 0.05).
@@ -59,7 +59,7 @@
 #'   \item \code{Y_input}: Original Y matrix (or NA if not returned).
 #'   \item \code{alpha}: Significance threshold used.
 #'   \item \code{nsv}: Variables removed due to non-significance.
-#'   \item \code{nzv}: Variables removed due to near-zero variance.
+#'   \item \code{nzv}: Variables removed due to near-zero variability.
 #'   \item \code{nz_coeffvar}: Variables removed due to near-zero coefficient of variation.
 #'   \item \code{class}: Model class.
 #'   \item \code{time}: Time taken to run the analysis.
@@ -326,7 +326,7 @@ isb.splsdacox <- function(X, Y,
 #' @param k_folds Numeric. Number of folds for cross-validation (default: 10).
 #' @param x.center Logical. If TRUE, the X matrix is centered to zero means (default: TRUE).
 #' @param x.scale Logical. If TRUE, the X matrix is scaled to unit variances (default: FALSE).
-#' @param remove_near_zero_variance Logical. If TRUE, near-zero variance variables are removed (default: TRUE).
+#' @param remove_near_zero_variance Logical. If TRUE, near-zero variability variables are removed (default: TRUE).
 #' @param remove_zero_variance Logical. If TRUE, zero-variance variables are removed (default: TRUE).
 #' @param toKeep.zv Character vector. Names of variables in X to retain despite variance filtering (default: NULL).
 #' @param remove_variance_at_fold_level Logical. If TRUE, variance filtering is applied at the fold level (default: FALSE).

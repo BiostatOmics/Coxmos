@@ -358,7 +358,7 @@ norm01 <- function(x){
 #' of the Coxmos object's attributes. Depending on the nature of the Coxmos object—whether it's derived
 #' from a survival model or a cross-validated model—the function tailors its output accordingly. For
 #' survival models, it elucidates the method employed, any variables removed due to high correlation,
-#' zero or near-zero variance, or non-significance within the Cox model, and presents a summary of
+#' zero or near-zero variability, or non-significance within the Cox model, and presents a summary of
 #' the survival model itself. In the context of cross-validated models, the function delineates the
 #' cross-validation method utilized and, if ascertainable, details of the best model. For evaluation
 #' objects, it systematically enumerates the methods evaluated and provides a summary of metrics for
@@ -392,7 +392,7 @@ print.Coxmos <- function(x, ...){
     }
 
     if("removed_variables" %in% names(x) && !is.null(x$removed_variables)){
-      message(paste0("A total of ", length(x$nzv), " variables have been removed due to Zero or Near-Zero Variance filter.\n\n"))
+      message(paste0("A total of ", length(x$nzv), " variables have been removed due to Zero or near-zero variability filter.\n\n"))
     }
 
     if("nsv" %in% names(x) && !is.null(x$nsv)){
@@ -515,18 +515,18 @@ getEPV <- function(X,Y){
 
 #' deleteZeroOrNearZeroVariance
 #' @description Provides a robust mechanism to filter out variables from a dataset that exhibit zero
-#' or near-zero variance, thereby enhancing the quality and interpretability of subsequent statistical
+#' or near-zero variability, thereby enhancing the quality and interpretability of subsequent statistical
 #' analyses.
 #'
 #' @details The `deleteZeroOrNearZeroVariance` function is an indispensable tool in the preprocessing
 #' phase of statistical modeling. In many datasets, especially high-dimensional ones, certain variables
-#' might exhibit zero or near-zero variance. Such variables can be problematic as they offer limited
+#' might exhibit zero or near-zero variability. Such variables can be problematic as they offer limited
 #' information variance and can potentially distort the results of statistical models, leading to
 #' issues like overfitting. By leveraging the `caret::nearZeroVar()` function, this tool offers a
 #' rigorous method to identify and exclude these variables. Users are afforded flexibility in their
-#' choices, with options to remove only zero variance variables, near-zero variance variables, or
+#' choices, with options to remove only zero variance variables, near-zero variability variables, or
 #' both. The function also provides the capability to set a frequency cutoff, `freqCut`, which
-#' determines the threshold for near-zero variance based on the ratio of the most frequent value to
+#' determines the threshold for near-zero variability based on the ratio of the most frequent value to
 #' the second most frequent value. For scenarios where certain variables are deemed essential and
 #' should not be removed regardless of their variance, the `toKeep.zv` parameter allows users to
 #' specify a list of such variables.

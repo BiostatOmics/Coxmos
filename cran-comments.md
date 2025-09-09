@@ -3,6 +3,7 @@ This resubmission incorporates the following adjustments:
 
 - All PARALLEL functions now allow you to specify the number of cores to use with the n_cores parameter. Using fewer cores will result in lower RAM memory usage during parallelization.
 - Updated 'mb.splsdacox' and 'mb.splsdrcox' models to return the design matrix used for the relationship between blocks.
+- Updated 'near-zero variance' to 'near-zero variability' for a more consistent name.
 
 # CRAN Submission Comments (2025-07-30)
 This resubmission incorporates the following adjustments:

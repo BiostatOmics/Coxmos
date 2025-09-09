@@ -204,7 +204,7 @@ The function begins by ensuring that the required libraries for evaluation metri
 It then checks the validity of the input parameters, such as ensuring that the response variables
 have the appropriate column names ("time" and "event") and that the evaluation weights sum to 1.
 
-Data preprocessing steps include the potential removal of variables with zero or near-zero variance,
+Data preprocessing steps include the potential removal of variables with zero or near-zero variability,
 and the transformation of explanatory variables to ensure they are centered or scaled as specified.
 The function also provides an option to remove variables based on their coefficient of variation.
 

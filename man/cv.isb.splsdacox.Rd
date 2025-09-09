@@ -74,7 +74,7 @@ For the event column, accepted values are 0/1 or FALSE/TRUE for censored and eve
 
 \item{x.scale}{Logical. If TRUE, the X matrix is scaled to unit variances (default: FALSE).}
 
-\item{remove_near_zero_variance}{Logical. If TRUE, near-zero variance variables are removed (default: TRUE).}
+\item{remove_near_zero_variance}{Logical. If TRUE, near-zero variability variables are removed (default: TRUE).}
 
 \item{remove_zero_variance}{Logical. If TRUE, zero-variance variables are removed (default: TRUE).}
 
