@@ -184,7 +184,7 @@ information).
 
 \code{opt.comp}: Optimal component selected by the best_model.
 \code{opt.nvar}: Optimal number of variables selected by the best_model.
-\code{design}: Design matrix used for computing the MultiBlocks models.
+\code{design}: Design used for the strength of the relationship to be modeled between blocks.
 
 \code{plot_AIC}: AIC plot by each hyper-parameter.
 \code{plot_C.Index}: C-Index plot by each hyper-parameter.
