@@ -2201,7 +2201,7 @@ plot_divergent.biplot <- function(X, Y, NAMEVAR1, NAMEVAR2, BREAKTIME, x.text = 
 #' @param legend_title Character. Legend title (default: NULL).
 #' @param top Numeric. Show "top" first variables. If top = NULL, all variables are shown (default: NULL).
 #' @param only_top Logical. If "only_top" = TRUE, then only top/radius loading variables will be
-#' shown in loading or biplot graph (default: FALSE).
+#' shown in loading or biplot graph (default: TRUE).
 #' @param radius Numeric. Radius size (loading/scale value) to plot variable names that are greater
 #' than the radius value (default: NULL).
 #' @param names Logical. Show loading names for top variables or for those that are outside the radius
@@ -2210,7 +2210,8 @@ plot_divergent.biplot <- function(X, Y, NAMEVAR1, NAMEVAR2, BREAKTIME, x.text = 
 #' @param text.size Numeric. Text size (default: 2).
 #' @param overlaps Numeric. Number of overlaps to show when plotting loading names. Recommended to be the same as top parameter (default: 10).
 #' @param ellipses Logical. If "ellipses" = TRUE, then ellipses are created for factor coloring (default: TRUE).
-#' @param scale_loadings Logical. If "scale_loadings" is set to TRUE, then the loadings are also scaled to the `[-1,1]` range specifically for biplot visualization (default: FALSE).
+#' @param scale_loadings Logical. If "scale_loadings" is set to TRUE, then the loadings are also scaled to the `[-1,1]` range specifically for biplot visualization (default: TRUE).
+#' @param scale_scores Logical. If "scale_scores" is set to TRUE, then the scores are also scaled to the `[-1,1]` range specifically for biplot visualization (default: TRUE).
 #'
 #' @return A list of two elements.
 #' \code{plot}: Score, Loading or Biplot graph in 'ggplot2' format.
@@ -2228,8 +2229,8 @@ plot_divergent.biplot <- function(X, Y, NAMEVAR1, NAMEVAR2, BREAKTIME, x.text = 
 #' plot_sPLS_Coxmos(splsicox.model, comp = c(1,2), mode = "scores")
 
 plot_sPLS_Coxmos <- function(model, comp = c(1,2), mode = "scores", factor = NULL, legend_title = NULL,
-                            top = NULL, only_top = FALSE, radius = NULL, names = TRUE, colorReverse = FALSE,
-                            text.size = 2, overlaps = 10, ellipses = TRUE, scale_loadings = FALSE){
+                            top = NULL, only_top = TRUE, radius = NULL, names = TRUE, colorReverse = FALSE,
+                            text.size = 2, overlaps = 10, ellipses = TRUE, scale_loadings = TRUE, scale_scores = TRUE){
 
   if(!isa(model,pkg.env$model_class)){
     warning("Model must be an object of class Coxmos.")
@@ -2246,7 +2247,9 @@ plot_sPLS_Coxmos <- function(model, comp = c(1,2), mode = "scores", factor = NUL
                          top = top, only_top = only_top,
                          radius = radius, names = names,
                          colorReverse = colorReverse, text.size = text.size,
-                         overlaps = overlaps, ellipses = ellipses, scale_loadings = scale_loadings)
+                         overlaps = overlaps, ellipses = ellipses,
+                         scale_loadings = scale_loadings,
+                         scale_scores = scale_scores)
 
   }else if(attr(model, "model") %in% pkg.env$multiblock_methods){
     plot_Coxmos.MB.PLS.model(model = model,
@@ -2257,7 +2260,9 @@ plot_sPLS_Coxmos <- function(model, comp = c(1,2), mode = "scores", factor = NUL
                             top = top, only_top = only_top,
                             radius = radius, names = names,
                             colorReverse = colorReverse, text.size = text.size,
-                            overlaps = overlaps, ellipses = ellipses, scale_loadings = scale_loadings)
+                            overlaps = overlaps, ellipses = ellipses,
+                            scale_loadings = scale_loadings,
+                            scale_scores = scale_scores)
   }else{
     stop("Model must be a PLS Coxmos model.")
   }
@@ -2405,11 +2410,12 @@ plot_pls_1comp <- function(matrix, mode = "loadings", factor_col = NULL, n_top =
 #' @param overlaps Numeric. Number of overlaps to show when plotting loading names (default: 10).
 #' @param ellipses Logical. If "ellipses" = TRUE, then ellipses are created for factor coloring (default: TRUE).
 #' @param scale_loadings Logical. If "scale_loadings" is set to TRUE, then the loadings are also scaled to the `[-1,1]` range specifically for biplot visualization (default: FALSE).
+#' @param scale_scores Logical. If "scale_scores" is set to TRUE, then the scores are also scaled to the `[-1,1]` range specifically for biplot visualization (default: FALSE).
 
 plot_Coxmos.PLS.model <- function(model, comp = c(1,2), mode = "scores", factor = NULL,
                                   legend_title = NULL, top = NULL, only_top = FALSE, radius = NULL,
                                   names = TRUE, colorReverse = FALSE, text.size = 2, overlaps = 10,
-                                  ellipses = TRUE, scale_loadings = FALSE){
+                                  ellipses = TRUE, scale_loadings = FALSE, scale_scores = FALSE){
 
   MAX_POINTS = 1000
   MAX_LOADINGS = 15
@@ -2426,13 +2432,13 @@ plot_Coxmos.PLS.model <- function(model, comp = c(1,2), mode = "scores", factor 
     radius <- NULL
   }
 
-  modes <- c("scores", "loadings", "biplot")
+  modes <- c("score", "scores", "loadings", "loadings", "biplot")
   if(!mode %in% modes){
     stop_quietly(paste0("mode must be one of the following: ", paste0(modes, collapse = ", ")))
   }
 
   if(!is.null(factor)){
-    if(!is.factor(factor) & mode %in% c("scores", "biplot")){
+    if(!is.factor(factor) & mode %in% c("score", "scores", "biplot")){
       stop_quietly("Factor must be a factor object.")
     }
   }else{
@@ -2450,7 +2456,7 @@ plot_Coxmos.PLS.model <- function(model, comp = c(1,2), mode = "scores", factor 
   #### ### #
   # SCORES #
   #### ### #
-  if(mode=="scores"){
+  if(mode %in% c("score", "scores")){
 
     if(ncol(aux.model$X$scores)==1){
       message("The model has only 1 component")
@@ -2524,7 +2530,7 @@ plot_Coxmos.PLS.model <- function(model, comp = c(1,2), mode = "scores", factor 
   #### ### ###
   # LOADINGS #
   #### ### ###
-  }else if(mode=="loadings"){
+  }else if(mode %in% c("loading", "loadings")){
 
     if(ncol(aux.model$X$loadings)==1){
       message("The model has only 1 component")
@@ -2533,6 +2539,10 @@ plot_Coxmos.PLS.model <- function(model, comp = c(1,2), mode = "scores", factor 
 
       df <- cbind(aux.model$X$loadings[,1])
       colnames(df) <- c("p1")
+
+      #retrieve real names
+      df_rownames <- retransformIllegalChars(rownames(df))
+      rownames(df) <- df_rownames
 
       ggp <- plot_pls_1comp(matrix = df, mode = "loadings", n_top = top)
 
@@ -2553,6 +2563,9 @@ plot_Coxmos.PLS.model <- function(model, comp = c(1,2), mode = "scores", factor 
 
     }else{
       df <- as.data.frame(aux.model$X$loadings)
+      #retrieve real names
+      df_rownames <- retransformIllegalChars(rownames(df))
+      rownames(df) <- df_rownames
     }
 
     if(nrow(df)<MAX_LOADINGS){
@@ -2632,6 +2645,10 @@ plot_Coxmos.PLS.model <- function(model, comp = c(1,2), mode = "scores", factor 
       FLAG_1_COMP = TRUE
 
       df <- cbind(aux.model$X$loadings[,1])
+      #retrieve real names
+      df_rownames <- retransformIllegalChars(rownames(df))
+      rownames(df) <- df_rownames
+
       colnames(df) <- c("p1")
       ggp_loadings <- plot_pls_1comp(matrix = df, mode = "loadings", n_top = top)
 
@@ -2673,6 +2690,10 @@ plot_Coxmos.PLS.model <- function(model, comp = c(1,2), mode = "scores", factor 
       df <- as.data.frame(aux.model$X$scores)
 
       df_loading <- as.data.frame(aux.model$X$loadings)
+      #retrieve real names
+      df_rownames <- retransformIllegalChars(rownames(df_loading))
+      rownames(df_loading) <- df_rownames
+
       max.loadings <- apply(abs(df_loading), 2, max)
       max.scores <- apply(abs(df), 2, max)
 
@@ -2680,7 +2701,9 @@ plot_Coxmos.PLS.model <- function(model, comp = c(1,2), mode = "scores", factor 
     }
 
     #scale scores to -1,1
-    df[,comp] <- norm01(df[,comp])*2-1
+    if(scale_scores){
+      df[,comp] <- norm01(df[,comp])*2-1
+    }
     ggp <- ggplot(as.data.frame(df))
 
     if(nrow(df) > MAX_POINTS){
@@ -2733,7 +2756,7 @@ plot_Coxmos.PLS.model <- function(model, comp = c(1,2), mode = "scores", factor 
     }
 
     if(nrow(df_loading)<MAX_LOADINGS){
-      subdata_loading <- df_loading
+      subdata_loading <- df_loading[,comp,drop=F]
     }else if(!is.null(top)){
       aux_loadings <- apply(df_loading,1,function(x){sqrt(crossprod(as.numeric(x[comp])))})
       aux_loadings <- aux_loadings[order(aux_loadings, decreasing = TRUE)]
@@ -2744,15 +2767,24 @@ plot_Coxmos.PLS.model <- function(model, comp = c(1,2), mode = "scores", factor 
       subdata_loading <- NULL
     }
 
+    #comp selected
     if(scale_loadings){
       #scale loadings to -1,1
-      subdata_loading <- norm01(subdata_loading[,comp,drop=F])*2-1
+      subdata_loading <- norm01(subdata_loading)*2-1
     }
 
     #depending on DF instead of df_loadings - ARROWS
     if(any(!is.null(top), !is.null(radius))){
 
       no_selected_loadings <- df_loading[!rownames(df_loading) %in% rownames(subdata_loading),]
+
+      if(scale_loadings){
+        #scale loadings to -1,1
+
+        #already correct components
+        no_selected_loadings <- norm01(no_selected_loadings)*2-1
+      }
+
       if(nrow(no_selected_loadings)!=0 & !only_top){
         ggp <- ggp + geom_segment(data = no_selected_loadings, lineend = "butt", linejoin = "mitre", size = 0.2,
                                   aes(x = 0, y = 0, xend = no_selected_loadings[,comp[1]],
@@ -2760,14 +2792,23 @@ plot_Coxmos.PLS.model <- function(model, comp = c(1,2), mode = "scores", factor 
                                   arrow = arrow(length = unit(0.1, "cm")))
       }
 
+      # already seected with correct components
       ggp <- ggp + geom_segment(data = subdata_loading, lineend = "butt", linejoin = "mitre",
-                                size = 0.33, aes(x = 0, y = 0, xend = subdata_loading[,comp[1]],
-                                                 yend = subdata_loading[,comp[2]]),
+                                size = 0.33, aes(x = 0, y = 0, xend = subdata_loading[,1],
+                                                 yend = subdata_loading[,2]),
                                 arrow = arrow(length = unit(0.1, "cm")))
 
     }else{
       #show all loadings
       no_selected_loadings <- df_loading[!rownames(df_loading) %in% rownames(subdata_loading),]
+
+      if(scale_loadings){
+        #scale loadings to -1,1
+
+        #already correct components
+        no_selected_loadings <- norm01(no_selected_loadings)*2-1
+      }
+
       ggp <- ggp + geom_segment(data = no_selected_loadings, lineend = "butt", linejoin = "mitre", size = 0.2,
                                 aes(x = 0, y = 0, xend = no_selected_loadings[,comp[1]],
                                     yend = no_selected_loadings[,comp[2]]),
@@ -2775,8 +2816,9 @@ plot_Coxmos.PLS.model <- function(model, comp = c(1,2), mode = "scores", factor 
     }
 
     if(names & !is.null(subdata_loading)){
-      ggp <- ggp + ggrepel::geom_text_repel(data = subdata_loading, aes(x = subdata_loading[,comp[1]],
-                                                                        y = subdata_loading[,comp[2]]),
+      # already seected with correct components
+      ggp <- ggp + ggrepel::geom_text_repel(data = subdata_loading, aes(x = subdata_loading[,1],
+                                                                        y = subdata_loading[,2]),
                                             max.overlaps = getOption("ggrepel.max.overlaps", default = overlaps),
                                             label = rownames(subdata_loading), size=text.size)
     }
@@ -2845,11 +2887,12 @@ plot_Coxmos.PLS.model <- function(model, comp = c(1,2), mode = "scores", factor 
 #' @param overlaps Numeric. Number of overlaps to show when plotting loading names (default: 10).
 #' @param ellipses Logical. If "ellipses" = TRUE, then ellipses are created for factor coloring (default: TRUE).
 #' @param scale_loadings Logical. If "scale_loadings" is set to TRUE, then the loadings are also scaled to the `[-1,1]` range specifically for biplot visualization (default: FALSE).
+#' @param scale_scores Logical. If "scale_scores" is set to TRUE, then the scores are also scaled to the `[-1,1]` range specifically for biplot visualization (default: FALSE).
 
 plot_Coxmos.MB.PLS.model <- function(model, comp = c(1,2), mode = "scores", factor = NULL,
                                      legend_title = NULL, top = NULL, only_top = FALSE, radius = NULL,
                                      names = TRUE, colorReverse = FALSE, text.size = 2, overlaps = 10,
-                                     ellipses = TRUE, scale_loadings = FALSE){
+                                     ellipses = TRUE, scale_loadings = FALSE, scale_scores = FALSE){
 
   MAX_POINTS = 1000
   MAX_LOADINGS = 15
@@ -2865,13 +2908,13 @@ plot_Coxmos.MB.PLS.model <- function(model, comp = c(1,2), mode = "scores", fact
     radius <- NULL
   }
 
-  modes <- c("scores", "loadings", "biplot")
+  modes <- c("score","scores","loading","loadings", "biplot")
   if(!mode %in% modes){
     stop_quietly(paste0("mode must be one of the following: ", paste0(modes, collapse = ", ")))
   }
 
   if(!is.null(factor)){
-    if(!is.factor(factor) & mode %in% c("scores", "biplot")){
+    if(!is.factor(factor) & mode %in% c("score","scores", "biplot")){
       stop_quietly("Factor must be a factor object.")
     }
   }else{
@@ -2901,7 +2944,7 @@ plot_Coxmos.MB.PLS.model <- function(model, comp = c(1,2), mode = "scores", fact
       ### ### ###
       ### SCORES #
       ### ### ###
-      if(mode=="scores"){
+      if(mode %in% c("score","scores")){
 
         if(attr(aux.model, "model") %in% c(pkg.env$singleblock_methods)){
           if(ncol(aux.model$list_spls_models[[block]]$X$scores)==1){
@@ -3023,7 +3066,7 @@ plot_Coxmos.MB.PLS.model <- function(model, comp = c(1,2), mode = "scores", fact
       #### ### ### #
       ### LOADINGS #
       #### ### ### #
-      }else if(mode=="loadings"){
+      }else if(mode %in% c("loading","loadings")){
 
         if(attr(aux.model, "model") %in% c(pkg.env$singleblock_methods)){
           if(ncol(aux.model$list_spls_models[[block]]$X$loadings)==1){
@@ -3033,6 +3076,10 @@ plot_Coxmos.MB.PLS.model <- function(model, comp = c(1,2), mode = "scores", fact
 
             df <- cbind(aux.model$list_spls_models[[block]]$X$loadings[,1])
             colnames(df) <- c("p1")
+
+            #retrieve real names
+            df_rownames <- retransformIllegalChars(rownames(df))
+            rownames(df) <- df_rownames
 
             ggp <- plot_pls_1comp(matrix = df, mode = "loadings", n_top = top)
 
@@ -3053,6 +3100,9 @@ plot_Coxmos.MB.PLS.model <- function(model, comp = c(1,2), mode = "scores", fact
 
           }else{
             df <- as.data.frame(aux.model$list_spls_models[[block]]$X$loadings)
+            #retrieve real names
+            df_rownames <- retransformIllegalChars(rownames(df))
+            rownames(df) <- df_rownames
           }
         }else{ #multiblock
           if(ncol(aux.model$X$loadings[[block]])==1){
@@ -3062,6 +3112,10 @@ plot_Coxmos.MB.PLS.model <- function(model, comp = c(1,2), mode = "scores", fact
 
             df <- cbind(aux.model$X$loadings[[block]][,1])
             colnames(df) <- c("p1")
+
+            #retrieve real names
+            df_rownames <- retransformIllegalChars(rownames(df))
+            rownames(df) <- df_rownames
 
             ggp <- plot_pls_1comp(matrix = df, mode = "loadings", n_top = top)
 
@@ -3082,6 +3136,9 @@ plot_Coxmos.MB.PLS.model <- function(model, comp = c(1,2), mode = "scores", fact
 
           }else{
             df <- as.data.frame(aux.model$X$loadings[[block]])
+            #retrieve real names
+            df_rownames <- retransformIllegalChars(rownames(df))
+            rownames(df) <- df_rownames
           }
         }
 
@@ -3168,6 +3225,10 @@ plot_Coxmos.MB.PLS.model <- function(model, comp = c(1,2), mode = "scores", fact
 
             df <- cbind(aux.model$list_spls_models[[block]]$X$loadings[,1])
             colnames(df) <- c("p1")
+            #retrieve real names
+            df_rownames <- retransformIllegalChars(rownames(df))
+            rownames(df) <- df_rownames
+
             ggp_loadings <- plot_pls_1comp(matrix = df, mode = "loadings", n_top = top)
 
             df <- cbind(aux.model$list_spls_models[[block]]$X$scores[,1])
@@ -3208,6 +3269,10 @@ plot_Coxmos.MB.PLS.model <- function(model, comp = c(1,2), mode = "scores", fact
             df <- as.data.frame(aux.model$list_spls_models[[block]]$X$scores)
 
             df_loading <- as.data.frame(aux.model$list_spls_models[[block]]$X$loadings)
+            #retrieve real names
+            df_rownames <- retransformIllegalChars(rownames(df_loading))
+            rownames(df_loading) <- df_rownames
+
             max.loadings <- apply(abs(df_loading), 2, max)
             max.scores <- apply(abs(df), 2, max)
 
@@ -3225,6 +3290,10 @@ plot_Coxmos.MB.PLS.model <- function(model, comp = c(1,2), mode = "scores", fact
 
             df <- cbind(aux.model$X$loadings[[block]][,1])
             colnames(df) <- c("p1")
+            #retrieve real names
+            df_rownames <- retransformIllegalChars(rownames(df))
+            rownames(df) <- df_rownames
+
             ggp_loadings <- plot_pls_1comp(matrix = df, mode = "loadings", n_top = top)
 
             df <- cbind(aux.model$X$scores[[block]][,1])
@@ -3265,6 +3334,10 @@ plot_Coxmos.MB.PLS.model <- function(model, comp = c(1,2), mode = "scores", fact
             df <- as.data.frame(aux.model$X$scores[[block]])
 
             df_loading <- as.data.frame(aux.model$X$loadings[[block]])
+            #retrieve real names
+            df_rownames <- retransformIllegalChars(rownames(df_loading))
+            rownames(df_loading) <- df_rownames
+
             #sometimes all 0s
             df_loading <- df_loading[which(rowSums(df_loading) != 0),]
 
@@ -3281,6 +3354,10 @@ plot_Coxmos.MB.PLS.model <- function(model, comp = c(1,2), mode = "scores", fact
 
         #scale scores to -1,1
         # df <- norm01(df[,comp])*2-1
+        if(scale_scores){
+          df[,comp] <- norm01(df[,comp])*2-1
+        }
+
         ggp <- ggplot(as.data.frame(df))
 
         if(nrow(df) > MAX_POINTS){
@@ -3297,12 +3374,24 @@ plot_Coxmos.MB.PLS.model <- function(model, comp = c(1,2), mode = "scores", fact
 
         if("R2" %in% names(model)){
           txt.expression <- paste0("Biplot (",attr(aux.model, "model"),") - ", block, " - ")
-          R2_ind <- R2_indv(model$R2)
+
+          if(attr(aux.model, "model") %in% c(pkg.env$singleblock_methods)){
+            R2_ind <- R2_indv(aux.model$R2[[block]])
+          }else{
+            # MB is different from HD
+            R2_ind <- aux.model$R2[[block]]
+          }
 
           r2_1 <- round(R2_ind[[comp[1]]], 4)
           r2_2 <- round(R2_ind[[comp[2]]], 4)
           #r2 <- round(sum(r2_1, r2_2), 4)
-          r2 <- round(model$R2[length(model$R2)][[1]], 4)
+
+          if(attr(aux.model, "model") %in% c(pkg.env$singleblock_methods)){
+            r2 <- round(aux.model$R2[[block]][length(aux.model$R2[[block]])][[1]], 4)
+          }else{
+            # MB is different from HD
+            r2 <- round(sum(R2_ind), 4)
+          }
 
           if(FLAG_1_COMP){
             ggp <- ggp + ggtitle(label = bquote(.(txt.expression) ~R^2 == .(r2))) +
@@ -3333,7 +3422,7 @@ plot_Coxmos.MB.PLS.model <- function(model, comp = c(1,2), mode = "scores", fact
         }
 
         if(nrow(df_loading)<MAX_LOADINGS){
-          subdata_loading <- df_loading
+          subdata_loading <- df_loading[,comp,drop=F]
         }else if(!is.null(top)){
           aux_loadings <- apply(df_loading,1,function(x){sqrt(crossprod(as.numeric(x[comp])))})
           aux_loadings <- aux_loadings[order(aux_loadings, decreasing = TRUE)]
@@ -3346,13 +3435,23 @@ plot_Coxmos.MB.PLS.model <- function(model, comp = c(1,2), mode = "scores", fact
 
         if(scale_loadings){
           #scale loadings to -1,1
-          subdata_loading <- norm01(subdata_loading[,comp,drop=F])*2-1
+
+          #already correct components
+          subdata_loading <- norm01(subdata_loading)*2-1
         }
 
         #depending on DF instead of df_loadings - ARROWS
         if(any(!is.null(top), !is.null(radius))){
 
           no_selected_loadings <- df_loading[!rownames(df_loading) %in% rownames(subdata_loading),]
+
+          if(scale_loadings){
+            #scale loadings to -1,1
+
+            #already correct components
+            no_selected_loadings <- norm01(no_selected_loadings)*2-1
+          }
+
           if(nrow(no_selected_loadings)!=0 & !only_top){
             ggp <- ggp + geom_segment(data = no_selected_loadings, lineend = "butt", linejoin = "mitre", size = 0.2,
                                       aes(x = 0, y = 0, xend = no_selected_loadings[,comp[1]],
@@ -3360,14 +3459,23 @@ plot_Coxmos.MB.PLS.model <- function(model, comp = c(1,2), mode = "scores", fact
                                       arrow = arrow(length = unit(0.1, "cm")))
           }
 
+          #already correct components
           ggp <- ggp + geom_segment(data = subdata_loading, lineend = "butt", linejoin = "mitre",
-                                    size = 0.33, aes(x = 0, y = 0, xend = subdata_loading[,comp[1]],
-                                                     yend = subdata_loading[,comp[2]]),
+                                    size = 0.33, aes(x = 0, y = 0, xend = subdata_loading[,1],
+                                                     yend = subdata_loading[,2]),
                                     arrow = arrow(length = unit(0.1, "cm")))
 
         }else{
           #show all loadings
           no_selected_loadings <- df_loading[!rownames(df_loading) %in% rownames(subdata_loading),]
+
+          if(scale_loadings){
+            #scale loadings to -1,1
+
+            #already correct components
+            no_selected_loadings <- norm01(no_selected_loadings)*2-1
+          }
+
           ggp <- ggp + geom_segment(data = no_selected_loadings, lineend = "butt", linejoin = "mitre", size = 0.2,
                                     aes(x = 0, y = 0, xend = no_selected_loadings[,comp[1]],
                                         yend = no_selected_loadings[,comp[2]]),
@@ -3375,8 +3483,9 @@ plot_Coxmos.MB.PLS.model <- function(model, comp = c(1,2), mode = "scores", fact
         }
 
         if(names & !is.null(subdata_loading)){
-          ggp <- ggp + ggrepel::geom_text_repel(data = subdata_loading, aes(x = subdata_loading[,comp[1]],
-                                                                            y = subdata_loading[,comp[2]]),
+          #already correct components
+          ggp <- ggp + ggrepel::geom_text_repel(data = subdata_loading, aes(x = subdata_loading[,1],
+                                                                            y = subdata_loading[,2]),
                                                 max.overlaps = getOption("ggrepel.max.overlaps", default = overlaps),
                                                 label = rownames(subdata_loading), size=text.size)
         }
@@ -4317,6 +4426,7 @@ plot_pseudobeta <- function(model, error.bar = TRUE, onlySig = FALSE, alpha = 0.
                   sd.max = sd.max))
     }
 
+    #retrieve real names
     plot <- coxweightplot.fromVector.Coxmos(model = model, vector = vector,
                                            sd.min = sd.min, sd.max = sd.max, auto.limits = auto.limits,
                                            zero.rm = zero.rm, top = top, selected_variables = selected_variables,
@@ -4492,6 +4602,17 @@ plot_pseudobeta <- function(model, error.bar = TRUE, onlySig = FALSE, alpha = 0.
       plot$plot <- plot$plot + labs(subtitle = subtitle)
     }
 
+    rn <- retransformIllegalChars(rownames(vector))
+    rownames(vector) <- rn
+
+    if(!is.null(sd.min)){
+      rn <- retransformIllegalChars(rownames(sd.min))
+      rownames(sd.min) <- rn
+
+      rn <- retransformIllegalChars(rownames(sd.max))
+      rownames(sd.max) <- rn
+    }
+
     return(list(plot = plot$plot,
                 beta = vector,
                 sd.min = sd.min,
@@ -4502,6 +4623,19 @@ plot_pseudobeta <- function(model, error.bar = TRUE, onlySig = FALSE, alpha = 0.
     aux_plot <- list()
     for(b in names(model$X$data)){
       aux_vector[[b]] <- plot[[b]]$coefficients
+
+      # update names
+      rn <- retransformIllegalChars(rownames(aux_vector[[b]]))
+      rownames(aux_vector[[b]]) <- rn
+
+      if(!is.null(sd.min[[b]])){
+        rn <- retransformIllegalChars(rownames(sd.min[[b]]))
+        rownames(sd.min[[b]]) <- rn
+
+        rn <- retransformIllegalChars(rownames(sd.max[[b]]))
+        rownames(sd.max[[b]]) <- rn
+      }
+
       aux_plot[[b]] <- plot[[b]]$plot
       aux_plot[[b]] <- aux_plot[[b]] + theme(plot.title = element_text(size = title_size_text),
                                              plot.subtitle = element_text(size = subtitle_size_text),

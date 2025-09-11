@@ -18,7 +18,8 @@ plot_Coxmos.MB.PLS.model(
   text.size = 2,
   overlaps = 10,
   ellipses = TRUE,
-  scale_loadings = FALSE
+  scale_loadings = FALSE,
+  scale_scores = FALSE
 )
 }
 \arguments{
@@ -54,6 +55,8 @@ size (default: TRUE).}
 \item{ellipses}{Logical. If "ellipses" = TRUE, then ellipses are created for factor coloring (default: TRUE).}
 
 \item{scale_loadings}{Logical. If "scale_loadings" is set to TRUE, then the loadings are also scaled to the \verb{[-1,1]} range specifically for biplot visualization (default: FALSE).}
+
+\item{scale_scores}{Logical. If "scale_scores" is set to TRUE, then the scores are also scaled to the \verb{[-1,1]} range specifically for biplot visualization (default: FALSE).}
 }
 \description{
 Visualizes the Coxmos model using multiblock partial least squares (MB-PLS) approach. This

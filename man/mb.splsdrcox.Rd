@@ -163,6 +163,10 @@ elements:
 
 \code{SCT}: PLS SCT
 
+\code{alpha}: Significance threshold used.
+
+\code{nsv}: Variables removed due to non-significance.
+
 \code{nzv}: Variables removed by remove_near_zero_variance or remove_zero_variance.
 
 \code{nz_coeffvar}: Variables removed by coefficient variation near zero.

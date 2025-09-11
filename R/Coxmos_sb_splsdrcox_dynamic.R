@@ -132,6 +132,16 @@
 #'
 #' \code{Y_input}: Y input matrix
 #'
+#' \code{R2}: sPLS acumulate R2
+#'
+#' \code{SCR}: PLS SCR
+#'
+#' \code{SCT}: PLS SCT
+#'
+#' \code{alpha}: Significance threshold used.
+#'
+#' \code{nsv}: Variables removed due to non-significance.
+#'
 #' \code{nzv}: Variables removed by remove_near_zero_variance or remove_zero_variance.
 #'
 #' \code{nz_coeffvar}: Variables removed by coefficient variation near zero.
@@ -343,10 +353,15 @@ sb.splsdrcox <- function(X, Y,
     all_scores <- cbind(all_scores, aux_scores)
   }
 
-  # all_loadings <- list()
-  # for(b in names(lst_sb.spls)){
-  #   all_loadings[[b]] <- lst_sb.spls[[b]]$X$loadings
-  # }
+  # R2
+  R2 <- list()
+  SCR <- list()
+  SCT <- list()
+  for(block in names(lst_sb.spls)){
+    SCR[[block]] <- lst_sb.spls[[block]]$SCR
+    SCT[[block]] <- lst_sb.spls[[block]]$SCT
+    R2[[block]] <- lst_sb.spls[[block]]$R2
+  }
 
   t2 <- Sys.time()
   time <- difftime(t2,t1,units = "mins")
@@ -367,6 +382,9 @@ sb.splsdrcox <- function(X, Y,
                                          call = if(returnData) func_call else NA,
                                          X_input = if(returnData) X_original else NA,
                                          Y_input = if(returnData) Y_original else NA,
+                                         R2 = R2,
+                                         SCR = SCR,
+                                         SCT = SCT,
                                          alpha = alpha,
                                          nsv = removed_variables,
                                          nzv = variablesDeleted,
