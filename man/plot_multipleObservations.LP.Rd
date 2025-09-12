@@ -11,7 +11,7 @@ plot_multipleObservations.LP(
   onlySig = TRUE,
   alpha = 0.05,
   zero.rm = TRUE,
-  txt.x.angle = 0,
+  txt.x.angle = 90,
   title = NULL,
   subtitle = NULL,
   legend.position = "bottom",
@@ -34,7 +34,7 @@ threshold (default: 0.05).}
 
 \item{zero.rm}{Logical. Remove variables equal to 0 (default: TRUE).}
 
-\item{txt.x.angle}{Numeric. Angle of X text (default: 0).}
+\item{txt.x.angle}{Numeric. Angle of X text (default: 90).}
 
 \item{title}{Character. Plot title (default: NULL).}
 

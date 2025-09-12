@@ -4622,6 +4622,12 @@ plot_pseudobeta <- function(model, error.bar = TRUE, onlySig = FALSE, alpha = 0.
     aux_vector <- list()
     aux_plot <- list()
     for(b in names(model$X$data)){
+      coeff <- coefficients[grep(b,rownames(coefficients)),,drop = FALSE]
+      if(length(coeff)==0){
+        next
+      }
+
+
       aux_vector[[b]] <- plot[[b]]$coefficients
 
       # update names
@@ -4805,7 +4811,7 @@ plot_observation.pseudobeta.list <- function(lst_models, observation, error.bar 
 #' @param alpha Numeric. Numerical values are regarded as significant if they fall below the
 #' threshold (default: 0.05).
 #' @param zero.rm Logical. Remove variables with a pseudobeta equal to 0 (default: TRUE).
-#' @param txt.x.angle Numeric. Angle of X text (default: 0).
+#' @param txt.x.angle Numeric. Angle of X text (default: 90).
 #' @param title Character. Plot title (default: NULL).
 #' @param title_size_text Numeric. Text size for title (default: 15).
 #' @param subtitle Character. Plot subtitle (default: NULL).
@@ -4845,7 +4851,7 @@ plot_observation.pseudobeta.list <- function(lst_models, observation, error.bar 
 #' plot_observation.pseudobeta(model = splsicox.model, observation = X_test[1,,drop=FALSE])
 
 plot_observation.pseudobeta <- function(model, observation, error.bar = TRUE, onlySig = TRUE,
-                                       alpha = 0.05, zero.rm = TRUE, txt.x.angle = 0,
+                                       alpha = 0.05, zero.rm = TRUE, txt.x.angle = 90,
                                        title = NULL, title_size_text = 15,
                                        subtitle = NULL, subtitle_size_text = 12,
                                        legend.position = "right",
@@ -4935,16 +4941,21 @@ plot_pseudobeta.newObservation <- function(model, observation, error.bar = TRUE,
 
   coefficients <- ggp.simulated_beta$beta
 
-  if(all(coefficients==0)){
+  if(is.null(coefficients) || all(coefficients==0)){
     warning("No significant variables selected.")
     return(NULL)
   }
+
+  rownames(coefficients) <- transformIllegalChars(rownames(coefficients))
 
   coeff.min <- NULL
   coeff.max <- NULL
   if(error.bar){
     coeff.min <- ggp.simulated_beta$sd.min
     coeff.max <- ggp.simulated_beta$sd.max
+
+    rownames(coeff.min) <- transformIllegalChars(rownames(coeff.min))
+    rownames(coeff.max) <- transformIllegalChars(rownames(coeff.max))
   }
 
   # Norm. patient & select model variables
@@ -5039,6 +5050,9 @@ plot_pseudobeta.newObservation <- function(model, observation, error.bar = TRUE,
     }
   }
 
+  df.pat$var <- retransformIllegalChars(df.pat$var)
+  rownames(df.pat) <- df.pat$var
+
   ggp <- ggplot(df.pat, aes(x = var, y = lp, fill = lp, color = 1)) +
     geom_bar(stat = "identity", position = "dodge")
 
@@ -5126,6 +5140,10 @@ plot_pseudobeta.newObservation <- function(model, observation, error.bar = TRUE,
       theme(legend.position = legend.position)
   }
 
+  rownames(lp.new_observation_variable) <- retransformIllegalChars(rownames(lp.new_observation_variable))
+  colnames(norm_patient) <- retransformIllegalChars(colnames(norm_patient))
+  colnames(observation) <- retransformIllegalChars(colnames(observation))
+
   return(list(plot = ggp, lp.var = lp.new_observation_variable, norm_observation = norm_patient, observation = observation))
 
 }
@@ -5173,12 +5191,21 @@ plot_MB.pseudobeta.newObservation <- function(model, observation, error.bar = TR
 
   coefficients <- ggp.simulated_beta$beta #list
 
+  for(b in names(coefficients)){
+    rownames(coefficients[[b]]) <- transformIllegalChars(rownames(coefficients[[b]]))
+  }
+
   coeff.min <- NULL
   coeff.max <- NULL
 
   if(error.bar){
     coeff.min <- ggp.simulated_beta$sd.min
     coeff.max <- ggp.simulated_beta$sd.max
+
+    for(b in names(coeff.min)){
+      rownames(coeff.min[[b]]) <- transformIllegalChars(rownames(coeff.min[[b]]))
+      rownames(coeff.max[[b]]) <- transformIllegalChars(rownames(coeff.max[[b]]))
+    }
   }
 
   #norm patient
@@ -5268,6 +5295,9 @@ plot_MB.pseudobeta.newObservation <- function(model, observation, error.bar = TR
       }
     }
 
+    df.pat$var <- retransformIllegalChars(df.pat$var)
+    rownames(df.pat) <- df.pat$var
+
     ggp <- ggplot(df.pat, aes(x = var, y = lp, fill = lp, color = 1)) +
       geom_bar(stat = "identity", position = "dodge")
 
@@ -5356,6 +5386,13 @@ plot_MB.pseudobeta.newObservation <- function(model, observation, error.bar = TR
     }
 
     lst_plots[[b]] <- ggp
+
+    for(b in names(lp.new_observation_variable)){
+      rownames(lp.new_observation_variable[[b]]) <- retransformIllegalChars(rownames(lp.new_observation_variable[[b]]))
+      colnames(observation[[b]]) <- retransformIllegalChars(colnames(observation[[b]]))
+      colnames(norm_patient[[b]]) <- retransformIllegalChars(colnames(norm_patient[[b]]))
+    }
+
     lst_lp.var[[b]] <- lp.new_observation_variable
 
   }
@@ -7562,7 +7599,7 @@ plot_multipleObservations.LP.list <- function(lst_models, observations, error.ba
 #' @param alpha Numeric. Numerical values are regarded as significant if they fall below the
 #' threshold (default: 0.05).
 #' @param zero.rm Logical. Remove variables equal to 0 (default: TRUE).
-#' @param txt.x.angle Numeric. Angle of X text (default: 0).
+#' @param txt.x.angle Numeric. Angle of X text (default: 90).
 #' @param title Character. Plot title (default: NULL).
 #' @param subtitle Character. Plot subtitle (default: NULL).
 #' @param legend.position Character. Legend position. Must be one of the following: "top", "bottom", "right" or "left (default: "bottom").
@@ -7590,7 +7627,7 @@ plot_multipleObservations.LP.list <- function(lst_models, observations, error.ba
 #' plot_multipleObservations.LP(model = splsicox.model, observations = X_test[1:5,])
 
 plot_multipleObservations.LP <- function(model, observations, error.bar = FALSE, onlySig = TRUE, alpha = 0.05,
-                                     zero.rm = TRUE, txt.x.angle = 0, title = NULL, subtitle = NULL,
+                                     zero.rm = TRUE, txt.x.angle = 90, title = NULL, subtitle = NULL,
                                      legend.position = "bottom",
                                      auto.limits = TRUE, top = NULL){
 
@@ -7837,6 +7874,9 @@ plot_cox.comparePatients <- function(model, new_data, error.bar = FALSE, onlySig
   #can be change for cox.prediction(model = model, new_data = patient, time = time, type = type, method = "cox")
   #for each patient on the data frame
 
+  rownames(ggp.simulated_beta$beta) <- transformIllegalChars(rownames(ggp.simulated_beta$beta))
+  rownames(coefficients) <- transformIllegalChars(rownames(coefficients))
+
   lp.pats <- norm_patient[,rownames(ggp.simulated_beta$beta)] %*% ggp.simulated_beta$beta$value
   colnames(lp.pats) <- "linear predictor"
 
@@ -7874,6 +7914,9 @@ plot_cox.comparePatients <- function(model, new_data, error.bar = FALSE, onlySig
 
   # delete values of 0
   lp.new_pat_variable <- lp.new_pat_variable[!lp.new_pat_variable$value==0,]
+
+  # get original names to plot
+  lp.new_pat_variable$var <- retransformIllegalChars(lp.new_pat_variable$var)
 
   ggp <- ggplot(lp.new_pat_variable[lp.new_pat_variable$lp.flag==FALSE,], aes(x = var, y = value, fill = patients)) +
     geom_bar(stat = "identity", position = "dodge") + xlab(label = "Variables")
@@ -7927,6 +7970,10 @@ plot_cox.comparePatients <- function(model, new_data, error.bar = FALSE, onlySig
     plot_layout(ncol = 2, widths = c(0.8, 0.2), guides = "collect") &
     theme(legend.position = legend.position)
 
+  # original colnames
+  colnames(norm_patient) <- retransformIllegalChars(colnames(norm_patient))
+  colnames(new_data) <- retransformIllegalChars(colnames(new_data))
+
   return(list(plot = pp, var.plot = res_all.plot, lp.plot = res_lp.plot, lp = lp.pats, lp.var = lp.new_pat_variable, norm_patients = norm_patient, patients = new_data))
 }
 
@@ -7946,6 +7993,16 @@ plot_MB.cox.comparePatients <- function(model, new_data, error.bar = FALSE, only
                                         alpha = alpha, zero.rm = zero.rm, auto.limits = auto.limits, top = top)
 
   lst_coefficients <- ggp.simulated_beta$beta
+
+  for(b in names(lst_coefficients)){
+    rownames(lst_coefficients[[b]]) <- transformIllegalChars(rownames(lst_coefficients[[b]]))
+    if(!length(ggp.simulated_beta$sd.min)==0){
+      rownames(ggp.simulated_beta$sd.min[[b]]) <- transformIllegalChars(rownames(ggp.simulated_beta$sd.min[[b]]))
+      rownames(ggp.simulated_beta$sd.max[[b]]) <- transformIllegalChars(rownames(ggp.simulated_beta$sd.max[[b]]))
+    }
+  }
+
+
 
   lst_plot <- list()
   lst_var.plot <- list()
@@ -7998,7 +8055,7 @@ plot_MB.cox.comparePatients <- function(model, new_data, error.bar = FALSE, only
     #can be change for cox.prediction(model = model, new_data = patient, time = time, type = type, method = "cox")
     #for each patient on the data frame
 
-    lp.pats <- norm_patient[,rownames(ggp.simulated_beta$beta[[b]])] %*% ggp.simulated_beta$beta[[b]]$value
+    lp.pats <- norm_patient[,rownames(lst_coefficients[[b]])] %*% lst_coefficients[[b]]$value
     colnames(lp.pats) <- "linear predictor"
 
     rownames(lp.new_pat_variable) <- rownames(coefficients)
@@ -8032,6 +8089,9 @@ plot_MB.cox.comparePatients <- function(model, new_data, error.bar = FALSE, only
     }else{
       auto.limits <- round2any(max(c(abs(sd.max), abs(sd.min), abs(lp.new_pat_variable$value))), accuracy = accuracy, f = ceiling)
     }
+
+    #recover original names for plotting
+    lp.new_pat_variable$var <- transformIllegalChars(lp.new_pat_variable$var, recover = TRUE)
 
     ggp <- ggplot(lp.new_pat_variable[lp.new_pat_variable$lp.flag==FALSE,], aes(x = var, y = value, fill = patients)) +
       geom_bar(stat = "identity", position = "dodge") + xlab(label = "Variables")
@@ -8092,6 +8152,11 @@ plot_MB.cox.comparePatients <- function(model, new_data, error.bar = FALSE, only
     lst_lp.var[[b]] <- lp.new_pat_variable
     lst_norm_patients[[b]] <- norm_patient
 
+  }
+
+  for(b in names(new_data)){
+    colnames(new_data[[b]]) <- transformIllegalChars(colnames(new_data[[b]]), recover = TRUE)
+    colnames(lst_norm_patients[[b]]) <- transformIllegalChars(colnames(lst_norm_patients[[b]]), recover = TRUE)
   }
 
   return(list(plot = lst_plot, var.plot = lst_var.plot, lp.plot = lst_lp.plot, lp = lst_lp, lp.var = lst_lp.var, norm_patients = lst_norm_patients, patients = new_data))

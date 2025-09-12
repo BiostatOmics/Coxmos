@@ -11,7 +11,7 @@ plot_observation.pseudobeta(
   onlySig = TRUE,
   alpha = 0.05,
   zero.rm = TRUE,
-  txt.x.angle = 0,
+  txt.x.angle = 90,
   title = NULL,
   title_size_text = 15,
   subtitle = NULL,
@@ -42,7 +42,7 @@ threshold (default: 0.05).}
 
 \item{zero.rm}{Logical. Remove variables with a pseudobeta equal to 0 (default: TRUE).}
 
-\item{txt.x.angle}{Numeric. Angle of X text (default: 0).}
+\item{txt.x.angle}{Numeric. Angle of X text (default: 90).}
 
 \item{title}{Character. Plot title (default: NULL).}
 

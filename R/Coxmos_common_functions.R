@@ -906,6 +906,53 @@ deleteIllegalChars <- function(chr.vector){
 }
 
 #only for FORMULAS
+
+#' transformIllegalChars
+#'
+#' @description
+#' Transforms illegal or problematic characters in variable names into safe placeholder tokens to
+#' ensure compatibility with programming or data handling environments. Optionally, this function
+#' can also reverse these transformations if needed.
+#'
+#' @details
+#' The function `transformIllegalChars` replaces characters that are typically considered illegal or
+#' problematic in variable names—such as spaces, mathematical operators, or punctuation marks—with
+#' descriptive placeholder tokens (e.g., `.space.`, `.comma.`). This is particularly useful for
+#' variable names when exporting data, using variable names in formulas, or avoiding syntax errors.
+#'
+#' The function supports two modes:
+#' - **Standard mode (`recover = FALSE`)**: Replaces illegal characters with placeholder tokens.
+#' - **Recovery mode (`recover = TRUE`)**: Replaces placeholder tokens back to their original illegal
+#' characters.
+#'
+#' The argument `except` allows specific characters or tokens to be exempted from transformation or
+#' recovery. Additionally, after processing, the function checks whether all resulting values are
+#' numeric and, if so, prepends `"var_"` to preserve name validity.
+#'
+#' This function uses an auxiliary function `deleteIllegalChars()` to sanitize additional issues
+#' before applying transformations.
+#'
+#' @param cn A character vector. Each element is a variable name to be sanitized or recovered.
+#' @param except A character vector of illegal characters or replacement tokens that should be
+#' excluded from the transformation or recovery process (default: NULL).
+#' @param recover Logical. If TRUE, reverts tokens back to their original characters instead of
+#' applying the transformation (default: FALSE).
+#'
+#' @return A character vector of transformed (or recovered) variable names, with illegal characters
+#' replaced or restored as specified. If the final result is purely numeric, it is prefixed
+#' with `"var_"` to ensure validity.
+#'
+#' @author Pedro Salguero Garcia. Maintainer: pedsalga@upv.edu.es
+#'
+#' @export
+#'
+#' @examples
+#' # Example 1: Transform illegal characters
+#' original_names <- c("hsa-let-7a-2-3p", "hsa-let-7a-3p")
+#' custom_formula_names <- transformIllegalChars(original_names)
+#'
+#' # Example 2: Recover original characters from transformed names
+#' recovered <- transformIllegalChars(custom_formula_names, recover = TRUE)
 transformIllegalChars <- function(cn, except = NULL, recover = FALSE){
   illegal_chars <- c(","," ", "-", "+", "*", ">", "<", ">=", "<=", "^", "/", "\\", ":", "|", "?", "(", ")")
   replacement <- c(".comma.",".space.", ".minus.", ".plus.", ".star.", ".over.", ".under.", ".over_equal.", ".under_equal.", ".power.", ".divided.", ".backslash.", ".twocolons.", ".verticalLine.", ".questionmark.", ".LParenthesis.", ".RParenthesis.")
@@ -934,11 +981,10 @@ transformIllegalChars <- function(cn, except = NULL, recover = FALSE){
 }
 
 retransformIllegalChars <- function(cn) {
-  # Definir los caracteres ilegales y sus reemplazos
+  # Illegal characters and the replacement
   illegal_chars <- c(",", " ", "-", "+", "*", ">", "<", ">=", "<=", "^", "/", "\\", ":", "|", "?", "(", ")")
   replacement <- c(".comma.", ".space.", ".minus.", ".plus.", ".star.", ".over.", ".under.", ".over_equal.", ".under_equal.", ".power.", ".divided.", ".backslash.", ".twocolons.", ".verticalLine.", ".questionmark.", ".LParenthesis.", ".RParenthesis.")
 
-  # Recorrer los reemplazos y revertirlos
   for (i in seq_along(replacement)) {
     cn <- vapply(cn, function(x) gsub(replacement[i], illegal_chars[i], x, fixed = TRUE), character(1))
   }
