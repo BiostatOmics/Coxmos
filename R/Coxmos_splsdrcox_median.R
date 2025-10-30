@@ -200,7 +200,7 @@ splsdrcox_penalty <- function (X, Y,
   event <- Y[,"event"]
 
   #### ZERO VARIANCE - ALWAYS
-  lst_dnz <- deleteZeroOrNearZeroVariance(X = X,
+  lst_dnz <- deleteZeroOrNearZeroVariability(X = X,
                                           remove_near_zero_variance = remove_near_zero_variance,
                                           remove_zero_variance = remove_zero_variance,
                                           toKeep.zv = toKeep.zv,
@@ -850,7 +850,7 @@ cv.splsdrcox_penalty <- function (X, Y,
 
   #### REQUIREMENTS
   if(!remove_variance_at_fold_level & (remove_near_zero_variance | remove_zero_variance)){
-    lst_dnz <- deleteZeroOrNearZeroVariance(X = X,
+    lst_dnz <- deleteZeroOrNearZeroVariability(X = X,
                                             remove_near_zero_variance = remove_near_zero_variance,
                                             remove_zero_variance = remove_zero_variance,
                                             toKeep.zv = toKeep.zv,

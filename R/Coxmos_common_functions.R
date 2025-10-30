@@ -513,12 +513,12 @@ getEPV <- function(X,Y){
   return(EPV)
 }
 
-#' deleteZeroOrNearZeroVariance
+#' deleteZeroOrNearZeroVariability
 #' @description Provides a robust mechanism to filter out variables from a dataset that exhibit zero
 #' or near-zero variability, thereby enhancing the quality and interpretability of subsequent statistical
 #' analyses.
 #'
-#' @details The `deleteZeroOrNearZeroVariance` function is an indispensable tool in the preprocessing
+#' @details The `deleteZeroOrNearZeroVariability` function is an indispensable tool in the preprocessing
 #' phase of statistical modeling. In many datasets, especially high-dimensional ones, certain variables
 #' might exhibit zero or near-zero variability. Such variables can be problematic as they offer limited
 #' information variance and can potentially distort the results of statistical models, leading to
@@ -552,9 +552,9 @@ getEPV <- function(X,Y){
 #' @examples
 #' data("X_proteomic")
 #' X <- X_proteomic
-#' filter <- deleteZeroOrNearZeroVariance(X, remove_near_zero_variance = TRUE)
+#' filter <- deleteZeroOrNearZeroVariability(X, remove_near_zero_variance = TRUE)
 
-deleteZeroOrNearZeroVariance <- function(X, remove_near_zero_variance = FALSE, remove_zero_variance = TRUE,
+deleteZeroOrNearZeroVariability <- function(X, remove_near_zero_variance = FALSE, remove_zero_variance = TRUE,
                                          toKeep.zv = NULL, freqCut = 95/5){
 
   auxX <- X

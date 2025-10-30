@@ -88,3 +88,6 @@ If you encounter a problem, please
 ### References
 If you use *Coxmos* in your research, please cite the original publication:
 
+Coxmos: Interpretable survival models for high-dimensional and multi-omic data
+Pedro Salguero, Anabel Buendía-Galera, Sonia Tarazona
+bioRxiv 2025.10.01.679727; doi: [https://doi.org/10.1101/2025.10.01.679727](https://doi.org/10.1101/2025.10.01.679727)

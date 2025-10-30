@@ -1,3 +1,8 @@
+# CRAN Submission Comments (2025-09-18)
+This resubmission incorporates the following adjustments:
+
+- Updated name function 'deleteZeroOrNearZeroVariance()' to 'deleteZeroOrNearZeroVariability()'.
+
 # CRAN Submission Comments (2025-09-11)
 This resubmission incorporates the following adjustments:
 
