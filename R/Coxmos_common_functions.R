@@ -1867,35 +1867,38 @@ predict.Coxmos <- function(object, ..., newdata = NULL){
 
   # Solve by iterative process instead of W*
   # seems that W* has problems bc expect no 0s value and cannot get the exact score
+  # --------
+  # 2025/11/08 - fixed
+  # now works with W.star
 
-  if(attr(model, "model") %in% c(pkg.env$splsicox)){
-
-    E_h <- X_test
-    #some times, n.comp is not the real number of components used
-    t_pred <- matrix(0, nrow = nrow(X_test), ncol = ncol(model$X$scores))
-
-    w_ok <- matrix(0, nrow = ncol(X_test), ncol = ncol(model$X$scores))
-    p_ok <- matrix(0, nrow = ncol(X_test), ncol = ncol(model$X$scores))
-
-    # for this predictions, we need to deflect the matrix in a loop instead of using W*
-    for(h in 1:ncol(model$X$scores)){
-      vars_h <- rownames(model$X$weightings_norm[,h,drop=F])
-
-      wh_norm_h <- model$X$weightings_norm[,h,drop=F]
-      ph_h <- model$X$loadings[,h,drop=F]
-
-      w_ok[, h] <- wh_norm_h
-      p_ok[, h] <- ph_h
-
-      t_pred[, h] <- E_h[,vars_h,drop=F] %*% wh_norm_h[vars_h,,drop=F]
-      E_h[, vars_h] <- E_h[, vars_h] - t_pred[, h] %*% t(ph_h[vars_h,])
-    }
-
-    predicted_scores <- t_pred
-    rownames(predicted_scores) <- rownames(X_test)
-    colnames(predicted_scores) <- colnames(model$X$scores)
-    return(predicted_scores)
-  }
+  # if(attr(model, "model") %in% c(pkg.env$splsicox)){
+  #
+  #   E_h <- X_test
+  #   #some times, n.comp is not the real number of components used
+  #   t_pred <- matrix(0, nrow = nrow(X_test), ncol = ncol(model$X$scores))
+  #
+  #   w_ok <- matrix(0, nrow = ncol(X_test), ncol = ncol(model$X$scores))
+  #   p_ok <- matrix(0, nrow = ncol(X_test), ncol = ncol(model$X$scores))
+  #
+  #   # for this predictions, we need to deflect the matrix in a loop instead of using W*
+  #   for(h in 1:ncol(model$X$scores)){
+  #     vars_h <- rownames(model$X$weightings_norm[,h,drop=F])
+  #
+  #     wh_norm_h <- model$X$weightings_norm[,h,drop=F]
+  #     ph_h <- model$X$loadings[,h,drop=F]
+  #
+  #     w_ok[, h] <- wh_norm_h
+  #     p_ok[, h] <- ph_h
+  #
+  #     t_pred[, h] <- E_h[,vars_h,drop=F] %*% wh_norm_h[vars_h,,drop=F]
+  #     E_h[, vars_h] <- E_h[, vars_h] - t_pred[, h] %*% t(ph_h[vars_h,])
+  #   }
+  #
+  #   predicted_scores <- t_pred
+  #   rownames(predicted_scores) <- rownames(X_test)
+  #   colnames(predicted_scores) <- colnames(model$X$scores)
+  #   return(predicted_scores)
+  # }
 
   ##### ### ### ###
   ### PLS METHODS #

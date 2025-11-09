@@ -1,6 +1,6 @@
 Package: Coxmos
 Title: Cox MultiBlock Survival
-Version: 1.1.5
+Version: 1.1.6
 Authors@R: 
     c(person("Pedro", "Salguero", , "pedsalga@upv.edu.es", role = c("aut", "cre", "rev"),
            comment = c(ORCID = "0000-0002-1879-3374")),

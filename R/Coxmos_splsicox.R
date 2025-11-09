@@ -295,6 +295,469 @@ splsicox <- function(X, Y,
     #4. t = Xh wh / wh'wh
     #4. t = Xh wh_norm (solo si wh ya normalizado)
 
+    #th <- Xh[,nm_keep,drop = FALSE] %*% sub_wh_norm ## error
+
+    # we should use all variable for computing orthogonal components
+    # by using only the non-zero variables we are not taking into account
+    # the correlation between non-selected variables and the variables selected
+    # for the latent variables
+    th <- Xh %*% as.matrix(wh_norm)
+
+    #th <- t(lm(t(Xh)~0 + sub_wh_norm)$coefficients)/((!XXNA)%*%(sub_wh_norm^2))
+
+    #should be...
+    #th <- t(lm(t(Xh)~0+wh)$coefficients)
+    #th <- th/as.vector(sqrt(sum(th^2)))
+
+    #5. p
+    #ph <- t(Xh) %*% th/as.vector(t(th) %*% th)
+    #normalization for NAs
+
+    ph <- data.frame(wh)
+    ph[,1] <- 0
+
+    # sub_ph <- t((t(th) %*% Xh[,nm_keep,drop = FALSE]) / (as.vector(t(th) %*% th))) ## error
+
+    #same correction for loadings - loadings have to be compute for all variables
+    sub_ph <- t((t(th) %*% Xh) / (as.vector(t(th) %*% th)))
+
+    # in this way, loadings reflects correlations between all variables and the scores
+    ph <- sub_ph
+
+    #6. Residuals
+    #res$residXX <- XXwotNA-temptt%*%temppp #residuals to the new matrix to get next components
+    # Xh_aux <- Xh[,nm_keep] - (th %*% t(sub_ph))
+    # Xh[,nm_keep] <- Xh_aux
+
+    # have the same problem
+    # Xh[,nm_keep] <- Xh[,nm_keep,drop=F] - (th %*% t(sub_ph)) ## error
+
+    # should use all variables
+    Xh <- Xh - (th %*% t(sub_ph))
+
+    Ts <- cbind(Ts, th)
+    P <- cbind(P, as.matrix(ph))
+    W <- cbind(W, wh)
+    W_norm <- cbind(W_norm, as.matrix(wh_norm))
+    E[[h]] <- Xh
+
+  }
+
+  # Problems computing firts component
+  if(h==0){ #no significant individual cox model at first component
+    func_call <- match.call()
+    # invisible(gc())
+
+    t2 <- Sys.time()
+    time <- difftime(t2,t1,units = "mins")
+
+    return(splsicox_class(list(X = list("data" = if(returnData) X_norm else NA,
+                                        "weightings" = NULL,
+                                        "weightings_norm" = NULL,
+                                        "W.star" = NULL, "loadings" = NULL,
+                                        "scores" = NULL,
+                                        "E" = NULL,
+                                        "x.mean" = xmeans, "x.sd" = xsds),
+                               Y = list("data" = Yh,
+                                        "y.mean" = ymeans, "y.sd" = ysds),
+                               beta_matrix = NULL, #NEED TO BE COMPUTED
+                               survival_model = NULL,
+                               n.comp = h,
+                               penalty = penalty,
+                               var_by_component = var_by_component, #variables selected for each component
+                               call = if(returnData) func_call else NA,
+                               X_input = if(returnData) X_original else NA,
+                               Y_input = if(returnData) Y_original else NA,
+                               nzv = variablesDeleted,
+                               nz_coeffvar = variablesDeleted_cvar,
+                               class = pkg.env$splsicox,
+                               time = time)))
+  }
+
+  colnames(Ts) <- paste0("comp_", 1:h)
+  colnames(P) <- paste0("comp_", 1:h)
+  colnames(W) <- paste0("comp_", 1:h)
+  colnames(W_norm) <- paste0("comp_", 1:h)
+  names(var_by_component) <- paste0("comp_", 1:h)
+
+  #### ### ### ### ### ### ### ### ### ### ### #
+  #                                            #
+  #      Computation of the coefficients       #
+  #      of the model with kk components       #
+  #                                            #
+  #### ### ### ### ### ### ### ### ### ### ### #
+
+  #### ### ### ### ### ### ### ### ### ### ##
+  ###              PLS-COX                 ##
+  #### ### ### ### ### ### ### ### ### ### ##
+
+  cox_model = NULL
+
+  d <- as.data.frame(cbind(as.matrix(Ts)))
+  h <- ncol(Ts)
+  aux <- tryCatch(
+    # Specifying expression
+    expr = {
+      survival::coxph(formula = survival::Surv(time,event) ~ .,
+                      data = d[,1:h,drop = FALSE],
+                      ties = "efron",
+                      singular.ok = TRUE,
+                      robust = TRUE,
+                      nocenter = rep(1, ncol(d[,1:h,drop = FALSE])),
+                      model = TRUE, x = TRUE)
+    },
+    # Specifying error message
+    error = function(e){
+      message(e$message)
+      # invisible(gc())
+      return(NA)
+    }
+  )
+
+  # keep at least one component
+  while(all(is.na(aux)) & h>1){
+    h <- h-1
+    aux <- tryCatch(
+      # Specifying expression
+      expr = {
+        survival::coxph(formula = survival::Surv(time,event) ~ .,
+                        data = d[,1:h,drop = FALSE],
+                        ties = "efron",
+                        singular.ok = TRUE,
+                        robust = TRUE,
+                        nocenter = rep(1, ncol(d[,1:h,drop = FALSE])),
+                        model = TRUE, x = TRUE)
+      },
+      # Specifying error message
+      error = function(e){
+        if(verbose){
+          message(e$message)
+        }
+        # invisible(gc())
+        return(NA)
+      }
+    )
+  }
+
+  # RETURN a MODEL with ALL significant Variables from complete, deleting one by one
+  removed_variables <- NULL
+  removed_variables_cor <- NULL
+  # REMOVE NA-PVAL or INF VARIABLES
+  # p_val could be NA for some variables (if NA change to P-VAL=1)
+  # DO IT ALWAYS, we do not want problems in COX models
+  if(all(c("time", "event") %in% colnames(d))){
+    lst_model <- removeNAorINFcoxmodel(model = aux, data = d, time.value = NULL, event.value = NULL)
+  }else{
+    lst_model <- removeNAorINFcoxmodel(model = aux, data = cbind(d, Yh), time.value = NULL, event.value = NULL)
+  }
+  aux <- lst_model$model
+  removed_variables_cor <- c(removed_variables_cor, lst_model$removed_variables)
+
+  #RETURN a MODEL with ALL significant Variables from complete, deleting one by one in backward method
+  if(remove_non_significant){
+    if(all(c("time", "event") %in% colnames(d))){
+      lst_rnsc <- removeNonSignificativeCox(cox = aux, alpha = alpha, cox_input = d, time.value = NULL, event.value = NULL)
+    }else{
+      lst_rnsc <- removeNonSignificativeCox(cox = aux, alpha = alpha, cox_input = cbind(d, Yh), time.value = NULL, event.value = NULL)
+    }
+
+    aux <- lst_rnsc$cox
+    removed_variables <- lst_rnsc$removed_variables
+  }
+
+  cox_model <- NULL
+  cox_model$fit <- aux
+
+  #if we cannot compute all components
+  if(h != n.comp & !all(is.na(cox_model$fit))){
+    if(verbose){
+      message(paste0("Model cannot be computed for all components. Final model select ", h," components instead of ", n.comp,"."))
+    }
+    #update all values
+    W <- W[,1:h,drop = FALSE]
+    W_norm = W_norm[,1:h,drop = FALSE]
+    P = P[,1:h,drop = FALSE]
+    Ts = Ts[,1:h,drop = FALSE]
+    E = E[1:h]
+    n.comp = ncol(Ts)
+    var_by_component = var_by_component[1:h]
+  }
+
+  #or if we filter some components
+  if(h != length(names(cox_model$fit$coefficients))){
+    if(verbose){
+      message(paste0("Updating matrices Final model select ", length(names(cox_model$fit$coefficients))," components instead of ", n.comp,"."))
+    }
+
+    #update all values
+    W <- W[,names(cox_model$fit$coefficients),drop = FALSE]
+    W_norm = W_norm[,names(cox_model$fit$coefficients),drop = FALSE]
+    P = P[,names(cox_model$fit$coefficients),drop = FALSE]
+    Ts = Ts[,names(cox_model$fit$coefficients),drop = FALSE]
+
+    which_to_keep <- which(colnames(W) %in% names(cox_model$fit$coefficients))
+
+    E = E[which_to_keep]
+    n.comp = which_to_keep
+  }
+
+  survival_model = NULL
+  if(!length(cox_model$fit) == 1){
+    survival_model <- getInfoCoxModel(cox_model$fit)
+  }
+
+  if(is.null(P) | is.null(W)){
+    message(paste0(pkg.env$splsicox, " model cannot be computed because P or W vectors are NULL. Returning NA."))
+    # invisible(gc())
+    return(NA)
+  }
+
+  #W.star
+  #sometimes solve(t(P) %*% W)
+  #system is computationally singular: reciprocal condition number = 6.24697e-18
+  # PW <- tryCatch(expr = {solve(t(P) %*% W, tol = tol)},
+  #                error = function(e){
+  #                  if(verbose){
+  #                    message(e$message)
+  #                  }
+  #                  NA
+  #               })
+  PW <- tryCatch(expr = {MASS::ginv(t(P) %*% W)},
+                 error = function(e){
+                   if(verbose){
+                     message(e$message)
+                   }
+                   NA
+                 })
+
+  if(all(is.na(PW))){
+    message(paste0(pkg.env$splsicox, " model cannot be computed due to ginv(t(P) %*% W). Multicollineality could be present in your data. Returning NA."))
+    # invisible(gc())
+    return(NA)
+  }
+
+  # What happen when you cannot compute W.star but you have P and W?
+  W.star <- W %*% PW
+  # In this case, the way to compute the SCORES is by using the W_norm matrix
+  # cannot work with W PW
+  # W.star <- W_norm
+
+  rownames(Ts) <- rownames(X)
+  colnames(W.star) <- colnames(W)
+  #rownames(P) <- rownames(W_norm) <- rownames(W) <-  rownames(W.star) <- colnames(Xh)
+
+  # if(stopped){
+  #   colnames(Ts) <- colnames(P) <- colnames(W_norm) <- colnames(W) <-  colnames(W.star) <- paste0("comp_", 1:h)
+  # }if(length(n.comp)>0){
+  #   colnames(Ts) <- colnames(P) <- colnames(W_norm) <- colnames(W) <-  colnames(W.star) <- paste0("comp_", n.comp)
+  # }else{
+  #   colnames(Ts) <- colnames(P) <- colnames(W_norm) <- colnames(W) <-  colnames(W.star) <- paste0("comp_", 1:n.comp)
+  # }
+
+  func_call <- match.call()
+
+  if(!returnData){
+    survival_model <- removeInfoSurvivalModel(survival_model)
+  }
+
+  t2 <- Sys.time()
+  time <- difftime(t2,t1,units = "mins")
+
+  # invisible(gc())
+  return(splsicox_class(list(X = list("data" = if(returnData) X_norm else NA,
+                                      "weightings" = W,
+                                      "weightings_norm" = W_norm, #important for predictions
+                                      "W.star" = W.star,
+                                      "loadings" = P,
+                                      "scores" = Ts,
+                                      "E" = if(returnData) E else NA,
+                                      "x.mean" = xmeans, "x.sd" = xsds),
+                             Y = list("data" = Yh,
+                                      "y.mean" = ymeans, "y.sd" = ysds),
+                             survival_model = survival_model,
+                             n.comp = h,
+                             penalty = penalty,
+                             var_by_component = var_by_component, #variables selected for each component
+                             call = if(returnData) func_call else NA,
+                             X_input = if(returnData) X_original else NA,
+                             Y_input = if(returnData) Y_original else NA,
+                             alpha = alpha,
+                             nsv = removed_variables,
+                             nzv = variablesDeleted,
+                             nz_coeffvar = variablesDeleted_cvar,
+                             class = pkg.env$splsicox,
+                             time = time)))
+}
+
+splsicox_old <- function(X, Y,
+                     n.comp = 4, penalty = 0.5,
+                     x.center = TRUE, x.scale = FALSE,
+                     remove_near_zero_variance = TRUE, remove_zero_variance = FALSE, toKeep.zv = NULL,
+                     remove_non_significant = FALSE, alpha = 0.05,
+                     MIN_EPV = 5, returnData = TRUE, verbose = FALSE){
+
+  # tol Numeric. Tolerance for solving: solve(t(P) %*% W) (default: 1e-15).
+  tol = 1e-10
+
+  t1 <- Sys.time()
+  y.center = y.scale = FALSE
+  FREQ_CUT <- 95/5
+
+  #### Original data
+  X_original <- X
+  Y_original <- Y
+
+  time <- Y[,"time"]
+  event <- Y[,"event"]
+
+  #### Check values classes and ranges
+  params_with_limits <- list("penalty" = penalty)
+  check_min0_less1_variables(params_with_limits)
+
+  params_with_limits <- list("alpha" = alpha)
+  check_min0_max1_variables(params_with_limits)
+
+  numeric_params <- list("n.comp" = n.comp,
+                         "MIN_EPV" = MIN_EPV, "tol" = tol)
+  check_class(numeric_params, class = "numeric")
+
+  logical_params <- list("x.center" = x.center, "x.scale" = x.scale,
+                         #"y.center" = y.center, "y.scale" = y.scale,
+                         "remove_near_zero_variance" = remove_near_zero_variance, "remove_zero_variance" = remove_zero_variance,
+                         "remove_non_significant" = remove_non_significant, "returnData" = returnData, "verbose" = verbose)
+  check_class(logical_params, class = "logical")
+
+  #### Check rownames
+  lst_check <- checkXY.rownames(X, Y, verbose = verbose)
+  X <- lst_check$X
+  Y <- lst_check$Y
+
+  #### Check colnames in X for Illegal Chars (affect cox formulas)
+  X <- checkColnamesIllegalChars(X)
+
+  #### REQUIREMENTS
+  checkX.colnames(X)
+  checkY.colnames(Y)
+  lst_check <- checkXY.class(X, Y, verbose = verbose)
+  X <- lst_check$X
+  Y <- lst_check$Y
+
+  #### ZERO VARIANCE - ALWAYS
+  lst_dnz <- deleteZeroOrNearZeroVariability(X = X,
+                                             remove_near_zero_variance = remove_near_zero_variance,
+                                             remove_zero_variance = remove_zero_variance,
+                                             toKeep.zv = toKeep.zv,
+                                             freqCut = FREQ_CUT)
+  X <- lst_dnz$X
+  variablesDeleted <- lst_dnz$variablesDeleted
+
+  #### COEF VARIATION
+  lst_dnzc <- deleteNearZeroCoefficientOfVariation(X = X)
+  X <- lst_dnzc$X
+  variablesDeleted_cvar <- lst_dnzc$variablesDeleted
+
+  #### SCALING
+  lst_scale <- XY.scale(X, Y, x.center, x.scale, y.center, y.scale)
+  Xh <- lst_scale$Xh
+  Yh <- lst_scale$Yh
+  xmeans <- lst_scale$xmeans
+  xsds <- lst_scale$xsds
+  ymeans <- lst_scale$ymeans
+  ysds <- lst_scale$ysds
+
+  X_norm <- Xh
+
+  #### MAX PREDICTORS
+  n.comp <- check.maxPredictors(X, Y, MIN_EPV, n.comp)
+
+  #### INITIALISING VARIABLES
+  Ts <- NULL
+  W <- NULL
+  W_norm <- NULL
+  P <- NULL
+  E <- list(Xh)
+
+  XXNA <- is.na(Xh) #TRUE is NA
+  YNA <- is.na(Yh) #TRUE is NA
+
+  #### ### ### ### ### ### ### ### ### ### ### ###
+  #### ### ### ### ### ### ### ### ### ### ### ###
+  ##                                            ##
+  ##  Beginning of the loop for the components  ##
+  ##                                            ##
+  #### ### ### ### ### ### ### ### ### ### ### ###
+  #### ### ### ### ### ### ### ### ### ### ### ###
+
+  #Update NAs by 0s
+  if(length(XXNA)>0){
+    Xh[XXNA] <- 0
+  }
+
+  var_by_component <- list()
+  stopped = FALSE
+  for(h in 1:n.comp){
+
+    #### ### ### ### ### ### ### ### ### ### ### #
+    #                                            #
+    #     Weight computation for each model      #
+    #                                            #
+    #### ### ### ### ### ### ### ### ### ### ### #
+
+    #### ### ### ##
+    ##  PLS-COX  ##
+    #### ### ### ##
+
+    #2. wh <- individual cox regression vector
+
+    # returning wh[,1] coefficients and wh[,2] p-values
+    # using Ts as extra information but Xh is already deflacted...
+    # have to be as NULL
+    wh <- getIndividualCox(data = cbind(Xh, Yh), time_var = "time", event_var = "event", score_data = NULL, verbose = verbose)
+
+    # use the same order as Xh
+    wh <- wh[colnames(Xh),]
+
+    if(all(is.na(wh))){
+      message(paste0("Stopping at component ", h-1, ": The weight vector could not be computed.."))
+      h = h-1
+      stopped = TRUE
+      break
+    }
+
+    ### ## ## ##
+    #filter variables by p-val cutoff
+    ### ## ## ##
+    index2zero <- which(wh[,2,drop = TRUE]>(1-penalty))# 1-penalty because is a penalty - remove 0.8 of variables equals to keep 0.2
+    index2keep <- which(wh[,2,drop = TRUE]<=(1-penalty))
+
+    if(length(index2keep)==0){
+      if(verbose){
+        message(paste0("Stopping at component ", h-1, ": No significant variables found in component ", h,"."))
+      }
+      h = h-1
+      break
+    }
+
+    wh[index2zero,1] <- 0
+    var_by_component[[h]] <- rownames(wh)[index2keep]
+
+    nm <- rownames(wh)
+    nm_keep <- var_by_component[[h]]
+    wh <- wh[,1,drop = TRUE] #keep only coefficients
+    names(wh) <- nm
+
+    sub_wh <- wh[nm_keep] #keep only coeff not zero
+
+    #3. wh <- wh / ||wh||
+    wh_norm <- data.frame(wh)
+    wh_norm[,1] <- 0
+    sub_wh_norm <- sub_wh/as.vector(sqrt(sum(sub_wh^2))) #as.vector(sqrt(t(wh) %*% wh))
+
+    wh_norm[nm_keep,] <- sub_wh_norm
+
+    #4. t = Xh wh / wh'wh
+    #4. t = Xh wh_norm (solo si wh ya normalizado)
+
     # th <- (Xh[,nm_keep,drop = FALSE] %*% sub_wh_norm)/((!XXNA[,nm_keep,drop = FALSE]) %*% sub_wh_norm^2) # do not remember why
     th <- Xh[,nm_keep,drop = FALSE] %*% sub_wh_norm
 
@@ -562,17 +1025,17 @@ splsicox <- function(X, Y,
                                       "y.mean" = ymeans, "y.sd" = ysds),
                              survival_model = survival_model,
                              n.comp = h,
-                            penalty = penalty,
-                            var_by_component = var_by_component, #variables selected for each component
-                            call = if(returnData) func_call else NA,
-                            X_input = if(returnData) X_original else NA,
-                            Y_input = if(returnData) Y_original else NA,
-                            alpha = alpha,
-                            nsv = removed_variables,
-                            nzv = variablesDeleted,
-                            nz_coeffvar = variablesDeleted_cvar,
-                            class = pkg.env$splsicox,
-                            time = time)))
+                             penalty = penalty,
+                             var_by_component = var_by_component, #variables selected for each component
+                             call = if(returnData) func_call else NA,
+                             X_input = if(returnData) X_original else NA,
+                             Y_input = if(returnData) Y_original else NA,
+                             alpha = alpha,
+                             nsv = removed_variables,
+                             nzv = variablesDeleted,
+                             nz_coeffvar = variablesDeleted_cvar,
+                             class = pkg.env$splsicox,
+                             time = time)))
 }
 
 #### ### ### ### ###

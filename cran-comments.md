@@ -1,3 +1,9 @@
+# CRAN Submission Comments (2025-11-08)
+This resubmission incorporates the following adjustments:
+
+- Fixed 'splsicox()' method for obtaining orthogonal components.
+- Fixed 'plot_Coxmos.PLS.model()' function.
+
 # CRAN Submission Comments (2025-09-18)
 This resubmission incorporates the following adjustments:
 
@@ -9,7 +15,7 @@ This resubmission incorporates the following adjustments:
 - All PARALLEL functions now allow you to specify the number of cores to use with the n_cores parameter. Using fewer cores will result in lower RAM memory usage during parallelization.
 - Updated 'mb.splsdacox' and 'mb.splsdrcox' models to return the design matrix used for the relationship between blocks.
 - Updated 'near-zero variance' to 'near-zero variability' for a more consistent name.
-- Update 'plot_sPLS_Coxmos' function to plot real variable name in loading an biplot mode, added the parameter "scale_scores", compute the real R2 value for MB models and fixed to plot any component of interest.
+- Updated 'plot_sPLS_Coxmos' function to plot real variable name in loading an biplot mode, added the parameter "scale_scores", compute the real R2 value for MB models and fixed to plot any component of interest.
 - Updated 'sb.splsdrcox' and 'mb.splsdrcox' to return R2, SCR and SCT values.
 - Updated 'plot_pseudobeta' to return variables with real name.
 - Updated 'plot_observation.pseudobeta' to return variables with real name.

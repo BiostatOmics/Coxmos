@@ -2792,7 +2792,7 @@ plot_Coxmos.PLS.model <- function(model, comp = c(1,2), mode = "scores", factor 
                                   arrow = arrow(length = unit(0.1, "cm")))
       }
 
-      # already seected with correct components
+      # already selected with correct components
       ggp <- ggp + geom_segment(data = subdata_loading, lineend = "butt", linejoin = "mitre",
                                 size = 0.33, aes(x = 0, y = 0, xend = subdata_loading[,1],
                                                  yend = subdata_loading[,2]),
@@ -2813,6 +2813,8 @@ plot_Coxmos.PLS.model <- function(model, comp = c(1,2), mode = "scores", factor 
                                 aes(x = 0, y = 0, xend = no_selected_loadings[,comp[1]],
                                     yend = no_selected_loadings[,comp[2]]),
                                 arrow = arrow(length = unit(0.1, "cm")))
+
+      subdata_loading <- no_selected_loadings
     }
 
     if(names & !is.null(subdata_loading)){
