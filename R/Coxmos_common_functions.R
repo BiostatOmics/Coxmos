@@ -2695,6 +2695,7 @@ get_EVAL_PLOTS <- function(fast_mode, best_model_info, w_AUC, w_I.BRIER, max.nco
                            colname_AUC = "AUC", colname_BRIER = "IBS", class = NULL){
 
   df_results_evals_comp_aux <- df_results_evals_comp
+  n_runs <- length(unique(df_results_evals_run$runs))
 
   if(length(max.ncomp)==1){
     max.ncomp <- 1:max.ncomp
@@ -2729,7 +2730,8 @@ get_EVAL_PLOTS <- function(fast_mode, best_model_info, w_AUC, w_I.BRIER, max.nco
   sd_vector_BRIER <- NULL
   # AUC - fast_mode
   # BRIER - fast_mode
-  if(w_AUC!=0){
+  # if((w_AUC!=0 & n_runs>1) || (TRUE & n_runs>1)){
+  if((w_AUC!=0 & n_runs>1)){
     if(!is.null(penalty.list)){
       if(fast_mode){
         for(l in 1:length(max.ncomp)){

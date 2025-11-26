@@ -2,15 +2,15 @@
 
 ![](https://cranlogs.r-pkg.org/badges/grand-total/Coxmos)
 
-* [Introduction](https://github.com/BiostatOmics/Coxmos/edit/master/README.md#introduction)
+* [Introduction](https://github.com/BiostatOmics/Coxmos#introduction)
 
-* [Installation](https://github.com/BiostatOmics/Coxmos/edit/master/README.md#installation)
+* [Installation](https://github.com/BiostatOmics/Coxmos#installation)
 
-* [Getting started](https://github.com/BiostatOmics/Coxmos/edit/master/README.md#getting-started)
+* [Getting started](https://github.com/BiostatOmics/Coxmos#getting-started)
 
-* [Contact](https://github.com/BiostatOmics/Coxmos/edit/master/README.md#contact)
+* [Contact](https://github.com/BiostatOmics/Coxmos#contact)
 
-* [References](https://github.com/BiostatOmics/Coxmos/edit/master/README.md#references)
+* [References](https://github.com/BiostatOmics/Coxmos#references)
 
 
 ### Introduction
