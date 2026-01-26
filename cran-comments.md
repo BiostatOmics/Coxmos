@@ -1,3 +1,8 @@
+# CRAN Submission Comments (2026-01-26)
+This resubmission incorporates the following adjustments:
+
+- License change to GPL-3.0 license.
+
 # CRAN Submission Comments (2025-11-08)
 This resubmission incorporates the following adjustments:
 
