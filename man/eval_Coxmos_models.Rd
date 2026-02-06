@@ -57,7 +57,7 @@ cores used, the less RAM memory will be used.(default: NULL).}
 \value{
 A list of four objects.
 \code{df}: A data.frame which the global predictions for all models. This data.frame is used to
-plot the information by the function \code{plot_evaluation()}.
+plot the information by the function \code{plot_evaluation()}. AIC column is train data AIC model value.
 \code{lst_AUC}: A list of models where the user can check the linear predictors computed, the
 global AUC, the AUC per time point and the predicted time points selected.
 \code{lst_BRIER}: A list of models where the user can check the predicted time points selected,
