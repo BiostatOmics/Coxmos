@@ -2,6 +2,7 @@
 This resubmission incorporates the following adjustments:
 
 - License change to GPL-3.0 license.
+- Fixed C-index computation metric for test data. Now computes the test C-index, instead of training C-Index.
 
 # CRAN Submission Comments (2025-11-08)
 This resubmission incorporates the following adjustments:

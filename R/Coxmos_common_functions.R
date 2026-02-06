@@ -5341,7 +5341,7 @@ checkTestTimesVSTrainTimes <- function(lst_models, Y_test){
 #'
 #' @return A list of four objects.
 #' \code{df}: A data.frame which the global predictions for all models. This data.frame is used to
-#' plot the information by the function `plot_evaluation()`.
+#' plot the information by the function `plot_evaluation()`. AIC column is train data AIC model value.
 #' \code{lst_AUC}: A list of models where the user can check the linear predictors computed, the
 #' global AUC, the AUC per time point and the predicted time points selected.
 #' \code{lst_BRIER}: A list of models where the user can check the predicted time points selected,
@@ -5480,7 +5480,7 @@ eval_Coxmos_models <- function(lst_models, X_test, Y_test, pred.method = "cenROC
     future::plan("sequential")
   }else{
     lst_eval <- purrr::map(lst_models, ~evaluation_list_Coxmos(model = ., X_test = X_test, Y_test = Y_test, pred.method = pred.method, pred.attr = pred.attr, times = times, PARALLEL = FALSE, n_cores = NULL, verbose = verbose, progress_bar = progress_bar))
-    # lst_eval <- evaluation_list_Coxmos(model = lst_models$cox, X_test = X_test, Y_test = Y_test, pred.method = pred.method, pred.attr = pred.attr, times = times, PARALLEL = FALSE, n_cores = NULL, verbose = verbose, progress_bar = progress_bar)
+    # lst_eval <- evaluation_list_Coxmos(model = lst_models$splsicox, X_test = X_test, Y_test = Y_test, pred.method = pred.method, pred.attr = pred.attr, times = times, PARALLEL = FALSE, n_cores = NULL, verbose = verbose, progress_bar = progress_bar)
   }
 
   names(lst_eval) <- names(lst_models)
@@ -5606,8 +5606,8 @@ evaluation_list_Coxmos <- function(model, X_test, Y_test, pred.method = "cenROC"
   }
 
   cox <- model$survival_model$fit
-  aic.cox <- stats::extractAIC(cox, k=2)[2] #k=2 <- AIC, [2] AIC Value
-  c.index.cox <- survival::concordance(cox)$concordance
+  # aic.cox <- stats::extractAIC(cox, k=2)[2] #k=2 <- AIC, [2] AIC Value
+  # c.index.cox <- survival::concordance(cox)$concordance
 
   #linear predictors
   if(isa(X_test, "list") & !attr(model, "model") %in% pkg.env$multiblock_methods){ #mix between multiblock and all PLS - Special case
@@ -5618,10 +5618,28 @@ evaluation_list_Coxmos <- function(model, X_test, Y_test, pred.method = "cenROC"
     X_test_mod <- predict.Coxmos(object = model, newdata = X_test) #all multiblock or all PLS - Ok
   }
 
+  ####
   #brier score
+  ####
   brier_score <- SURVCOMP_BRIER(model = model, X_test_mod = X_test_mod, Y_test = Y_test)
 
   lp <- getLinealPredictors(cox = cox, data = X_test_mod)
+  lp_fit <- lp$fit
+
+  ####
+  #c-index
+  ####
+  surv_test <- survival::Surv(time = Y_test[,"time"], event = Y_test[,"event"])
+  loglik_test <- survival::coxph(surv_test ~ lp_fit, init = 1, iter = 0)$loglik[1]
+  aic.cox <- loglik_test #pseudo aic
+  aic.cox <- stats::extractAIC(cox, k=2)[2] #k=2 <- AIC, [2] AIC Value
+
+  # Note: Y_test must be a Surv object
+  c.index.cox <- survival::concordance(surv_test ~ lp_fit)$concordance
+
+  ####
+  # auc
+  ####
   lst_AUC_values <- getAUC_from_LP_2.0(linear.predictors = lp, Y = Y_test, times = times, bestModel = NULL, eval = pred.attr, method = pred.method, PARALLEL = PARALLEL, n_cores = n_cores, verbose = verbose)
   #lst_AUC[[m]] <- lst_AUC_values
 
