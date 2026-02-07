@@ -2818,10 +2818,11 @@ get_EVAL_PLOTS <- function(fast_mode, best_model_info, w_AUC, w_I.BRIER, max.nco
     ggp <- ggp + labs(title = ggp_title, subtitle = "IBS metric", y = "IBS")
     ggp_IBS <- ggp + guides(color = guide_legend(title = "Penalty"))
 
-    ggp <- ggp_AUC
-    ggp <- ggp + labs(title = ggp_title, subtitle = "AUC metric")
-    ggp_AUC <- ggp + guides(color = guide_legend(title = "Penalty"))
-
+    if(w_AUC!=0){
+      ggp <- ggp_AUC
+      ggp <- ggp + labs(title = ggp_title, subtitle = "AUC metric")
+      ggp_AUC <- ggp + guides(color = guide_legend(title = "Penalty"))
+    }
   }else{
     if(w_AUC!=0){
       ggp_AUC <- evalplot_errorbar(df = df_results_evals_comp_aux, x.var = "n.comps", y.var = colname_AUC, y.var.sd = "AUC.sd", best_component = best_model_info$n.comps, x.text = x.text)
@@ -2842,9 +2843,10 @@ get_EVAL_PLOTS <- function(fast_mode, best_model_info, w_AUC, w_I.BRIER, max.nco
     ggp <- ggp_IBS
     ggp_IBS <- ggp + labs(title = ggp_title, subtitle = "IBS metric", y = "IBS")
 
-    ggp <- ggp_AUC
-    ggp_AUC <- ggp + labs(title = ggp_title, subtitle = "AUC metric")
-
+    if(w_AUC!=0){
+      ggp <- ggp_AUC
+      ggp_AUC <- ggp + labs(title = ggp_title, subtitle = "AUC metric")
+    }
   }
 
   rownames(df_results_evals_comp_aux) <- NULL

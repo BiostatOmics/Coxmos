@@ -4,6 +4,7 @@ This resubmission incorporates the following adjustments:
 - License change to GPL-3.0 license.
 - Fixed 'get_COX_evaluation_AIC_CINDEX' function for C-index computation metric. Now computes the test C-index, instead of training C-Index.
 - Fixed 'evaluation_list_Coxmos' function for C-index computation metric. Now computes the test (evaluated fold) C-index, instead of training C-Index.
+- Fixed 'get_EVAL_PLOTS' function when w_AUC is equal to zero.
 
 # CRAN Submission Comments (2025-11-08)
 This resubmission incorporates the following adjustments:

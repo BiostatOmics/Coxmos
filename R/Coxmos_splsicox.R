@@ -1518,7 +1518,9 @@ cv.splsicox <- function (X, Y,
   colnames(df_results_evals)[which(colnames(df_results_evals)=="penalty")] <- "penalty"
   colnames(df_results_evals_run)[which(colnames(df_results_evals_run)=="penalty")] <- "penalty"
   colnames(df_results_evals_comp)[which(colnames(df_results_evals_comp)=="penalty")] <- "penalty"
-  ggp_AUC <- ggp_AUC + guides(color=guide_legend(title="penalty"))
+  if(w_AUC!=0){
+    ggp_AUC <- ggp_AUC + guides(color=guide_legend(title="penalty"))
+  }
   ggp_IBS <- ggp_IBS + guides(color=guide_legend(title="penalty"))
   ggp_C.Index <- ggp_C.Index + guides(color=guide_legend(title="penalty"))
   ggp_AIC <- ggp_AIC + guides(color=guide_legend(title="penalty"))

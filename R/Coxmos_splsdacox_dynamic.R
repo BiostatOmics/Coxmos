@@ -152,16 +152,16 @@
 #' splsdacox(X, Y, n.comp = 2, vector = NULL, x.center = TRUE, x.scale = TRUE)
 
 splsdacox <- function(X, Y,
-                               n.comp = 4, vector = NULL,
-                               MIN_NVAR = 1, MAX_NVAR = NULL, n.cut_points = 5,
-                               MIN_AUC_INCREASE = 0.01,
-                               x.center = TRUE, x.scale = FALSE,
-                               remove_near_zero_variance = TRUE, remove_zero_variance = TRUE,
-                               toKeep.zv = NULL,
-                               remove_non_significant = FALSE, alpha = 0.05,
-                               EVAL_METHOD = "AUC", pred.method = "cenROC", max.iter = 200,
-                               times = NULL, max_time_points = 15,
-                               MIN_EPV = 5, returnData = TRUE, verbose = FALSE){
+                      n.comp = 4, vector = NULL,
+                      MIN_NVAR = 1, MAX_NVAR = NULL, n.cut_points = 5,
+                      MIN_AUC_INCREASE = 0.01,
+                      x.center = TRUE, x.scale = FALSE,
+                      remove_near_zero_variance = TRUE, remove_zero_variance = TRUE,
+                      toKeep.zv = NULL,
+                      remove_non_significant = FALSE, alpha = 0.05,
+                      EVAL_METHOD = "AUC", pred.method = "cenROC", max.iter = 200,
+                      times = NULL, max_time_points = 15,
+                      MIN_EPV = 5, returnData = TRUE, verbose = FALSE){
   # tol Numeric. Tolerance for solving: solve(t(P) %*% W) (default: 1e-15).
   tol = 1e-10
 
