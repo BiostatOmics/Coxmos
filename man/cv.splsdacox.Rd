@@ -223,7 +223,7 @@ index_train <- caret::createDataPartition(Y_proteomic$event, p = .5, list = FALS
 X_train <- X_proteomic[index_train,1:50]
 Y_train <- Y_proteomic[index_train,]
 cv.splsdacox_dynamic_model <- cv.splsdacox(X_train, Y_train, max.ncomp = 2, vector = NULL,
-n_run = 1, k_folds = 2, x.center = TRUE, x.scale = TRUE)
+n_run = 1, k_folds = 3, x.center = TRUE, x.scale = TRUE)
 }
 \author{
 Pedro Salguero Garcia. Maintainer: pedsalga@upv.edu.es

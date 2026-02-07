@@ -79,7 +79,7 @@
 #' vector <- list()
 #' vector$mirna <- c(10, 15)
 #' vector$proteomic <- c(10, 15)
-#' cv <- cv.isb.splsdacox(X_train, Y_train, max.ncomp = 1, vector = vector, n_run = 1, k_folds = 2)
+#' cv <- cv.isb.splsdacox(X_train, Y_train, max.ncomp = 1, vector = vector, n_run = 1, k_folds = 3)
 #' model <- isb.splsdacox(X_train, Y_train, cv)
 
 isb.splsdacox <- function(X, Y,

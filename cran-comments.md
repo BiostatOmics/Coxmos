@@ -2,7 +2,8 @@
 This resubmission incorporates the following adjustments:
 
 - License change to GPL-3.0 license.
-- Fixed C-index computation metric for test data. Now computes the test C-index, instead of training C-Index.
+- Fixed 'get_COX_evaluation_AIC_CINDEX' function for C-index computation metric. Now computes the test C-index, instead of training C-Index.
+- Fixed 'evaluation_list_Coxmos' function for C-index computation metric. Now computes the test (evaluated fold) C-index, instead of training C-Index.
 
 # CRAN Submission Comments (2025-11-08)
 This resubmission incorporates the following adjustments:
@@ -123,7 +124,7 @@ This resubmission incorporates the following adjustments:
 - Function 'getCIndex_AUC_CoxModel_spls' fixed to handle non-converging models.
 - Function 'get_Coxmos_models2.0' updated to manage the 'EVAL_METHOD' parameter in MB functions.
 - Descriptions of 'Dynamic' functions updated to include all possible values for 'EVAL_METHOD'.
-- Function 'boxplot.performance' updated to separate different types of evaluators.
+- Function 'boxplot_performance' updated to separate different types of evaluators.
 - New functions 'checkX.colnames' and 'checkX.colnames.mb' added to all relevant methods.
 - Parameter 'EVAL_METHOD' updated across all functions that include it.
 - Function 'plot_evaluation' fixed to handle missing values at certain time points.

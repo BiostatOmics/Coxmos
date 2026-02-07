@@ -752,7 +752,7 @@ splsdrcox_penalty <- function (X, Y,
 #' X_train <- X_proteomic[index_train,1:50]
 #' Y_train <- Y_proteomic[index_train,]
 #' cv.splsdrcox_model <- cv.splsdrcox_penalty(X_train, Y_train, max.ncomp = 2, penalty.list = c(0.1),
-#' n_run = 1, k_folds = 2, x.center = TRUE, x.scale = TRUE)
+#' n_run = 1, k_folds = 3, x.center = TRUE, x.scale = TRUE)
 
 cv.splsdrcox_penalty <- function (X, Y,
                          max.ncomp = 8, penalty.list = seq(0.1,0.9,0.2),
@@ -930,6 +930,8 @@ cv.splsdrcox_penalty <- function (X, Y,
   total_models <- max.ncomp * k_folds * n_run * length(penalty.list)
   df_results_evals <- get_COX_evaluation_AIC_CINDEX(comp_model_lst = comp_model_lst, alpha = alpha,
                                                     max.ncomp = max.ncomp, penalty.list = penalty.list, n_run = n_run, k_folds = k_folds,
+                                                    X_test = X, Y_test = Y,
+                                                    lst_X_test = lst_test_indexes, lst_Y_test = lst_test_indexes,
                                                     total_models = total_models, remove_non_significant_models = remove_non_significant_models, verbose = verbose)
 
   if(all(is.null(df_results_evals))){

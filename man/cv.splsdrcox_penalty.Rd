@@ -310,7 +310,7 @@ index_train <- caret::createDataPartition(Y_proteomic$event, p = .5, list = FALS
 X_train <- X_proteomic[index_train,1:50]
 Y_train <- Y_proteomic[index_train,]
 cv.splsdrcox_model <- cv.splsdrcox_penalty(X_train, Y_train, max.ncomp = 2, penalty.list = c(0.1),
-n_run = 1, k_folds = 2, x.center = TRUE, x.scale = TRUE)
+n_run = 1, k_folds = 3, x.center = TRUE, x.scale = TRUE)
 data("X_proteomic")
 data("Y_proteomic")
 set.seed(123)
@@ -318,7 +318,7 @@ index_train <- caret::createDataPartition(Y_proteomic$event, p = .5, list = FALS
 X_train <- X_proteomic[index_train,1:50]
 Y_train <- Y_proteomic[index_train,]
 cv.splsdrcox_model <- cv.splsdrcox_penalty(X_train, Y_train, max.ncomp = 2, penalty.list = c(0.1),
-n_run = 1, k_folds = 2, x.center = TRUE, x.scale = TRUE)
+n_run = 1, k_folds = 3, x.center = TRUE, x.scale = TRUE)
 }
 \author{
 Pedro Salguero Garcia. Maintainer: pedsalga@upv.edu.es

@@ -412,7 +412,7 @@ isb.splsicox <- function(X, Y,
 #' X_train$proteomic <- X_train$proteomic[index_train,1:30]
 #' Y_train <- Y_multiomic[index_train,]
 #' cv.isb.splsicox_model <- cv.isb.splsicox(X_train, Y_train, max.ncomp = 1, penalty.list = c(0, 0.5),
-#' n_run = 1, k_folds = 2, x.center = TRUE, x.scale = TRUE)
+#' n_run = 1, k_folds = 3, x.center = TRUE, x.scale = TRUE)
 
 cv.isb.splsicox <- function(X, Y,
                             max.ncomp = 8, penalty.list = seq(0,0.9,0.1),

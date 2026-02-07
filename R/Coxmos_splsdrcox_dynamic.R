@@ -732,7 +732,7 @@ splsdrcox <- function(X, Y,
 #' X_train <- X_proteomic[index_train,1:20]
 #' Y_train <- Y_proteomic[index_train,]
 #' cv.splsdrcox_dynamic_model <- cv.splsdrcox(X = X_train, Y = Y_train, max.ncomp = 1,
-#' vector = NULL, n_run = 1, k_folds = 2, x.center = TRUE, x.scale = TRUE)
+#' vector = NULL, n_run = 1, k_folds = 3, x.center = TRUE, x.scale = TRUE)
 
 cv.splsdrcox <- function(X, Y,
                         max.ncomp = 8, vector = NULL,
@@ -911,7 +911,10 @@ cv.splsdrcox <- function(X, Y,
   total_models <- max.ncomp * k_folds * n_run
   df_results_evals <- get_COX_evaluation_AIC_CINDEX(comp_model_lst = comp_model_lst, alpha = alpha,
                                                     max.ncomp = max.ncomp, penalty.list = NULL, n_run = n_run, k_folds = k_folds,
-                                                    total_models = total_models, remove_non_significant_models = remove_non_significant_models, verbose = verbose)
+                                                    X_test = X, Y_test = Y,
+                                                    lst_X_test = lst_test_indexes, lst_Y_test = lst_test_indexes,
+                                                    total_models = total_models,
+                                                    remove_non_significant_models = remove_non_significant_models, verbose = verbose)
 
   if(all(is.null(df_results_evals))){
     message(paste0("Best model could NOT be obtained. All models computed present problems."))

@@ -659,7 +659,7 @@ plot_evaluation <- function(eval_results, evaluation = "AUC", pred.attr = "mean"
       test_comparations = NULL
     }
 
-    plot <- boxplot.performance(df = eval_results$df,
+    plot <- boxplot_performance(df = eval_results$df,
                                 x.var = "method",
                                 y.var = evaluation,
                                 x.fill = "method",
@@ -724,7 +724,7 @@ gg_color_hue <- function(n) {
   grDevices::hcl(h = hues, l = 65, c = 100)[1:n]
 }
 
-boxplot.performance <- function(df, x.var, y.var, x.fill = NULL, x.alpha = NULL, x.lab = NULL,
+boxplot_performance <- function(df, x.var, y.var, x.fill = NULL, x.alpha = NULL, x.lab = NULL,
                                 y.lab = NULL, fill.lab = NULL, alpha.lab = NULL, title = NULL,
                                 y.limit = NULL, y.limit.exception = NULL, jitter = TRUE,
                                 test = "anova", eval_method = "auto", show.median = TRUE,
@@ -1552,7 +1552,7 @@ lineplot.performace2.0 <- function(df, x.var = "time", y.var = "AUC", x.color = 
   return(ggp)
 }
 
-barplot.mean_performace2.0 <- function(df, x.var = "method", y.var="AUC", x.color = "method",
+barplot_mean_performace2.0 <- function(df, x.var = "method", y.var="AUC", x.color = "method",
                                        x.lab = NULL, y.lab = NULL, y.limit = NULL,
                                        hide_labels = TRUE, legend_rm = NULL, legend_title = "Method",
                                        legend_size_text = 12,

@@ -712,6 +712,8 @@ cv.sb.splsdacox <- function(X, Y,
   total_models <- max.ncomp * k_folds * n_run
   df_results_evals <- get_COX_evaluation_AIC_CINDEX(comp_model_lst = lst_model, alpha = alpha,
                                                     max.ncomp = max.ncomp, penalty.list = NULL, n_run = n_run, k_folds = k_folds,
+                                                    X_test = X, Y_test = Y,
+                                                    lst_X_test = lst_test_indexes, lst_Y_test = lst_test_indexes,
                                                     total_models = total_models, remove_non_significant_models = remove_non_significant_models, verbose = verbose)
 
   if(all(is.null(df_results_evals))){

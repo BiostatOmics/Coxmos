@@ -217,7 +217,7 @@ index_train <- caret::createDataPartition(Y_proteomic$event, p = .5, list = FALS
 X_train <- X_proteomic[index_train,]
 Y_train <- Y_proteomic[index_train,]
 cv.coxEN_model <- cv.coxEN(X_train, Y_train, EN.alpha.list = c(0.1,0.5),
-x.center = TRUE, x.scale = TRUE)
+x.center = TRUE, x.scale = TRUE, n_run = 1, k_folds = 3)
 }
 \author{
 Pedro Salguero Garcia. Maintainer: pedsalga@upv.edu.es

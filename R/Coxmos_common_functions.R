@@ -2708,8 +2708,8 @@ get_EVAL_PLOTS <- function(fast_mode, best_model_info, w_AUC, w_I.BRIER, max.nco
     for(l in 1:length(max.ncomp)){
       for(e in 1:length(penalty.list)){
         if(max.ncomp[[l]] %in% df_results_evals_fold$n.comps & penalty.list[[e]] %in% df_results_evals_fold$penalty){
-          vector <- c("AIC.sd" = sd(df_results_evals_fold[df_results_evals_fold$n.comps==max.ncomp[[l]] & df_results_evals_fold$penalty==penalty.list[[e]],colname_AIC]),
-                      "c_index.sd" = sd(df_results_evals_fold[df_results_evals_fold$n.comps==max.ncomp[[l]] & df_results_evals_fold$penalty==penalty.list[[e]],colname_c_index]))
+          vector <- c("AIC.sd" = sd(df_results_evals_fold[df_results_evals_fold$n.comps==max.ncomp[[l]] & df_results_evals_fold$penalty==penalty.list[[e]],colname_AIC],na.rm=TRUE),
+                      "c_index.sd" = sd(df_results_evals_fold[df_results_evals_fold$n.comps==max.ncomp[[l]] & df_results_evals_fold$penalty==penalty.list[[e]],colname_c_index], na.rm=TRUE))
 
           sd_vector <- rbind(sd_vector, vector)
         }
@@ -2718,8 +2718,8 @@ get_EVAL_PLOTS <- function(fast_mode, best_model_info, w_AUC, w_I.BRIER, max.nco
   }else{
     for(l in 1:length(max.ncomp)){
       if(max.ncomp[[l]] %in% df_results_evals_fold$n.comps){
-        vector <- c("AIC.sd" = sd(df_results_evals_fold[df_results_evals_fold$n.comps==max.ncomp[[l]],colname_AIC]),
-                    "c_index.sd" = sd(df_results_evals_fold[df_results_evals_fold$n.comps==max.ncomp[[l]],colname_c_index]))
+        vector <- c("AIC.sd" = sd(df_results_evals_fold[df_results_evals_fold$n.comps==max.ncomp[[l]],colname_AIC], na.rm=TRUE),
+                    "c_index.sd" = sd(df_results_evals_fold[df_results_evals_fold$n.comps==max.ncomp[[l]],colname_c_index], na.rm=TRUE))
 
         sd_vector <- rbind(sd_vector, vector)
       }
@@ -2856,6 +2856,8 @@ get_EVAL_PLOTS <- function(fast_mode, best_model_info, w_AUC, w_I.BRIER, max.nco
 #### ### ### ### ### ##
 get_COX_evaluation_AIC_CINDEX <- function(comp_model_lst, max.ncomp, penalty.list = NULL,
                                           n_run, k_folds, total_models,
+                                          X_test, Y_test,
+                                          lst_X_test, lst_Y_test,
                                           remove_non_significant_models, alpha = 0.05,
                                           verbose = FALSE){
 
@@ -2947,7 +2949,27 @@ get_COX_evaluation_AIC_CINDEX <- function(comp_model_lst, max.ncomp, penalty.lis
           }
 
           aic <- stats::extractAIC(cox, k=2)[2] #k=2 <- AIC, [2] AIC Value
-          c_index <- survival::concordance(cox)$concordance
+          c_index <- survival::concordance(cox)$concordance #train
+
+          #c_index test
+          model.coxmos = model
+          if(isa(X_test, "list") & !attr(model.coxmos, "model") %in% pkg.env$multiblock_methods){
+            which_block = purrr::map(names(X_test), ~length(grep(., m, fixed = FALSE))>0)
+            names(which_block) <- names(X_test)
+            X_test_mod <- predict(object = model.coxmos, newdata = X_test[[names(which_block)[which_block==TRUE]]])
+          }else{
+            X_test_mod <- predict(object = model.coxmos, newdata = X_test) #all multiblock or all PLS - Ok
+          }
+
+          lp <- getLinealPredictors(cox = cox, data = X_test_mod[lst_X_test[[r]][[f]],,drop=F])
+          lp_fit <- lp$fit
+          c_index <- survcomp::concordance.index(x = c(lp_fit),
+                                                     surv.time = Y_test[lst_Y_test[[r]][[f]],"time"],
+                                                     surv.event = Y_test[lst_Y_test[[r]][[f]],"event"])$c.index
+
+          if(is.na(c_index)){
+            cat(paste0("\nC-Index for run ", r, " and fold ", f, " could not be computed as a minimum of 4 events are needed in the evaluation fold.\n"))
+          }
 
           df_results_evals <- rbind(df_results_evals, cbind(max.ncomp[[comp]], r, f, n_var, aic, c_index))
           pb$tick()
@@ -3011,6 +3033,22 @@ get_COX_evaluation_AIC_CINDEX <- function(comp_model_lst, max.ncomp, penalty.lis
 
             aic <- stats::extractAIC(cox, k=2)[2] #k=2 <- AIC, [2] AIC Value
             c_index <- survival::concordance(cox)$concordance
+
+            #c_index test
+            model.coxmos = model
+            if(isa(X_test, "list") & !attr(model.coxmos, "model") %in% pkg.env$multiblock_methods){
+              which_block = purrr::map(names(X_test), ~length(grep(., m, fixed = FALSE))>0)
+              names(which_block) <- names(X_test)
+              X_test_mod <- predict(object = model.coxmos, newdata = X_test[[names(which_block)[which_block==TRUE]]])
+            }else{
+              X_test_mod <- predict(object = model.coxmos, newdata = X_test) #all multiblock or all PLS - Ok
+            }
+
+            lp <- getLinealPredictors(cox = cox, data = X_test_mod[lst_X_test[[r]][[f]],,drop=F])
+            lp_fit <- lp$fit
+            c_index <- survcomp::concordance.index(x = c(lp_fit),
+                                                   surv.time = Y_test[lst_Y_test[[r]][[f]],"time"],
+                                                   surv.event = Y_test[lst_Y_test[[r]][[f]],"event"])$c.index
 
             df_results_evals <- rbind(df_results_evals, cbind(max.ncomp[[comp]], penalty.list[[e]], r, f, n_var, aic, c_index))
             pb$tick()
@@ -4631,9 +4669,9 @@ get_Coxmos_models2.0 <- function(method = "sPLS-ICOX",
       return(NULL)
     }
 
-    ######
+    #####
     ## We need to fill models from 1:max.ncomp (it uses max.ncomp to fill the others, if it is NULL, method fail!!!)
-    ######
+    #####
     if(max.ncomp>1){
       pb_text <- "(:spin) [:bar] :percent [Elapsed time: :elapsedfull || Estimated remaining time: :eta]"
       pb <- progress::progress_bar$new(format = pb_text,
@@ -5605,11 +5643,12 @@ evaluation_list_Coxmos <- function(model, X_test, Y_test, pred.method = "cenROC"
     X_test <- checkColnamesIllegalChars(X_test)
   }
 
+  ## coxmodel
   cox <- model$survival_model$fit
-  # aic.cox <- stats::extractAIC(cox, k=2)[2] #k=2 <- AIC, [2] AIC Value
+
+  aic.cox <- stats::extractAIC(cox, k=2)[2] #k=2 <- AIC, [2] AIC Value
   # c.index.cox <- survival::concordance(cox)$concordance
 
-  #linear predictors
   if(isa(X_test, "list") & !attr(model, "model") %in% pkg.env$multiblock_methods){ #mix between multiblock and all PLS - Special case
     which_block = purrr::map(names(X_test), ~length(grep(., m, fixed = FALSE))>0)
     names(which_block) <- names(X_test)
@@ -5623,19 +5662,14 @@ evaluation_list_Coxmos <- function(model, X_test, Y_test, pred.method = "cenROC"
   ####
   brier_score <- SURVCOMP_BRIER(model = model, X_test_mod = X_test_mod, Y_test = Y_test)
 
-  lp <- getLinealPredictors(cox = cox, data = X_test_mod)
-  lp_fit <- lp$fit
-
   ####
   #c-index
   ####
-  surv_test <- survival::Surv(time = Y_test[,"time"], event = Y_test[,"event"])
-  loglik_test <- survival::coxph(surv_test ~ lp_fit, init = 1, iter = 0)$loglik[1]
-  aic.cox <- loglik_test #pseudo aic
-  aic.cox <- stats::extractAIC(cox, k=2)[2] #k=2 <- AIC, [2] AIC Value
-
-  # Note: Y_test must be a Surv object
-  c.index.cox <- survival::concordance(surv_test ~ lp_fit)$concordance
+  lp <- getLinealPredictors(cox = cox, data = X_test_mod)
+  lp_fit <- lp$fit
+  c.index.cox <- survcomp::concordance.index(x = c(lp_fit),
+                                         surv.time = Y_test[,"time"],
+                                         surv.event = Y_test[,"event"])$c.index
 
   ####
   # auc

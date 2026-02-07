@@ -778,7 +778,7 @@ mb.splsdrcox <- function (X, Y,
 #' X_train$proteomic <- X_train$proteomic[index_train,1:50]
 #' Y_train <- Y_multiomic[index_train,]
 #' cv.mb.splsdrcox_model <- cv.mb.splsdrcox(X_train, Y_train, max.ncomp = 2, vector = NULL,
-#' n_run = 1, k_folds = 2, x.center = TRUE, x.scale = TRUE)
+#' n_run = 1, k_folds = 3, x.center = TRUE, x.scale = TRUE)
 #' }
 
 cv.mb.splsdrcox <- function(X, Y,
@@ -959,6 +959,8 @@ cv.mb.splsdrcox <- function(X, Y,
   total_models <- max.ncomp * k_folds * n_run
   df_results_evals <- get_COX_evaluation_AIC_CINDEX(comp_model_lst = comp_model_lst, alpha = alpha,
                                                     max.ncomp = max.ncomp, penalty.list = NULL, n_run = n_run, k_folds = k_folds,
+                                                    X_test = X, Y_test = Y,
+                                                    lst_X_test = lst_test_indexes, lst_Y_test = lst_test_indexes,
                                                     total_models = total_models, remove_non_significant_models = remove_non_significant_models, verbose = verbose)
 
   if(all(is.null(df_results_evals))){

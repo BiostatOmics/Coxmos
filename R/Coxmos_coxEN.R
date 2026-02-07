@@ -639,7 +639,7 @@ coxEN <- function(X, Y,
 #' X_train <- X_proteomic[index_train,]
 #' Y_train <- Y_proteomic[index_train,]
 #' cv.coxEN_model <- cv.coxEN(X_train, Y_train, EN.alpha.list = c(0.1,0.5),
-#' x.center = TRUE, x.scale = TRUE)
+#' x.center = TRUE, x.scale = TRUE, n_run = 1, k_folds = 3)
 
 cv.coxEN <- function(X, Y,
                      EN.alpha.list = seq(0,1,0.2),
@@ -818,6 +818,8 @@ cv.coxEN <- function(X, Y,
   #### ### ### ### ### ### #
   df_results_evals <- get_COX_evaluation_AIC_CINDEX(comp_model_lst = comp_model_lst, alpha = alpha,
                                                     max.ncomp = EN.alpha.list, penalty.list = NULL, n_run = n_run, k_folds = k_folds,
+                                                    X_test = X, Y_test = Y,
+                                                    lst_X_test = lst_test_indexes, lst_Y_test = lst_test_indexes,
                                                     total_models = total_models, remove_non_significant_models = remove_non_significant_models, verbose = verbose) #deletion at variable level for EN
 
   if(all(is.null(df_results_evals))){

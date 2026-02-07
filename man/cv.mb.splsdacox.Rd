@@ -236,7 +236,7 @@ X_train$mirna <- X_train$mirna[index_train,1:50]
 X_train$proteomic <- X_train$proteomic[index_train,1:50]
 Y_train <- Y_multiomic[index_train,]
 cv.mb.splsdacox_model <- cv.mb.splsdacox(X_train, Y_train, max.ncomp = 2, vector = NULL,
-n_run = 1, k_folds = 2, x.center = TRUE, x.scale = TRUE)
+n_run = 1, k_folds = 3, x.center = TRUE, x.scale = TRUE)
 }
 }
 \author{

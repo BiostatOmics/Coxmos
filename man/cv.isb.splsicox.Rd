@@ -191,7 +191,7 @@ X_train$mirna <- X_train$mirna[index_train,1:30]
 X_train$proteomic <- X_train$proteomic[index_train,1:30]
 Y_train <- Y_multiomic[index_train,]
 cv.isb.splsicox_model <- cv.isb.splsicox(X_train, Y_train, max.ncomp = 1, penalty.list = c(0, 0.5),
-n_run = 1, k_folds = 2, x.center = TRUE, x.scale = TRUE)
+n_run = 1, k_folds = 3, x.center = TRUE, x.scale = TRUE)
 }
 \author{
 Pedro Salguero Garcia. Maintainer: pedsalga@upv.edu.es
